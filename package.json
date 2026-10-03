@@ -1,0 +1,31 @@
+{
+  "name": "folyo",
+  "private": true,
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "dotenv -e .env -- concurrently --kill-others -n web,edge \"pnpm --filter @folyo/web dev\" \"pnpm --filter @folyo/edge dev\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit && pnpm -r typecheck",
+    "test": "vitest run",
+    "build": "pnpm --filter @folyo/web build:worker && pnpm --filter @folyo/edge build",
+    "db:generate": "pnpm --filter @folyo/db generate",
+    "db:migrate": "pnpm --filter @folyo/db migrate",
+    "db:seed": "pnpm --filter @folyo/db seed"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^22.19.0",
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.7.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^3.2.4"
+  }
+}

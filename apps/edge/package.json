@@ -1,0 +1,19 @@
+{
+  "name": "@folyo/edge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "node ../../scripts/dev-edge.mjs",
+    "build": "wrangler deploy --dry-run --outdir dist"
+  },
+  "dependencies": {
+    "@folyo/core": "workspace:*",
+    "hono": "^4.11.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.54.0",
+    "@cloudflare/workers-types": "^4.20251213.0"
+  }
+}

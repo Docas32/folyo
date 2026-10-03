@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "folyo-edge",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-12-01",
+  "dev": {
+    "port": 8787
+  },
+  "vars": {
+    "ROOT_DOMAIN": "lvh.me",
+    "ENVIRONMENT": "dev"
+  },
+  "services": [
+    {
+      "binding": "WEB",
+      "service": "folyo-web"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ASSETS_BUCKET",
+      "bucket_name": "folyo-user-assets"
+    },
+    {
+      "binding": "SITES_BUCKET",
+      "bucket_name": "folyo-published-sites"
+    }
+  ]
+}

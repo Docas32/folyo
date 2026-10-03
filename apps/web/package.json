@@ -1,0 +1,26 @@
+{
+  "name": "@folyo/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "build:worker": "opennextjs-cloudflare build",
+    "deploy": "pnpm build:worker && wrangler deploy",
+    "preview": "pnpm build:worker && wrangler dev"
+  },
+  "dependencies": {
+    "@folyo/core": "workspace:*",
+    "@opennextjs/cloudflare": "^1.15.0",
+    "next": "^15.5.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.54.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0"
+  }
+}

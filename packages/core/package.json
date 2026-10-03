@@ -1,0 +1,16 @@
+{
+  "name": "@folyo/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {},
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
