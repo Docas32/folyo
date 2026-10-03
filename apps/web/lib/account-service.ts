@@ -18,7 +18,8 @@ export type ErrorCode =
   | 'confirmation'
   | 'conflict'
   | 'unavailable'
-  | 'origin';
+  | 'origin'
+  | 'notFound';
 export class AccountError extends Error {
   constructor(
     public code: ErrorCode,

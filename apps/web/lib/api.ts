@@ -18,12 +18,17 @@ export async function apiAccount(
     throw new AccountError('siteRequired', 409);
   return context;
 }
+class BodyValidationError extends AccountError {
+  constructor(public issues: z.ZodIssue[]) {
+    super('invalid', 400);
+  }
+}
 export async function body<T>(request: Request, schema: z.ZodType<T>) {
   const json: unknown = await request.json().catch(() => {
     throw new AccountError('invalid', 400);
   });
   const parsed = schema.safeParse(json);
-  if (!parsed.success) throw new AccountError('invalid', 400);
+  if (!parsed.success) throw new BodyValidationError(parsed.error.issues);
   return parsed.data;
 }
 export function route(handler: (request: Request) => Promise<Response>) {
@@ -31,6 +36,17 @@ export function route(handler: (request: Request) => Promise<Response>) {
     try {
       return await handler(request);
     } catch (error) {
+      if (error instanceof BodyValidationError)
+        return Response.json(
+          {
+            error: 'invalid',
+            issues: error.issues.map((issue) => ({
+              path: issue.path,
+              code: issue.code,
+            })),
+          },
+          { status: 400 },
+        );
       if (error instanceof AccountError)
         return Response.json(
           {

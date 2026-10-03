@@ -19,7 +19,9 @@ export default async function RootLayout({
   }
   return (
     <html lang={locale}>
-      <body>{children}</body>
+      {/* Browser zoom extensions can inject inline styles before hydration.
+          Ignore attribute differences on body only; children stay checked. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

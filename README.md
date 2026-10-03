@@ -1,6 +1,6 @@
-# Folyo — F1
+# Folyo
 
-Fundação da plataforma de portfólios: app Next.js 15, roteador Hono em Cloudflare Workers, PostgreSQL Neon e dois buckets R2. F2 adiciona autenticação Google, termos, onboarding, dashboard e configurações. Editor e publicação permanecem como pontos de extensão.
+Fundação da plataforma de portfólios: app Next.js 15, roteador Hono em Cloudflare Workers, PostgreSQL Neon e dois buckets R2. F2 adiciona autenticação Google, termos, onboarding, dashboard e configurações. F3a adiciona o editor de blocos com autosave; publicação permanece como ponto de extensão.
 
 ## Requisitos e instalação
 
@@ -152,7 +152,7 @@ Handles são normalizados com trim/lowercase, têm 3–30 caracteres ASCII alfan
 
 A troca de handle tem cooldown de exatamente sete dias após `handle_changed_at`. A primeira troca é livre; uma requisição bloqueada recebe `nextAllowedAt` em ISO UTC e a UI mostra a data no idioma do usuário. A condição do UPDATE usa compare-and-set e cutoff no banco para impedir que duas requisições simultâneas ignorem o prazo. Salvar título/descrição ou enviar o mesmo handle não reinicia o prazo. Não há redirect do handle anterior nesta frente.
 
-O dashboard mostra status, handle e link `https://{handle}.{ROOT_DOMAIN}`, com clipboard e espaço `data-ad-slot="dashboard-top"` sem scripts. Esse link aponta para o stub do edge; em dev o link solicitado usa HTTPS, embora Wrangler local sirva HTTP — para verificar o stub localmente, use os exemplos curl da F1. `/editor` é apenas o stub solicitado.
+O dashboard mostra status, handle e link `https://{handle}.{ROOT_DOMAIN}`, com clipboard e espaço `data-ad-slot="dashboard-top"` sem scripts. Esse link aponta para o stub do edge; em dev o link solicitado usa HTTPS, embora Wrangler local sirva HTTP — para verificar o stub localmente, use os exemplos curl da F1. `/editor` contém o editor de blocos da F3a.
 
 Dicionários `getDictionary(locale)` em `apps/web/lib/i18n` cobrem todas as strings das novas telas, inclusive labels, mensagens e textos legais provisórios. O locale vem de `users.locale`, com fallback `en`. Não há next-intl; F5 pode estender essa camada.
 
@@ -177,8 +177,67 @@ R2 e PostgreSQL não podem participar da mesma transação. Por isso a limpeza R
 - [ ] Sem sessão, páginas privadas voltam a `/` e APIs retornam 401; sem Origin correto, mutações retornam 403.
 - [ ] Em uma conta de teste descartável, abrir exclusão: confirmação errada bloqueia; confirmação correta remove registros, limpa os dois prefixos e volta ao início sem sessão.
 
-### Validação F2 neste ambiente
+F1 e F2 foram validadas E2E no projeto antes desta frente. O checklist acima permanece como referência para regressões de autenticação e conta.
 
-Node 22/pnpm foram encontrados na instalação existente. ESLint passou e os 116 testes automatizados passaram; os testes incluem validação de handles, upsert Google com DB mockado, contratos de API, cooldown, compare-and-set SQL e limpeza R2 paginada/erros com mocks. `pnpm db:generate` confirma que o schema coincide com o snapshot gerado.
+## F3a — editor de blocos e autosave
 
-A rede do ambiente bloqueia o registry npm e o acesso externo. A dependência `next-auth@5.0.0-beta.30` foi declarada, mas ainda não instalada; por isso typecheck completo, build e smoke test Google não puderam ser aprovados. `pnpm-lock.yaml` precisa ser atualizado por `pnpm install` com rede disponível antes de congelar a CI. A tentativa de aplicar a migration F2 ao Neon falhou com `EAI_AGAIN` no primeiro acesso ao serviço; a migration ainda não foi aplicada. O build foi tentado e falhou na compilação. Esses passos não estão marcados como concluídos.
+Depois do onboarding, abra `/editor` diretamente no Next (`pnpm dev:auth`, porta 3000). Não há nova migration nesta frente: as tabelas `pages` e `blocks` da F1 já possuem as colunas necessárias.
+
+No primeiro acesso, o servidor cria a página **Início** (`inicio`) para `pt-BR`, ou **Home** (`home`) nos demais locales, e um hero com placeholders. A página SSR e `GET /api/editor` usam a mesma função de bootstrap. A operação usa uma transação Neon HTTP (`db.batch`), com `pg_advisory_xact_lock` por site e INSERT condicional. O hero só é inserido a partir da página recém-criada; chamadas simultâneas não duplicam a página e remover todos os blocos não faz o hero reaparecer no reload.
+
+### Contrato compartilhado
+
+`packages/core/src/blocks.ts` exporta os nove schemas de conteúdo, `blockContentSchema` (union discriminada `{type, content}`), `BlockType`, os tipos inferidos e a validação do envelope de salvamento. Editor, API e futuro renderizador F4 devem importar esses schemas; não crie validadores paralelos. `createDefaultBlock(type, locale)` retorna o conteúdo do tipo com placeholders localizados, compartilhados com os dicionários web por `getBlockPlaceholders`.
+
+- hero, heading e text: texto simples; o editor nunca interpreta HTML.
+- image e gallery: URLs externas com preview; sem uploads. Galeria: 1–12 itens.
+- button: texto, URL e estilo primary/outline.
+- social: 1–10 links, com plataforma e string de URL, incluindo email/WhatsApp.
+- divider: objeto estritamente vazio; spacer: tamanho sm/md/lg.
+
+URLs de imagens, avatar e botão devem ser HTTP(S), além de URLs válidas. Protocolos como `javascript:` e `data:` são rejeitados pelo schema compartilhado. As URLs sociais permanecem strings conforme o contrato; F4 deve escolher protocolos seguros por plataforma antes de renderizá-las como links. Imagens de exemplo usam `placehold.co`; os demais links de exemplo usam `example.com`. O preview usa `referrerPolicy="no-referrer"` e informa falhas de carregamento.
+
+### API e persistência
+
+| Endpoint                         | Contrato                                                                                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/editor`                | `{site, pages, blocks}`: resumo do site (id, title, handle, status), páginas ordenadas e blocos da primeira página; `Cache-Control: no-store`              |
+| `PUT /api/pages/[pageId]/blocks` | `{blocks:[{id,type,content,position}]}`, com UUIDs distintos, até 100 blocos e `position` igual ao índice no array; retorna `{ok:true,savedAt}` em ISO UTC |
+
+Ambas as APIs exigem sessão, conta existente, termos e site. Ownership é verificado no servidor; um site cujo dono não coincide com a sessão retorna 403, e página inexistente/de outro site retorna 404. O PUT também exige Origin da mesma origem. Conteúdo inválido retorna 400 com `issues:[{path,code}]`, por exemplo `['blocks',0,'content','url']`. IDs de usuário/site e outras propriedades extras no body são rejeitados.
+
+Cada save adquire o mesmo advisory lock do bootstrap e faz **delete + insert da lista completa** em uma única transação, atualizando `sites.updated_at` pelo relógio PostgreSQL. IDs de blocos de outra página não são usados para upsert: uma colisão de PK causa rollback, sem mover ou apagar blocos alheios. Uma lista vazia apaga todos os blocos da página. A primeira página é escolhida por `position`, com `id` como desempate.
+
+Essa escolha mantém o MVP simples, preserva os UUIDs enviados e evita posições parcialmente atualizadas. O lock serializa saves e leituras do editor por site. Entre abas/dispositivos, vence a última transação concluída; não há merge de edições concorrentes. F3b e futuras escritas de páginas devem respeitar o mesmo lock `editor:{siteId}`. Veja [batch Neon/Drizzle](https://orm.drizzle.team/docs/batch-api) e [advisory locks PostgreSQL](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS).
+
+### Comportamento do editor
+
+A paleta inclui ícone, nome e descrição dos nove tipos, ao final da lista e nos espaços entre blocos. `BlockTypeMenu` em `apps/web/components/editor/block-menu.tsx` é independente do trigger/posição e pode ser reutilizado pelo comando `/` na F3b. Controles de seta/exclusão aparecem no hover, no foco de teclado e em dispositivos de toque. A exclusão oferece desfazer do último bloco por cinco segundos, inclusive se o delete já tiver sido salvo.
+
+As alterações são validadas pelos schemas core e entram em uma fila de autosave com debounce de **1,5 segundo**. A fila envia só uma requisição por vez, conserva a revisão válida mais recente e não marca edições novas como salvas ao receber uma resposta antiga. Saves sobrepostos são encadeados. Bloco inválido fica com borda vermelha e o indicador informa seu número; nenhuma lista inválida é enviada. Os estados incluem alterações pendentes, Salvando…, Salvo HH:MM e erro com retry manual. Erros de rede preservam o conteúdo local.
+
+O link de volta ao dashboard aguarda o flush das alterações válidas; em erro ou conteúdo inválido, permanece no editor para correção/retry. Ao fechar/recarregar com alterações pendentes, o navegador pode oferecer seu aviso nativo. Não há persistência local offline: o estado após reload vem do último save confirmado no banco.
+
+### Validação e checklist F3a
+
+Testes Vitest cobrem conteúdo válido/inválido por tipo e limites, defaults em ambos os idiomas, envelope completo, PUT com DB mockado (sucesso, validação, sessão/termos, ownership e página estrangeira), plano transacional, bootstrap simultâneo com DB mockado e preservação de página vazia. A fila tem testes com timers e Promises controladas para debounce, sobrescrita da revisão pendente, resposta antiga, conteúdo inválido, falha/retry e flush. Os 116 testes anteriores permanecem na suíte. Na validação desta entrega, os **196 testes**, ESLint e typecheck de todos os workspaces passaram. O build OpenNext e o empacotamento dry-run do edge também concluíram.
+
+```sh
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+- [ ] Abrir `/editor` em uma conta sem páginas: conferir Início/Home e hero; carregar em duas abas e confirmar uma única página/bloco inicial.
+- [ ] Adicionar cada tipo pelo menu final e pelo menu entre blocos; editar campos e conferir os previews externos.
+- [ ] Mover com ↑/↓, aguardar Salvo HH:MM e recarregar; conferir conteúdo e ordem.
+- [ ] Excluir um bloco e desfazer em até cinco segundos; excluir todos, aguardar save e recarregar para conferir o empty state.
+- [ ] Apagar nome do hero ou usar URL inválida: conferir borda/indicador e ausência de PUT; corrigir e conferir autosave.
+- [ ] Simular offline no navegador, editar, conferir erro, voltar online e usar retry; conferir o conteúdo após reload.
+- [ ] Com rede lenta, editar durante um save; conferir que o último estado persiste e a resposta anterior não sinaliza save completo.
+- [ ] Confirmar que PUT para página de outra conta retorna 404 e que payload inválido retorna 400 com path.
+
+A validação automatizada de bootstrap e persistência nesta entrega usa DB mockado; o checklist de navegador/Neon acima não foi executado neste ambiente.
+
+Editor nesta frente opera apenas na primeira página. Não há drag & drop, gerência de páginas, upload, templates, publicação ou renderização pública.

@@ -34,6 +34,7 @@ export const apiResponseSchema = z.object({
       'conflict',
       'unavailable',
       'origin',
+      'notFound',
     ])
     .optional(),
   nextAllowedAt: z.string().datetime().optional(),

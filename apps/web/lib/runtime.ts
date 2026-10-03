@@ -1,3 +1,4 @@
+import { createEditorRepository } from './editor-repository';
 import { z } from 'zod';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { databaseUrlSchema, environmentSchema } from '@folyo/core';
@@ -18,4 +19,8 @@ export function repository() {
 export async function accountBuckets() {
   const { env } = await getCloudflareContext({ async: true });
   return { assets: env.ASSETS_BUCKET, sites: env.SITES_BUCKET };
+}
+
+export function editorRepository() {
+  return createEditorRepository(serverEnv().DATABASE_URL);
 }

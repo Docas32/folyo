@@ -88,3 +88,245 @@ dialog::backdrop {
     margin: 1rem auto;
   }
 }
+
+/* F3a editor: controls remain keyboard reachable and visible on touch devices. */
+.editor-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 6rem;
+}
+.editor-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  border-bottom: 1px solid #dce0e7;
+  padding-bottom: 1.25rem;
+}
+.editor-topbar h1 {
+  margin: 0.25rem 0;
+  font-size: 1.6rem;
+}
+.editor-kicker {
+  font-size: 0.8rem;
+  color: #677086;
+}
+.editor-status {
+  border-radius: 16px;
+  background: #e6e9f1;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+}
+.editor-save {
+  text-align: right;
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+.save-error,
+.save-invalid,
+.block-error {
+  color: #a32424;
+}
+.editor-canvas {
+  max-width: 740px;
+  margin: 2rem auto;
+}
+.editor-block {
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #dce0e7;
+  border-radius: 12px;
+}
+.editor-block-invalid {
+  border: 2px solid #b52c2c;
+}
+.block-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.block-heading h2 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #677086;
+  margin: 0;
+}
+.block-controls {
+  display: flex;
+  gap: 0.4rem;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.editor-block:hover .block-controls,
+.editor-block:focus-within .block-controls {
+  opacity: 1;
+}
+.block-controls button,
+.editor-secondary {
+  background: #f5f6f8;
+  color: #273047;
+  border-color: #dce0e7;
+}
+.block-controls button {
+  padding: 0.25rem 0.6rem;
+}
+.block-fields {
+  display: grid;
+  gap: 1rem;
+}
+.block-field {
+  display: grid;
+  gap: 0.4rem;
+}
+.block-field > span {
+  font-size: 0.8rem;
+  color: #677086;
+}
+.block-field input,
+.block-field textarea,
+.block-field select {
+  background: #fbfcfe;
+  border-color: #dce0e7;
+  font: inherit;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  width: 100%;
+}
+.block-field textarea {
+  resize: vertical;
+  overflow: hidden;
+}
+.block-image-preview {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  background: #f5f6f8;
+  border-radius: 6px;
+}
+.block-list-item {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #e2e5ec;
+  border-radius: 8px;
+}
+.block-insert {
+  position: relative;
+  text-align: center;
+  padding: 0.75rem 0;
+}
+.add-block-trigger {
+  background: transparent;
+  color: #53607c;
+  border: 1px dashed #bcc5d7;
+  font-size: 0.85rem;
+}
+.block-insert-quiet > .add-block-trigger {
+  opacity: 0;
+}
+.block-insert-quiet:hover > .add-block-trigger,
+.block-insert-quiet:focus-within > .add-block-trigger {
+  opacity: 1;
+}
+.block-menu-popover {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 100%;
+  z-index: 5;
+  width: min(380px, 90vw);
+  padding: 0.5rem;
+  background: white;
+  box-shadow: 0 8px 32px #20253422;
+  border: 1px solid #dce0e7;
+  border-radius: 10px;
+  text-align: left;
+}
+.block-type-menu {
+  display: grid;
+  max-height: 380px;
+  overflow-y: auto;
+}
+.block-type-menu button {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  text-align: left;
+  background: white;
+  border: 0;
+  color: #273047;
+  width: 100%;
+  padding: 0.7rem;
+}
+.block-type-menu button:hover {
+  background: #f0f2ff;
+}
+.block-icon {
+  font-size: 1.2rem;
+  width: 1.5rem;
+  text-align: center;
+}
+.block-type-menu strong,
+.block-type-menu small {
+  display: block;
+}
+.block-type-menu small {
+  color: #677086;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+.block-menu-popover > button {
+  margin: 0.5rem;
+  font-size: 0.75rem;
+  background: #f5f6f8;
+  color: #273047;
+}
+.editor-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  border: 1px dashed #bcc5d7;
+  border-radius: 12px;
+}
+.editor-empty h2 {
+  font-size: 1.3rem;
+}
+.editor-empty button {
+  margin: 0.5rem;
+}
+.editor-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: #202534;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  z-index: 10;
+}
+.preview-error {
+  font-size: 0.8rem;
+  color: #677086;
+}
+@media (hover: none) {
+  .block-controls,
+  .block-insert-quiet > .add-block-trigger {
+    opacity: 1;
+  }
+}
+@media (max-width: 600px) {
+  .editor-topbar {
+    align-items: start;
+    gap: 1rem;
+  }
+  .editor-block {
+    padding: 1rem;
+  }
+}

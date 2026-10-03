@@ -44,17 +44,6 @@ export const templateSchema = z.enum([
   'creative',
 ]);
 export const siteStatusSchema = z.enum(['draft', 'published']);
-export const blockTypeSchema = z.enum([
-  'hero',
-  'heading',
-  'text',
-  'image',
-  'gallery',
-  'button',
-  'social',
-  'divider',
-  'spacer',
-]);
 export const environmentSchema = z.object({
   ROOT_DOMAIN: z
     .string()
@@ -69,7 +58,7 @@ export const databaseUrlSchema = z
   );
 export type TemplateId = z.infer<typeof templateSchema>;
 export type SiteStatus = z.infer<typeof siteStatusSchema>;
-export type BlockType = z.infer<typeof blockTypeSchema>;
+export * from './blocks';
 // F5: replace this catalog with locale selection; components keep using keys.
 export const messages = {
   'pt-BR': {
