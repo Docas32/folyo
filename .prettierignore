@@ -6,3 +6,5 @@ dist
 pnpm-lock.yaml
 **/next-env.d.ts
 packages/db/migrations/meta
+
+client_secret_*.json*

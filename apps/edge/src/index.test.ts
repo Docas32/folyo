@@ -150,12 +150,52 @@ describe('host dispatch', () => {
       limit: 100
     });
   });
+  it('exposes /__dev/r2-health on localhost in dev', async () => {
+    list.mockResolvedValue({
+      objects: [{
+        key: 'file.html',
+        size: 1024
+      } as R2Object],
+      truncated: false,
+      delimitedPrefixes: []
+    });
+    const response = await request('localhost:8787', '/__dev/r2-health', {
+      ...env,
+      ENVIRONMENT: 'dev'
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      ok: true,
+      objects: [{
+        key: 'file.html',
+        size: 1024
+      }],
+      truncated: false
+    });
+    expect(list).toHaveBeenCalledWith({
+      limit: 100
+    });
+  });
+  it('returns 404 for non-GET methods on /__dev/r2-health', async () => {
+    const response = await app.request('http://localhost:8787/__dev/r2-health', {
+      method: 'POST',
+      headers: {
+        host: 'localhost:8787'
+      }
+    }, {
+      ...env,
+      ENVIRONMENT: 'dev'
+    });
+    expect(response.status).toBe(404);
+    expect(list).not.toHaveBeenCalled();
+  });
   it('does not expose the R2 diagnostic in production', async () => {
     webFetch.mockResolvedValue(new Response('not found', {
       status: 404
     }));
     expect((await request('app.lvh.me', '/__dev/r2')).status).toBe(404);
     expect((await request('app.lvh.me', '/__dev/r2-health')).status).toBe(404);
+    expect((await request('localhost:8787', '/__dev/r2-health')).status).toBe(404);
     expect(list).not.toHaveBeenCalled();
   });
   it('rejects invalid environment configuration', async () => {

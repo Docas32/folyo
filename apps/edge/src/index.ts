@@ -33,8 +33,11 @@ app.all('*', async c => {
     }
     return c.redirect(url.toString(), 302);
   }
-  if (host === `app.${ROOT_DOMAIN}`) {
-    if (ENVIRONMENT === 'dev' && (url.pathname === '/__dev/r2' || url.pathname === '/__dev/r2-health')) {
+  if (host === `app.${ROOT_DOMAIN}` || (ENVIRONMENT === 'dev' && (host === 'localhost' || host === '127.0.0.1'))) {
+    if (url.pathname === '/__dev/r2' || url.pathname === '/__dev/r2-health') {
+      if (ENVIRONMENT !== 'dev' || c.req.method !== 'GET') {
+        return c.text(defaultMessages.notFound, 404);
+      }
       const listed = await c.env.SITES_BUCKET.list({
         limit: 100
       });
@@ -47,7 +50,6 @@ app.all('*', async c => {
         truncated: listed.truncated
       });
     }
-    if (ENVIRONMENT === 'dev' && url.pathname === '/__dev/r2') {
     if (ENVIRONMENT === 'dev') {
       url.protocol = 'http:';
       url.hostname = 'localhost';

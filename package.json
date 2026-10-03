@@ -14,7 +14,8 @@
     "build": "pnpm --filter @folyo/web build:worker && pnpm --filter @folyo/edge build",
     "db:generate": "pnpm --filter @folyo/db generate",
     "db:migrate": "pnpm --filter @folyo/db migrate",
-    "db:seed": "pnpm --filter @folyo/db seed"
+    "db:seed": "pnpm --filter @folyo/db seed",
+    "dev:auth": "dotenv -e .env -- pnpm --filter @folyo/web dev"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

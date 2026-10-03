@@ -1,0 +1,90 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #f5f6f8;
+  color: #202534;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+main {
+  max-width: 720px;
+  margin: 3rem auto;
+  padding: 2rem;
+}
+h1 {
+  letter-spacing: -0.04em;
+}
+section {
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid #dce0e7;
+  border-radius: 12px;
+  background: white;
+}
+form {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+input,
+textarea,
+button {
+  font: inherit;
+  border: 1px solid #b7bfcc;
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+}
+input,
+textarea {
+  width: 100%;
+}
+textarea {
+  min-height: 100px;
+}
+button {
+  cursor: pointer;
+  background: #2639c2;
+  color: white;
+  width: fit-content;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+a {
+  color: #2639c2;
+  overflow-wrap: anywhere;
+}
+nav {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+p {
+  margin: 0.5rem 0;
+}
+.danger {
+  background: #a32424;
+}
+dialog {
+  border: 1px solid #dce0e7;
+  border-radius: 12px;
+  max-width: 500px;
+  width: calc(100% - 2rem);
+  padding: 1.5rem;
+}
+dialog::backdrop {
+  background: #0008;
+}
+:focus-visible {
+  outline: 3px solid #7f8df1;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  main {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+}

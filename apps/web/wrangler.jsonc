@@ -3,18 +3,25 @@
   "name": "folyo-web",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-12-01",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "global_fetch_strictly_public"
-  ],
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "folyo-web"
-    }
-  ]
+      "service": "folyo-web",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ASSETS_BUCKET",
+      "bucket_name": "folyo-user-assets",
+    },
+    {
+      "binding": "SITES_BUCKET",
+      "bucket_name": "folyo-published-sites",
+    },
+  ],
 }

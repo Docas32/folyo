@@ -7,3 +7,6 @@ dist/
 !.env.example
 .dev.vars*
 *.tsbuildinfo
+
+# Downloaded Google OAuth credentials
+client_secret_*.json*
