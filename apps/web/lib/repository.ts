@@ -36,7 +36,13 @@ export function createRepository(databaseUrl: string): Repository {
     async createSite(userId, handle) {
       await db
         .insert(sites)
-        .values({ userId, handle, templateId: 'blank', status: 'draft' });
+        .values({
+          userId,
+          handle,
+          templateId: 'blank',
+          theme: { preset: 'blank' },
+          status: 'draft',
+        });
     },
     async acceptTerms(userId, version, now) {
       await db

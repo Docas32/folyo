@@ -1,6 +1,6 @@
 # Folyo
 
-Fundação da plataforma de portfólios: app Next.js 15, roteador Hono em Cloudflare Workers, PostgreSQL Neon e dois buckets R2. F2 adiciona autenticação Google, termos, onboarding, dashboard e configurações. F3a adiciona o editor de blocos com autosave; publicação permanece como ponto de extensão.
+Fundação da plataforma de portfólios: app Next.js 15, roteador Hono em Cloudflare Workers, PostgreSQL Neon e dois buckets R2. F2 adiciona autenticação Google, termos, onboarding, dashboard e configurações. F3a adiciona o editor de blocos com autosave; F4 publica snapshots estáticos versionados via KV/R2.
 
 ## Requisitos e instalação
 
@@ -25,7 +25,7 @@ curl -i -H 'Host: desconhecido.example' http://localhost:8787
 curl -H 'Host: app.lvh.me' http://localhost:8787/__dev/r2
 ```
 
-Resultados: HTML Next, HTML do stub Maria, dois redirects 302 e um 404. No navegador use http://app.lvh.me:8787; o redirect preserva a porta local. O diagnóstico R2 responde `{"objects":[],"truncated":false}` inicialmente e lista até 100 objetos. Só está disponível no host do app em `dev`; nos outros ambientes a rota segue para o app.
+Resultados: HTML Next, 404 neutro para Maria ainda não publicada, dois redirects 302 e um 404. No navegador use http://app.lvh.me:8787; o redirect preserva a porta local. O diagnóstico R2 responde `{"objects":[],"truncated":false}` inicialmente e lista até 100 objetos. Só está disponível no host do app em `dev`; nos outros ambientes a rota segue para o app.
 
 ## Neon e banco de dados
 
@@ -70,7 +70,7 @@ O script `pnpm --filter @folyo/web deploy` está preparado para build + `wrangle
 
 ```text
 apps/web       Next.js 15 App Router + OpenNext
-apps/edge      Hono, dispatch por Host, diagnóstico R2 e stub F4
+apps/edge      Hono, dispatch por Host e serviço de snapshots KV/R2
 packages/core  Zod, tipos, handles reservados e catálogo pt-BR
 packages/db    Schema, client Neon, migrations e seed
 .github        CI, sem deploy
@@ -78,7 +78,7 @@ packages/db    Schema, client Neon, migrations e seed
 
 - F2: auth, sessões e dashboard em `apps/web`; consumir `@folyo/db` no servidor.
 - F3: editor e gerenciamento de páginas/blocos em `apps/web`.
-- F4: publicação no R2 e substituição do TODO em `apps/edge/src/index.ts` por leitura das publicações.
+- F4: renders compartilhados, preview e publicação estática versionada em KV/R2.
 - F5: estender os dicionários em `apps/web/lib/i18n` e o catálogo de stubs em `packages/core`.
 
 ## Decisões técnicas
@@ -402,9 +402,8 @@ objetos já ausentes são tratados como sucesso. Só assets órfãos anteriores 
 são elegíveis. Em produção, agendar via cron-job.org ou Cloudflare Cron Trigger
 chamando o endpoint com o bearer token; a escolha do scheduler fica adiada.
 
-**F4:** publicações também referenciam assets. Antes de implementar publicação,
-registrar um snapshot de keys em `publications` e excluir da coleta as keys da
-versão publicada atual. Hoje a janela de sete dias cobre o MVP.
+**F4b:** a versão publicada atual e snapshots em preparação protegem suas keys
+via `publications.assets_keys` e `publication_operations`. Veja o protocolo abaixo.
 
 ### F4a — render compartilhado e preview do rascunho
 
@@ -445,3 +444,226 @@ aceita parágrafos, listas `- `, citações `> `, `**negrito**` e `*itálico*`.
 Links sociais aceitam HTTP(S), e `mailto:` somente para email; URLs incompletas ou
 protocolos executáveis ficam sem href. Não há lightbox; eventual interação é da F5.
 A F4a não altera o roteador edge nem implementa publicação ou múltiplos templates.
+
+## F4b — publicação estática e Edge
+
+`POST /api/site/publish` exige sessão, termos, ownership e Origin do app. Lê o
+rascunho inteiro numa transação sob o mesmo lock do editor, valida título/handle/
+páginas e gera cada documento com `renderToReadableStream` de `react-dom/server.edge`, entrada compatível com
+Workers e Route Handlers do App Router. A publicação aguarda `allReady` e consome
+o stream inteiro antes de gravar R2; não há bootstrap/hidratação ou Suspense no
+layout. Essa entrada evita as APIs legadas que o App Router bloqueia no build. O snapshot
+reutiliza `SiteRender`/`BlockRender`; não há outro markup de blocos. Dados do usuário
+continuam escapados por React, inclusive title, metadados e links inline.
+
+A primeira página ocupa `index.html`, as demais `{slug}/index.html`. Nav usa `./`
+para home e `./{slug}` para as outras páginas; URLs canônicas não têm barra final
+nas subpáginas. Um `site.css` contém `SITE_CSS`, reset de body e variáveis do tema.
+As fontes escolhidas pelo tema vêm de um `<link>` Google Fonts, usando os fallbacks
+nominais do tema. Cada documento inclui descrição, canonical, OG/Twitter e a
+primeira imagem hero/image de todo o site. Imagens hero/image/gallery em
+`/api/assets/` são convertidas para URLs absolutas do app.
+
+Configure **APP_PUBLIC_URL** como origem pública do app, sem caminho/query:
+`http://app.lvh.me:8787` em dev e `https://app.<ROOT_DOMAIN>` em produção. A URL
+pública usa ROOT_DOMAIN; em dev usa HTTP e SITE_EDGE_PORT (8787), fora de dev
+usa HTTPS sem porta. Configure SITE_EDGE_PORT=8787 em dev e vazio em produção.
+APP_PUBLIC_URL fornece somente a origem do app/asset, nunca a porta do portfólio.
+Se APP_PUBLIC_URL estiver ausente, vazia ou inválida, publicar retorna HTTP 400
+com mensagem pt/en explícita antes de qualquer gravação em banco/R2/KV. O renderer também
+valida essa origem e converte avatar, imagem, itens de galeria e OG/Twitter de
+`/api/assets/` para URLs absolutas. Republicar regenera snapshots antigos.
+Dashboard, publish API e metadados do snapshot usam buildPublicSiteUrl. Não configure APP_PUBLIC_URL como localhost quando imagens
+precisarem ser acessadas por outros dispositivos ou por crawlers externos.
+
+### Versões, consistência e falhas
+
+A migration `0003` adiciona `publications.assets_keys` (JSONB, default `[]`) e
+`publication_operations` (trava persistida por site + token + keys em preparação).
+Aplique com `pnpm db:migrate`. Duas publicações/despublicações simultâneas do mesmo
+site não podem escrever o mesmo prefixo: a segunda recebe 409 `publicationBusy`.
+A trava não expira automaticamente, evitando que uma operação lenta seja
+ultrapassada e depois sobrescreva o KV de uma operação mais recente.
+
+A ordem é: capturar rascunho → proteger suas keys → escrever TODOS os HTMLs e CSS
+em `sites/{siteId}/v{published_version+1}/` → registrar a publication → gravar
+`SITE_KV[site:{handle}] = {siteId,version}` → atualizar status/published_version no
+banco numa transação com recomputação de órfãos → liberar a trava. O KV é o último
+passo que altera o roteamento público; antes dele, a versão anterior permanece
+intacta. Falha em R2 deixa objetos órfãos para limpeza futura. Republicar sempre
+cria uma versão, mesmo sem mudanças de conteúdo. Histórico não é alterado pela
+edição do rascunho.
+
+KV, R2 e Neon não compartilham uma transação distribuída. Se a finalização no
+banco falhar após escrever KV, a API tenta restaurar o ponteiro anterior. Se essa
+compensação também falhar, mantém a trava e a proteção de assets para recuperação
+operacional. Se um Worker for interrompido, a trava também permanece. Para
+recuperar: primeiro confirme que não existe publicação em andamento, inspecione o
+KV e os arquivos R2, reconcilie `sites.status/published_version` com o ponteiro
+completo escolhido, e só então remova a row de `publication_operations` desse
+site e recompute órfãos. Nunca libere a trava enquanto um writer ainda pode atuar.
+Uma falha de rede no banco pode ter resultado de commit incerto; use o mesmo
+procedimento de reconciliação antes de uma nova publicação.
+
+Não há cache de ponteiros em memória no Worker. O próprio KV tem
+[consistência eventual](https://developers.cloudflare.com/kv/concepts/how-kv-works/):
+as alterações e misses cacheados podem demorar 60 segundos ou mais para propagar.
+Portanto, a troca é atômica quanto à completude do snapshot, não uma invalidação
+instantânea em todos os pontos da rede. HTML usa `public,max-age=300`, então um
+navegador pode manter a versão anterior por até cinco minutos. `./site.css?v=N`
+usa `public,max-age=31536000,immutable`; o Edge resolve N para o prefixo vN (mesmo
+após republicar), evitando CSS velho na nova versão. `/site.css` sem versão usa
+cache curto. O Edge não consulta Neon: só KV e SITES_BUCKET. Miss de KV/objeto
+retorna 404 neutro em pt/en, sem expor existência da conta.
+
+`POST /api/site/unpublish` apaga o ponteiro KV e marca draft. Repetir é permitido;
+publications e R2 são mantidos como histórico, com cleanup diferido. Após propagação
+e expiração do cache HTTP o link retorna 404. Falha de atualização do banco tenta
+restaurar o ponteiro anterior com o mesmo protocolo de recuperação acima.
+
+### Assets e GC
+
+`publications.assets_keys` registra as keys originais `/api/assets/` do snapshot.
+Recomputação considera blocos de todas as páginas do rascunho, a versão publicada
+atual e as keys de uma operação em preparação. Esses assets têm `orphaned_at=NULL`.
+O cron exclui candidatos protegidos e revalida cada key antes de apagar o objeto,
+inclusive quando havia um timestamp de órfão antigo. Republicar/despublicar libera
+keys que não estão mais no rascunho/versão atual; começa então a janela normal de
+GC_GRACE_DAYS. Ela também cobre acessos a HTML da versão anterior em caches.
+Versões antigas mantêm HTML/CSS como histórico, mas seus assets deixam de ser
+protegidos depois da janela quando não são mais referenciados.
+
+### Desenvolvimento e produção
+
+Em dev, os dois wrangler.jsonc têm o mesmo identificador local SITE_KV. O web usa
+`initOpenNextCloudflareForDev` com `persist.path=../edge/.wrangler/state/v3` e
+remoteBindings=false, compartilhando KV/R2 com o Edge. Miniflare cria os recursos
+[localmente](https://developers.cloudflare.com/workers/local-development/local-data/).
+Uploads/leitura de `/api/assets` continuam usando o storage S3 remoto já configurado
+na F3; publicar não muda esse contrato.
+
+1. Atualize `.env` com APP_PUBLIC_URL e SITE_EDGE_PORT=8787, execute `pnpm db:migrate` e `pnpm dev`.
+2. Em Configurações, informe título/descrição. Edite as páginas e espere o autosave.
+3. No dashboard clique Publicar e abra `http://{handle}.lvh.me:8787`.
+4. Confira nav, imagens, tema e metadados. Editar o rascunho não muda o HTML público;
+   Republicar cria v2. Despublicar pede confirmação e retorna o site a draft.
+
+Produção:
+
+1. Crie o namespace com `pnpm --filter @folyo/edge exec wrangler kv namespace create SITE_KV`.
+   Substitua o ID local de exemplo pelo ID real nos **dois** wrangler.jsonc. Não
+   publique o ID `00000000000000000000000000000004`.
+2. Crie/configure SITES_BUCKET e os buckets de assets já existentes; os bindings
+   R2/KV do web e Edge devem apontar para os mesmos recursos de publicação.
+3. Configure ROOT_DOMAIN/ENVIRONMENT no Edge; no web configure ROOT_DOMAIN,
+   ENVIRONMENT, APP_PUBLIC_URL, SITE_EDGE_PORT vazio e os secrets Neon/Auth/R2. Aplique migrations na
+   branch correta do Neon antes de servir a nova API.
+4. Configure DNS wildcard `*.ROOT_DOMAIN` e rotas Worker para raiz e wildcard;
+   `app.ROOT_DOMAIN` é encaminhado ao web pelo binding WEB. Use TLS ativo e
+   AUTH_URL público. Domínios custom de clientes ficam para F5.
+5. Configure CRON_SECRET/GC_GRACE_DAYS no web e agende POST
+   `https://app.<ROOT_DOMAIN>/api/cron/assets-gc` com Authorization Bearer usando
+   scheduler externo ou Worker Cron Trigger. Não inclua tokens em URLs/logs.
+6. Faça deploy do web e Edge com bindings sincronizados e confira um publish,
+   republish e unpublish. Criar recursos/deploy é uma etapa operacional separada
+   do build dry-run do repositório.
+
+### Templates e aparência (F5a)
+
+O catálogo vive em `apps/web/lib/templates.ts`. `buildTemplate(id, locale)` cria
+um documento novo com `{ theme, pages: [{ title, slug, blocks: [{ type, content }] }] }`.
+Os IDs e o tipo `TemplateDefinition` são compartilhados em `packages/core`.
+Os nomes, descrições, textos, nomes fictícios e alternativas das imagens ficam
+nos dicionários `apps/web/lib/i18n/templates.ts` (pt-BR/en). Blocos não carregam
+IDs nem posições no catálogo: o repositório os atribui na aplicação.
+
+Para adicionar um quinto template:
+
+1. Inclua o ID em `TEMPLATE_IDS` em `packages/core/src/templates.ts`; o tema usa o mesmo enum.
+2. Adicione nomes, descrições e conteúdo nos dois dicionários.
+3. Implemente o caso em `buildTemplate`, usando os schemas de blocos existentes,
+   slugs únicos e uma cor da paleta `ACCENT_PALETTE`.
+4. Acrescente a miniatura SVG em `TemplateThumbnail` e cubra o documento nos testes
+   de estrutura/localização e renderização estática.
+
+`POST /api/site/template` recebe somente `{ templateId }`: sempre aplica o tema,
+e substitui páginas/blocos apenas quando o site continua virgem. A verificação,
+o replace e a atualização do tema usam uma transação Neon HTTP com o mesmo lock
+consultivo do editor, além do lock da linha do site. O predicado SQL corresponde
+à função testável `isVirginSite`: site vazio ou uma página inicial pt-BR/en com
+um único hero padrão, sem alterações de metadados, página ou conteúdo. Páginas
+intencionalmente vazias e sites publicados são preservados. Sites editados
+retornam `409 { appliedTheme: true, contentSkipped: true, theme }`; a interface
+trata isso como aplicação de estilo e explica a preservação do conteúdo.
+`POST /api/site/template/style` é a ação explícita de Settings que aplica o tema
+completo e `templateId` sem substituir conteúdo, inclusive em sites virgens.
+`PATCH /api/site/theme` valida e mescla somente os campos de aparência permitidos
+no JSONB dentro do lock, preservando os demais campos. Todos exigem ownership,
+termos aceitos e origem válida.
+
+Novos sites começam com o tema mínimo `{ preset: 'blank' }`, que indica a escolha
+pendente no onboarding. Escolher qualquer template, inclusive blank, persiste o
+tema completo e libera o dashboard. Sites antigos com `{}` ou tema completo
+mantêm seu fluxo anterior. Não é necessária migração do banco. Aplicações repetidas
+não acumulam páginas/blocos e nunca substituem conteúdo que deixou de ser virgem.
+As alterações aparecem ao abrir o preview `/p/[siteId]`; a versão pública muda
+na próxima publicação. Preview e HTML publicado continuam usando os mesmos
+renders puros e `themeToCssVars`, incluindo heroLayout e as fontes do catálogo.
+
+O catálogo também inclui quatro portfólios demonstrativos completos (`executive`,
+`studio`, `scientist`, `developer`), cada um com cinco páginas e os nove tipos de
+bloco disponíveis. Os perfis e casos são fictícios; o texto orienta a substituição
+pelas informações reais do usuário. Os dois idiomas ficam em
+`apps/web/lib/i18n/showcase-templates.ts`.
+
+As 28 ilustrações originais ficam em `apps/web/public/template-assets`:
+composições editoriais, identidades visuais, diagramas de pesquisa e conceitos
+de interfaces. São SVGs estáticos, sem scripts ou referências remotas. Apenas os
+caminhos do catálogo passam por `templateAssetUrlSchema`; preview os usa diretamente
+e o render de publicação transforma esses caminhos em URLs absolutas da aplicação.
+Essas imagens compartilhadas não são uploads do usuário e não entram no GC de assets.
+Os IDs e o schema de templates agora têm uma única fonte em
+`packages/core/src/templates.ts`, também usada pelo schema de temas.
+
+### Preview de templates e exclusão do portfólio (F5a.1)
+
+Cada card das galerias oferece **Ver exemplo**. `TemplatePreviewModal` monta o
+`buildTemplate(id, locale)` em memória e usa `SiteRender`, os mesmos renders de
+blocos, estilos, fontes e variáveis de tema do preview e do HTML publicado.
+A navegação do modal troca apenas a página renderizada: não muda a URL nem toca
+no banco. **Fechar** e Escape retornam à galeria sem aplicar conteúdo. **Usar este
+template** chama a API já existente; o 409 de um site editado continua aplicando
+somente o estilo e mostrando a mensagem de preservação de conteúdo.
+
+Settings tem uma **Zona de perigo** exclusiva para **Excluir portfólio**, separada
+da exclusão da conta. A confirmação exige marcar a perda do link público e digitar
+o handle exato. `DELETE /api/site` mantém a conta e a sessão, retorna `{ ok: true,
+handle }`, e envia o usuário para `/onboarding`. Ausência do site ou ownership
+incompatível retorna 404. Se uma publicação estiver em andamento, retorna 409 para
+impedir que aquela operação restaure um roteamento depois da exclusão.
+
+A transação, sob o mesmo lock do editor, remove o site (cascade de páginas, blocos,
+publicações e denúncias), apaga as linhas de assets do usuário e registra uma tarefa
+em `site_deletions`. A migração `0004_adorable_bug.sql` cria essa fila sem foreign
+keys para que sobreviva à exclusão do site. **Execute `pnpm db:migrate` antes de
+usar esta versão em outro ambiente.**
+
+Depois do commit, a chave `site:{handle}` é removida do KV **antes** da limpeza dos
+prefixos R2 `sites/{siteId}/` (todas as versões) e `assets/{userId}/`. Falhas de R2
+são registradas sem desfazer a exclusão nem impedir o sucesso da resposta. A fila
+continua pendente; o cron de assets GC tenta a limpeza novamente, pois o GC de
+assets normal não encontra mais as linhas já removidas. Falha crítica de KV retorna
+503 e também deixa a tarefa para recuperação pelo cron. Uma tarefa só é removida
+depois de todas as limpezas concluírem.
+
+Retentativas não removem um pointer KV que já pertence a outro site que reutilizou
+o handle. A limpeza de imagens preserva assets registrados de um novo portfólio e
+objetos enviados após a exclusão, usando as datas de upload do R2. As ilustrações
+compartilhadas de templates em `public/template-assets` não são imagens do usuário
+e permanecem disponíveis.
+
+O handle volta a estar disponível assim que o site é removido: a verificação de
+unicidade existente continua sendo a fonte de verdade. **O cooldown de troca de
+handle não se aplica à recriação pós-exclusão**: o novo site começa sem o histórico
+de troca do antigo. O fluxo normal de termos, handle e template é reutilizado, sem
+excluir o usuário nem exigir um novo login.

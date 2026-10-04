@@ -48,7 +48,11 @@ export function TermsForm({ d, locale }: { d: Dictionary; locale: string }) {
       if (!result.ok) setError(errorMessage(d, result.data, locale));
       else {
         router.replace(
-          result.data.redirect === '/dashboard' ? '/dashboard' : '/onboarding',
+          result.data.redirect === '/dashboard'
+            ? '/dashboard'
+            : result.data.redirect === '/onboarding/template'
+              ? '/onboarding/template'
+              : '/onboarding',
         );
         router.refresh();
       }
@@ -158,7 +162,7 @@ export function HandleForm({
       );
       if (!result.ok) setError(errorMessage(d, result.data, locale));
       else {
-        router.replace(initial ? '/settings' : '/dashboard');
+        router.replace(initial ? '/settings' : '/onboarding/template');
         router.refresh();
       }
     } catch {

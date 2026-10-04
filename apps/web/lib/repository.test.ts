@@ -49,6 +49,7 @@ describe('Drizzle account repository', () => {
       userId: user.id,
       handle: 'maria',
       templateId: 'blank',
+      theme: { preset: 'blank' },
       status: 'draft',
     });
   });

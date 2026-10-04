@@ -284,3 +284,62 @@ describe('pure block rendering', () => {
     }
   });
 });
+
+describe('template hero layouts and links', () => {
+  it.each(['left', 'center'] as const)(
+    'renders %s layout without requiring an avatar',
+    (heroLayout) => {
+      const { container } = render(
+        <HeroRender
+          content={{ name: 'Alex', title: 'Designer' }}
+          theme={{ ...DEFAULT_THEME, heroLayout }}
+        />,
+      );
+      expect(container.querySelector('section')).toHaveClass(
+        `site-hero-${heroLayout}`,
+      );
+      expect(container.querySelector('img')).toBeNull();
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Alex',
+      );
+    },
+  );
+  it.each(['#', 'mailto:alex@example.com'])(
+    'renders safe template button links: %s',
+    (url) => {
+      render(
+        <ButtonRender
+          content={{ label: 'Contact', url, style: 'primary' }}
+          theme={DEFAULT_THEME}
+        />,
+      );
+      expect(screen.getByRole('link', { name: 'Contact' })).toHaveAttribute(
+        'href',
+        url,
+      );
+    },
+  );
+});
+
+it('renders built-in template artwork while rejecting arbitrary relative image URLs', () => {
+  const { container, rerender } = render(
+    <ImageRender
+      content={{
+        url: '/template-assets/studio-cover.svg',
+        alt: 'Art direction',
+      }}
+      theme={DEFAULT_THEME}
+    />,
+  );
+  expect(screen.getByRole('img')).toHaveAttribute(
+    'src',
+    '/template-assets/studio-cover.svg',
+  );
+  rerender(
+    <ImageRender
+      content={{ url: '/template-assets/../secret.svg', alt: 'Invalid image' }}
+      theme={DEFAULT_THEME}
+    />,
+  );
+  expect(container.querySelector('img')).not.toHaveAttribute('src');
+});

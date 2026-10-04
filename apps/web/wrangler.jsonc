@@ -14,6 +14,9 @@
       "service": "folyo-web",
     },
   ],
+  "kv_namespaces": [
+    { "binding": "SITE_KV", "id": "00000000000000000000000000000004" },
+  ],
   "r2_buckets": [
     {
       "binding": "ASSETS_BUCKET",

@@ -122,6 +122,7 @@ export const publications = pgTable(
       }),
     version: integer('version').notNull(),
     r2Prefix: text('r2_prefix').notNull(),
+    assetsKeys: jsonb('assets_keys').$type<string[]>().notNull().default([]),
     publishedAt: timestamp('published_at', {
       withTimezone: true,
     }).defaultNow(),
@@ -144,4 +145,27 @@ export const reports = pgTable('reports', {
 });
 export const reservedHandles = pgTable('reserved_handles', {
   handle: text('handle').primaryKey(),
+});
+
+// Durable serialization across R2/KV calls; crash recovery is explicit (README).
+export const publicationOperations = pgTable('publication_operations', {
+  siteId: uuid('site_id')
+    .primaryKey()
+    .references(() => sites.id, { onDelete: 'cascade' }),
+  token: uuid('token').notNull(),
+  assetsKeys: jsonb('assets_keys').$type<string[]>().notNull().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// No foreign keys: cleanup must survive deletion of the site/account itself.
+export const siteDeletions = pgTable('site_deletions', {
+  siteId: uuid('site_id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+  handle: text('handle').notNull(),
+  assetKeys: jsonb('asset_keys').$type<string[]>().notNull().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });

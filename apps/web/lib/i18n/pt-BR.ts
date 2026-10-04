@@ -1,6 +1,10 @@
+import { siteDeletionPt } from './site-deletion';
+import { templatePt } from './templates';
 import { getBlockPlaceholders } from '@folyo/core';
 import type { Dictionary } from './en';
 const ptBR: Dictionary = {
+  siteDeletion: siteDeletionPt,
+  templates: templatePt,
   signInError: 'Não foi possível entrar com Google. Tente novamente.',
   brand: 'Folyo',
   welcome: 'Seu portfólio começa aqui',
@@ -61,6 +65,32 @@ const ptBR: Dictionary = {
   busy: 'Aguarde…',
   home: 'Início',
   preview: 'Ver preview',
+  publication: {
+    publish: 'Publicar site',
+    republish: 'Republicar',
+    unpublish: 'Despublicar',
+    publishing: 'Publicando…',
+    republishing: 'Republicando…',
+    unpublishing: 'Despublicando…',
+    publishedSuccess: 'Site publicado',
+    unpublishedSuccess: 'Site despublicado',
+    error: 'Não foi possível atualizar a publicação. Tente novamente.',
+    retry: 'Tentar novamente',
+    confirmTitle: 'Despublicar site?',
+    confirmDescription:
+      'O link público deixará de funcionar. Você poderá publicar novamente quando quiser.',
+    publishTitleRequired:
+      'Adicione um título em Configurações antes de publicar.',
+    publishPagesRequired:
+      'Adicione pelo menos uma página no editor antes de publicar.',
+    publishHandleInvalid:
+      'Escolha um endereço válido em Configurações antes de publicar.',
+    publishAppUrlRequired: 'APP_PUBLIC_URL não configurada',
+    publishAppUrlInvalid:
+      'APP_PUBLIC_URL inválida: configure a origem HTTP(S) do app',
+    publicationBusy:
+      'Uma publicação está em andamento. Tente novamente em instantes.',
+  },
   siteChrome: { navigation: 'Páginas do site', madeWith: 'Feito com Folyo' },
   editor: {
     preview: 'Preview',

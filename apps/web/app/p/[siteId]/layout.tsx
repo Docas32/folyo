@@ -1,5 +1,15 @@
 import type { ReactNode } from 'react';
-import { Lora, Playfair_Display, Source_Sans_3 } from 'next/font/google';
+import {
+  Lora,
+  Playfair_Display,
+  Source_Sans_3,
+  Space_Grotesk,
+} from 'next/font/google';
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
 const lora = Lora({
   subsets: ['latin'],
   variable: '--font-lora',
@@ -18,7 +28,7 @@ const sourceSans = Source_Sans_3({
 export default function PreviewLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className={`${lora.variable} ${playfair.variable} ${sourceSans.variable}`}
+      className={`${lora.variable} ${playfair.variable} ${sourceSans.variable} ${spaceGrotesk.variable}`}
     >
       {children}
     </div>

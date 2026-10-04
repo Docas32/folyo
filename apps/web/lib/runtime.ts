@@ -1,3 +1,8 @@
+import { createSiteDeletionRepository } from './site-deletion-repository';
+import type { DeletionBindings } from './site-deletion-service';
+import { createTemplateRepository } from './template-repository';
+import { createPublishRepository } from './publish/repository';
+import { readPublishEnvironment } from './publish/environment';
 import { createPreviewRepository } from './preview-repository';
 import {
   createAssetBucket,
@@ -48,4 +53,32 @@ export function pageRepository() {
 
 export function previewRepository() {
   return createPreviewRepository(serverEnv().DATABASE_URL);
+}
+
+export async function publicationBindings() {
+  const { env } = await getCloudflareContext({ async: true });
+  return { sites: env.SITES_BUCKET, kv: env.SITE_KV };
+}
+export { publishEnvironmentSchema } from './publish/environment';
+export function publishEnvironment() {
+  return readPublishEnvironment(process.env);
+}
+export function publishRepository() {
+  return createPublishRepository(serverEnv().DATABASE_URL);
+}
+
+export function templateRepository() {
+  return createTemplateRepository(serverEnv().DATABASE_URL);
+}
+
+export function siteDeletionRepository() {
+  return createSiteDeletionRepository(serverEnv().DATABASE_URL);
+}
+export async function siteDeletionBindings(): Promise<DeletionBindings> {
+  const { env } = await getCloudflareContext({ async: true });
+  return {
+    kv: env.SITE_KV,
+    sites: async () => env.SITES_BUCKET,
+    assets: async () => (await accountBuckets()).assets,
+  };
 }

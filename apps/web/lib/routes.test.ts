@@ -53,7 +53,7 @@ describe('account API', () => {
       req('/api/onboarding', 'POST', { handle: '  MARIA ' }),
     );
     expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ redirect: '/dashboard' });
+    expect(await response.json()).toEqual({ redirect: '/onboarding/template' });
     expect(repo.createSite).toHaveBeenCalledWith(user.id, 'maria');
   });
   it('returns 409 when insert loses the unique race', async () => {
@@ -96,6 +96,26 @@ describe('account API', () => {
       (await POST(req('/api/onboarding', 'POST', { handle: 'maria' }))).status,
     ).toBe(403);
     expect((await GET(req('/api/handle/check?handle=maria'))).status).toBe(403);
+  });
+  it('accepts terms through a public Host when Next uses the internal listener URL', async () => {
+    const request = new Request(
+      'http://0.0.0.0:3000/api/account/accept-terms',
+      {
+        method: 'POST',
+        headers: {
+          host: 'app.lvh.me:3000',
+          origin: 'http://app.lvh.me:3000',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ accepted: true }),
+      },
+    );
+    expect((await acceptTerms(request)).status).toBe(200);
+    expect(repo.acceptTerms).toHaveBeenCalledWith(
+      user.id,
+      '2026-10-v1',
+      expect.any(Date),
+    );
   });
   it('requires same-origin mutations', async () => {
     const request = req('/api/onboarding', 'POST', { handle: 'maria' });

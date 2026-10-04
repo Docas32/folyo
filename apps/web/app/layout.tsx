@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import { Inter } from 'next/font/google';
+import {
+  Inter,
+  Lora,
+  Playfair_Display,
+  Source_Sans_3,
+  Space_Grotesk,
+} from 'next/font/google';
 import { headers } from 'next/headers';
 import { getDictionary, supportedLocale } from '../lib/i18n';
 import { accountContext } from '../lib/session';
@@ -8,6 +14,26 @@ import './globals.css';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+const lora = Lora({
+  subsets: ['latin'],
+  variable: '--font-lora',
+  display: 'swap',
+});
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
+const sourceSans = Source_Sans_3({
+  subsets: ['latin'],
+  variable: '--font-source-sans',
+  display: 'swap',
+});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
   display: 'swap',
 });
 export const metadata = { title: getDictionary('en').brand };
@@ -24,7 +50,16 @@ export default async function RootLayout({
     if (!(error instanceof AccountError && error.status === 401)) throw error;
   }
   return (
-    <html lang={locale} className={inter.variable}>
+    <html
+      lang={locale}
+      className={[
+        inter.variable,
+        lora.variable,
+        playfair.variable,
+        sourceSans.variable,
+        spaceGrotesk.variable,
+      ].join(' ')}
+    >
       {/* Browser zoom extensions can inject inline styles before hydration.
           Ignore attribute differences on body only; children stay checked. */}
       <body suppressHydrationWarning>{children}</body>

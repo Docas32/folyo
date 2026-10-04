@@ -245,9 +245,22 @@ export function createAssetBucket(input: z.infer<typeof storageEnvSchema>) {
       const xml = await response.text();
       if (!xml.includes('<ListBucketResult'))
         throw new Error('Invalid object listing');
-      const objects = [...xml.matchAll(/<Key>(.*?)<\/Key>/g)].map((match) => ({
-        key: decodeURIComponent(decodeXml(match[1] ?? '')),
-      }));
+      const objects = [
+        ...xml.matchAll(/<Contents>([\s\S]*?)<\/Contents>/g),
+      ].map((match) => {
+        const content = match[1] ?? '';
+        const key = content.match(/<Key>(.*?)<\/Key>/)?.[1] ?? '';
+        const modified = content.match(
+          /<LastModified>(.*?)<\/LastModified>/,
+        )?.[1];
+        const uploaded = modified ? new Date(modified) : undefined;
+        return {
+          key: decodeURIComponent(decodeXml(key)),
+          ...(uploaded && Number.isFinite(uploaded.getTime())
+            ? { uploaded }
+            : {}),
+        };
+      });
       const cursor = xml.match(
         /<NextContinuationToken>(.*?)<\/NextContinuationToken>/,
       )?.[1];

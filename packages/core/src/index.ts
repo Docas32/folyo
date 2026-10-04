@@ -37,12 +37,7 @@ export const availableHandleSchema = handleSchema.refine(
   (handle) => !RESERVED_HANDLES.some((reserved) => reserved === handle),
   'Reserved handle',
 );
-export const templateSchema = z.enum([
-  'blank',
-  'minimal',
-  'professional',
-  'creative',
-]);
+export * from './templates';
 export const siteStatusSchema = z.enum(['draft', 'published']);
 export const environmentSchema = z.object({
   ROOT_DOMAIN: z
@@ -56,7 +51,6 @@ export const databaseUrlSchema = z
   .refine((url) =>
     ['postgres:', 'postgresql:'].includes(new URL(url).protocol),
   );
-export type TemplateId = z.infer<typeof templateSchema>;
 export type SiteStatus = z.infer<typeof siteStatusSchema>;
 export * from './blocks';
 // F5: replace this catalog with locale selection; components keep using keys.

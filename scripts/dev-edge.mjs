@@ -9,7 +9,7 @@ const child = spawn(
     'wrangler',
     'dev',
     '--port',
-    '8787',
+    process.env.SITE_EDGE_PORT || '8787',
     '--var',
     `ROOT_DOMAIN:${process.env.ROOT_DOMAIN ?? 'lvh.me'}`,
     '--var',
@@ -17,8 +17,12 @@ const child = spawn(
   ],
   { stdio: 'inherit', shell: false },
 );
-child.on('error', () => { process.exitCode = 1; });
-child.on('exit', code => { process.exitCode = code ?? 1; });
+child.on('error', () => {
+  process.exitCode = 1;
+});
+child.on('exit', (code) => {
+  process.exitCode = code ?? 1;
+});
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => child.kill(signal));
 }

@@ -23,7 +23,13 @@ export type ErrorCode =
   | 'storageConfig'
   | 'storageUnavailable'
   | 'uploadPersistenceFailed'
-  | 'uploadFailed';
+  | 'uploadFailed'
+  | 'publishTitleRequired'
+  | 'publishPagesRequired'
+  | 'publishHandleInvalid'
+  | 'publicationBusy'
+  | 'publishAppUrlRequired'
+  | 'publishAppUrlInvalid';
 export class AccountError extends Error {
   constructor(
     public code: ErrorCode,
@@ -53,7 +59,9 @@ export function postLoginPath(user: User, site: Site | undefined) {
     ? '/accept-terms'
     : !site
       ? '/onboarding'
-      : '/dashboard';
+      : needsTemplateSelection(site)
+        ? '/onboarding/template'
+        : '/dashboard';
 }
 export function nextHandleChange(
   changedAt: Date | null,
@@ -144,7 +152,7 @@ export async function patchSite(
 // Structural interface keeps tests independent of Cloudflare's runtime types.
 export interface Bucket {
   list(options: { prefix: string; cursor?: string; limit: number }): Promise<{
-    objects: { key: string }[];
+    objects: { key: string; uploaded?: Date }[];
     truncated: boolean;
     cursor?: string;
   }>;
@@ -182,4 +190,14 @@ export async function deleteAccount(
   await clearPrefix(buckets.sites, `sites/${site.id}/`);
   await clearPrefix(buckets.assets, `assets/${userId}/`);
   await repo.deleteUser(userId);
+}
+
+// New sites persist this minimal initial theme until a template is chosen.
+// Legacy sites with {} keep their existing dashboard flow.
+export function needsTemplateSelection(site: Site) {
+  return (
+    site.templateId === 'blank' &&
+    site.theme.preset === 'blank' &&
+    Object.keys(site.theme).length === 1
+  );
 }

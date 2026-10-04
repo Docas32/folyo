@@ -1,3 +1,4 @@
+import { templateAssetUrlSchema } from './templates';
 import { z } from 'zod';
 import { assetUrlSchema, MAX_PAGES } from './editor-management';
 import { getBlockPlaceholders } from './block-placeholders';
@@ -26,7 +27,9 @@ export const heroContentSchema = z
     name: z.string().min(1).max(80),
     title: z.string().max(120),
     subtitle: z.string().max(200).optional(),
-    avatarUrl: externalUrlSchema.optional(),
+    avatarUrl: z
+      .union([externalUrlSchema, assetUrlSchema, templateAssetUrlSchema])
+      .optional(),
   })
   .strict();
 export const headingContentSchema = z
@@ -39,7 +42,11 @@ export const headingContentSchema = z
 export const textContentSchema = z
   .object({ text: z.string().max(5000) })
   .strict();
-export const imageUrlSchema = z.union([externalUrlSchema, assetUrlSchema]);
+export const imageUrlSchema = z.union([
+  externalUrlSchema,
+  assetUrlSchema,
+  templateAssetUrlSchema,
+]);
 export const imageContentSchema = z
   .object({
     url: imageUrlSchema,
@@ -60,7 +67,11 @@ export const galleryContentSchema = z
 export const buttonContentSchema = z
   .object({
     label: z.string().min(1).max(60),
-    url: externalUrlSchema,
+    url: z.union([
+      externalUrlSchema,
+      z.literal('#'),
+      z.string().regex(/^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/),
+    ]),
     style: z.enum(['primary', 'outline']),
   })
   .strict();

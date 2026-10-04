@@ -1,3 +1,9 @@
+import { DeletePortfolio } from '../../components/delete-portfolio';
+import { publishEnvironment } from '../../lib/runtime';
+import { buildPublicSiteUrl } from '../../lib/publish/environment';
+import { AppearanceSettings } from '../../components/templates';
+import { editorRepository } from '../../lib/runtime';
+import { isVirginSite } from '../../lib/templates';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { pageAccount } from '../../lib/session';
@@ -13,6 +19,12 @@ export default async function Settings() {
   if (!site) redirect('/onboarding');
   const d = getDictionary(user.locale);
   const locale = supportedLocale(user.locale);
+  const document = await editorRepository().bootstrapAndRead(site.id, locale);
+  const virgin = isVirginSite(
+    site,
+    document.pages,
+    document.blocks as { type: string; content: unknown }[],
+  );
   return (
     <main>
       <h1>{d.settingsHeading}</h1>
@@ -37,6 +49,18 @@ export default async function Settings() {
           nextAllowedAt={nextHandleChange(site.handleChangedAt)?.toISOString()}
         />
       </section>
+      <AppearanceSettings
+        d={d}
+        locale={locale}
+        siteId={site.id}
+        initialTheme={site.theme}
+        virgin={virgin}
+      />
+      <DeletePortfolio
+        d={d}
+        handle={site.handle}
+        publicUrl={buildPublicSiteUrl(site.handle, publishEnvironment())}
+      />
       <DeleteAccountForm d={d} locale={locale} handle={site.handle} />
     </main>
   );

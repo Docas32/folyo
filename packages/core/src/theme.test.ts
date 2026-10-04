@@ -37,3 +37,15 @@ describe('site theme', () => {
     expect(themeToCssVars(value)).toBe(themeToCssVars(DEFAULT_THEME));
   });
 });
+
+describe('template theme defaults', () => {
+  it('defaults old persisted themes to centered heroes', () => {
+    expect(resolveTheme({ accent: '#1E5AA8' }).heroLayout).toBe('center');
+    expect(
+      themeToCssVars({ heroLayout: 'left', headingFont: 'space-grotesk' }),
+    ).toContain('--site-hero-layout: left;');
+    expect(themeToCssVars({ headingFont: 'space-grotesk' })).toContain(
+      '--font-space-grotesk',
+    );
+  });
+});

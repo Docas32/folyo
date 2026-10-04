@@ -1,3 +1,4 @@
+import { hasSameOrigin } from './request-origin';
 import { z } from 'zod';
 import { AccountError } from './account-service';
 import { accountContext } from './session';
@@ -6,10 +7,7 @@ export async function apiAccount(
   stage: 'user' | 'terms' | 'site',
 ) {
   // Custom cookie-authenticated mutations need CSRF protection as well as auth.
-  if (
-    request.method !== 'GET' &&
-    request.headers.get('origin') !== new URL(request.url).origin
-  )
+  if (request.method !== 'GET' && !hasSameOrigin(request))
     throw new AccountError('origin', 403);
   const context = await accountContext();
   if (stage !== 'user' && !context.user.termsAcceptedAt)

@@ -69,3 +69,26 @@ describe('server account access', () => {
     expect(getDictionary('unknown')).toBe(getDictionary('en'));
   });
 });
+
+describe('template onboarding', () => {
+  it('persists the pending choice across logins and prevents dashboard access', async () => {
+    repo.findSite.mockResolvedValue({ ...site, theme: { preset: 'blank' } });
+    await expect(pageAccount('app')).rejects.toThrow(
+      'redirect:/onboarding/template',
+    );
+    expect((await pageAccount('template')).site?.id).toBe(site.id);
+  });
+  it('allows the dashboard once even blank was explicitly chosen', async () => {
+    repo.findSite.mockResolvedValue({
+      ...site,
+      theme: {
+        preset: 'blank',
+        accent: '#16161D',
+        headingFont: 'inter',
+        bodyFont: 'inter',
+        heroLayout: 'center',
+      },
+    });
+    expect((await pageAccount('app')).site?.id).toBe(site.id);
+  });
+});

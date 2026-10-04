@@ -1,3 +1,4 @@
+import { TemplateToast } from '../../components/template-toast';
 import { pageAccount } from '../../lib/session';
 import { getDictionary, supportedLocale } from '../../lib/i18n';
 import { HandleForm } from '../../components/forms';
@@ -8,6 +9,7 @@ export default async function Onboarding() {
   return (
     <main>
       <h1>{d.onboardingHeading}</h1>
+      <TemplateToast />
       <HandleForm d={d} locale={supportedLocale(user.locale)} />
       <Logout label={d.signOut} />
     </main>

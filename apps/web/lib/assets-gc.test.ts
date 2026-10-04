@@ -7,12 +7,15 @@ function fixtures() {
     { id: '1', r2Key: 'a' },
     { id: '2', r2Key: 'b' },
   ]);
+  const protectedKey = vi.fn().mockResolvedValue(false);
   const remove = vi.fn().mockResolvedValue({});
   const deleteObject = vi.fn().mockResolvedValue(undefined);
   const repo = () =>
-    ({ expired, remove }) as unknown as ReturnType<typeof gcRepository>;
+    ({ expired, remove, protected: protectedKey }) as unknown as ReturnType<
+      typeof gcRepository
+    >;
   const storage = () => ({ deleteObject }) as unknown as ObjectStorage;
-  return { expired, remove, deleteObject, repo, storage };
+  return { protectedKey, expired, remove, deleteObject, repo, storage };
 }
 const authorized = () =>
   new Request('http://localhost/api/cron/assets-gc', {
@@ -58,6 +61,17 @@ describe('assets GC endpoint', () => {
       ).json(),
     ).toEqual({ deleted: 0, keys: [] });
   });
+  it('never deletes an asset protected by the published snapshot even if absent from draft', async () => {
+    const f = fixtures();
+    f.protectedKey.mockImplementation(async (key: string) => key === 'a');
+    expect(
+      await (
+        await collectAssets(authorized(), 'secret', '7', f.repo, f.storage)
+      ).json(),
+    ).toEqual({ deleted: 1, keys: ['b'] });
+    expect(f.deleteObject).not.toHaveBeenCalledWith('a');
+    expect(f.remove).not.toHaveBeenCalledWith('1', expect.any(Date));
+  });
   it('continues after a failed R2 deletion, preserving its row', async () => {
     const f = fixtures();
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -70,4 +84,17 @@ describe('assets GC endpoint', () => {
     expect(f.remove).toHaveBeenCalledTimes(1);
     expect(f.remove).toHaveBeenCalledWith('2', expect.any(Date));
   });
+});
+
+it('drains portfolio cleanup jobs only after cron authentication and configuration validation', async () => {
+  const f = fixtures();
+  const cleanup = vi.fn().mockResolvedValue(undefined);
+  await collectAssets(authorized(), 'wrong', '7', f.repo, f.storage, cleanup);
+  await collectAssets(authorized(), 'secret', '0', f.repo, f.storage, cleanup);
+  expect(cleanup).not.toHaveBeenCalled();
+  await collectAssets(authorized(), 'secret', '7', f.repo, f.storage, cleanup);
+  expect(cleanup).toHaveBeenCalledOnce();
+  expect(cleanup.mock.invocationCallOrder[0]).toBeLessThan(
+    f.expired.mock.invocationCallOrder[0]!,
+  );
 });

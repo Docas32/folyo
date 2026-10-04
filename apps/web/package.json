@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev": "next dev --port 3000",
+    "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "next build",
     "build:worker": "opennextjs-cloudflare build",
     "deploy": "pnpm build:worker && wrangler deploy",

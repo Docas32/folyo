@@ -12,6 +12,9 @@ export type SiteRenderProps = {
   /** Serializable path prefix: preview /p/<id>; published site uses ''. */
   basePath: string;
   appUrl: string;
+  onPageChange?: (pageId: string) => void;
+  relativeNavigation?: boolean;
+  embedCss?: boolean;
   chrome: { navigation: string; madeWith: string };
 };
 export function pageHref(basePath: string, slug: string) {
@@ -34,6 +37,9 @@ export function SiteRender({
   basePath,
   appUrl,
   chrome,
+  onPageChange,
+  relativeNavigation = false,
+  embedCss = true,
 }: SiteRenderProps) {
   const theme = resolveTheme(storedTheme);
   return (
@@ -47,14 +53,28 @@ export function SiteRender({
         } as CSSProperties
       }
     >
-      <style>{SITE_CSS}</style>
+      {embedCss && <style>{SITE_CSS}</style>}
       {pages.length > 1 && (
         <header className="site-header">
           <nav className="site-nav" aria-label={chrome.navigation}>
             {pages.map((page, index) => (
               <a
                 key={page.id}
-                href={pageHref(basePath, page.slug)}
+                onClick={
+                  onPageChange
+                    ? (event) => {
+                        event.preventDefault();
+                        onPageChange(page.id);
+                      }
+                    : undefined
+                }
+                href={
+                  relativeNavigation
+                    ? index === 0
+                      ? './'
+                      : `./${encodeURIComponent(page.slug)}`
+                    : pageHref(basePath, page.slug)
+                }
                 aria-current={page.id === activePageId ? 'page' : undefined}
                 data-home={index === 0 ? 'true' : undefined}
               >

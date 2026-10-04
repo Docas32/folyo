@@ -1,4 +1,8 @@
-import { parseInlineMarkdown, type InlineToken } from '@folyo/core';
+import {
+  templateAssetUrlSchema,
+  parseInlineMarkdown,
+  type InlineToken,
+} from '@folyo/core';
 import type { ReactNode } from 'react';
 import type {
   BlockContent,
@@ -24,13 +28,14 @@ export function safeLink(value: string, platform?: string): string | undefined {
   return undefined;
 }
 function safeImage(value: string): string | undefined {
+  if (templateAssetUrlSchema.safeParse(value).success) return value;
   return value.startsWith('/api/assets/') && !/[\s\\]/.test(value)
     ? value
     : safeLink(value);
 }
-export function HeroRender({ content }: RenderProps<'hero'>) {
+export function HeroRender({ content, theme }: RenderProps<'hero'>) {
   return (
-    <section className="site-hero">
+    <section className={`site-hero site-hero-${theme.heroLayout}`}>
       {content.avatarUrl && safeImage(content.avatarUrl) && (
         <img
           className="site-avatar"
@@ -139,7 +144,7 @@ export function ButtonRender({ content }: RenderProps<'button'>) {
   return (
     <a
       className={`site-button site-button-${content.style}`}
-      href={safeLink(content.url)}
+      href={content.url === '#' ? '#' : safeLink(content.url, 'email')}
     >
       {content.label}
     </a>

@@ -4,26 +4,29 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-12-01",
   "dev": {
-    "port": 8787
+    "port": 8787,
   },
   "vars": {
     "ROOT_DOMAIN": "lvh.me",
-    "ENVIRONMENT": "dev"
+    "ENVIRONMENT": "dev",
   },
   "services": [
     {
       "binding": "WEB",
-      "service": "folyo-web"
-    }
+      "service": "folyo-web",
+    },
+  ],
+  "kv_namespaces": [
+    { "binding": "SITE_KV", "id": "00000000000000000000000000000004" },
   ],
   "r2_buckets": [
     {
       "binding": "ASSETS_BUCKET",
-      "bucket_name": "folyo-user-assets"
+      "bucket_name": "folyo-user-assets",
     },
     {
       "binding": "SITES_BUCKET",
-      "bucket_name": "folyo-published-sites"
-    }
-  ]
+      "bucket_name": "folyo-published-sites",
+    },
+  ],
 }

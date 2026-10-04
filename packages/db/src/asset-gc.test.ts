@@ -28,6 +28,14 @@ describe('recomputeOrphans transaction', () => {
     expect(query.sql).not.toContain('limit');
     // DISTINCT + EXISTS means removing either of two references keeps the asset active.
   });
+  it('includes current publication and in-flight asset keys in orphan recomputation', () => {
+    const query = compile(recomputeOrphansQuery(db, { userId: 'owner' }));
+    expect(query.sql).toContain('jsonb_array_elements_text(pub.assets_keys)');
+    expect(query.sql).toContain(
+      "s.status = 'published' and pub.version = s.published_version",
+    );
+    expect(query.sql).toContain('publication_operations op');
+  });
   it('runs standalone recomputation behind the same editor transaction lock', async () => {
     const batch = vi.fn().mockResolvedValue([{}, {}]);
     db.batch = batch as Database['batch'];

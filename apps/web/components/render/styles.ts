@@ -18,6 +18,8 @@ export const SITE_CSS = `
 .folyo-site h3 { font-size: 1.5rem; }
 .folyo-site p { margin: 0; }
 .folyo-site .site-hero { text-align: center; padding: 24px 0 32px; margin: 0; border: 0; border-radius: 0; background: transparent; }
+.folyo-site .site-hero-left { text-align: left; }
+.folyo-site .site-hero-left .site-subtitle { margin-inline: 0; }
 .folyo-site .site-hero > * + * { margin-top: 16px; }
 .folyo-site .site-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; }
 .folyo-site .site-profession { font-size: 1.25rem; font-weight: 500; }

@@ -1,5 +1,9 @@
+import { siteDeletionEn } from './site-deletion';
+import { templateEn } from './templates';
 import { getBlockPlaceholders } from '@folyo/core';
 const en = {
+  siteDeletion: siteDeletionEn,
+  templates: templateEn,
   signInError: 'Could not sign in with Google. Please try again.',
   brand: 'Folyo',
   welcome: 'Your portfolio starts here',
@@ -60,6 +64,30 @@ const en = {
   busy: 'Please wait…',
   home: 'Home',
   preview: 'View preview',
+  publication: {
+    publish: 'Publish site',
+    republish: 'Republish',
+    unpublish: 'Unpublish',
+    publishing: 'Publishing…',
+    republishing: 'Republishing…',
+    unpublishing: 'Unpublishing…',
+    publishedSuccess: 'Site published',
+    unpublishedSuccess: 'Site unpublished',
+    error: 'Could not update publication. Please try again.',
+    retry: 'Try again',
+    confirmTitle: 'Unpublish site?',
+    confirmDescription:
+      'The public link will stop working. You can publish again whenever you want.',
+    publishTitleRequired: 'Add a title in Settings before publishing.',
+    publishPagesRequired:
+      'Add at least one page in the editor before publishing.',
+    publishHandleInvalid:
+      'Choose a valid address in Settings before publishing.',
+    publishAppUrlRequired: 'APP_PUBLIC_URL is not configured',
+    publishAppUrlInvalid:
+      'APP_PUBLIC_URL is invalid: configure the HTTP(S) app origin',
+    publicationBusy: 'A publication is already in progress. Try again shortly.',
+  },
   siteChrome: { navigation: 'Site pages', madeWith: 'Made with Folyo' },
   editor: {
     preview: 'Preview',

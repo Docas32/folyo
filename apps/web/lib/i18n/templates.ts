@@ -1,0 +1,198 @@
+import { showcaseEn, showcasePt } from './showcase-templates';
+export const templateEn = {
+  showcase: showcaseEn,
+  viewExample: 'View example',
+  useTemplate: 'Use this template',
+  closePreview: 'Close',
+  previewTitle: 'Preview · {name}',
+  loadingPreview: 'Loading template preview',
+  heading: 'Choose a starting point',
+  intro: 'Make it yours with your story, work and colors.',
+  banner: 'Choose a template to get started faster',
+  appearance: 'Appearance',
+  accent: 'Accent color',
+  typography: 'Typography',
+  fontSample: 'Your story, thoughtfully told',
+  heroLayout: 'Hero layout',
+  center: 'Centered',
+  left: 'Left aligned',
+  section: 'Template',
+  choose: 'Choose template',
+  applyStyle: 'Apply style',
+  applyContent: 'Apply content',
+  contentNote:
+    'Creates {count} pages with sample content. Replace the examples with your own.',
+  contentDisabled:
+    'Your portfolio has edits. Only the style can be applied; your content is preserved.',
+  created: 'Portfolio created from {name}',
+  styleApplied: 'Style applied.',
+  contentSkipped: 'Style applied. Your existing content was preserved.',
+  saved: 'Appearance saved.',
+  names: {
+    blank: 'Start from scratch',
+    minimal: 'Minimal',
+    professional: 'Professional',
+    creative: 'Creative',
+    executive: 'Professional · Executive',
+    studio: 'Creative · Studio',
+    scientist: 'Scientist',
+    developer: 'Developer',
+  },
+  descriptions: {
+    blank: 'A simple introduction, ready for your ideas.',
+    minimal: 'Quiet typography and space for your story.',
+    professional: 'Your experience, skills and next opportunity.',
+    creative: 'Put your visual work in the spotlight.',
+    executive: 'Editorial presence for strategy, expertise and career.',
+    studio: 'A bold visual world for identities and art direction.',
+    scientist: 'Research, methods and publications with clarity.',
+    developer: 'Interfaces, architecture and technical case studies.',
+  },
+  content: {
+    home: 'Home',
+    homeSlug: 'home',
+    about: 'About',
+    aboutSlug: 'about',
+    experience: 'Experience',
+    experienceSlug: 'experience',
+    work: 'Work',
+    workSlug: 'work',
+    contact: 'Contact',
+    contactSlug: 'contact',
+    name: 'Alex Morgan',
+    email: 'alex@example.com',
+    minimalTitle: 'Writer & independent researcher',
+    minimalSubtitle:
+      'I turn complex ideas into stories that bring people closer.',
+    minimalText:
+      'I write about cities, culture and the ways we live together. My work begins with a good question and a willingness to listen.\n\nHere you will find a little of my journey and the ideas I am exploring. I am open to editorial projects and thoughtful collaborations.',
+    aboutText:
+      'Based in Bristol, I combine research, interviews and clear writing to make new perspectives accessible.\n\nAway from my desk, you will find me browsing secondhand bookshops or walking a new neighborhood. Tell me what you are working on — I would love to hear about it.',
+    professionalTitle: 'Product designer',
+    professionalSubtitle:
+      'I help teams turn everyday challenges into useful digital products.',
+    professionalText:
+      'I connect research, strategy and design to create experiences people can trust. Over the past six years, I have worked with small teams and growing companies to simplify complex services.',
+    cv: 'Download CV',
+    experienceText:
+      'Senior Product Designer · Studio North · 2022–present\n- Led discovery and design for a customer service platform.\n- Built a shared design system with engineers.\n- Mentored designers and facilitated research sessions.\n\nProduct Designer · Clear Labs · 2020–2022\n- Designed accessible onboarding and account experiences.\n- Tested prototypes with customers and improved key journeys.',
+    contactText:
+      'Have a product challenge or a role in mind? Share a few details about your team and what you hope to build. I am available for consulting and new opportunities.',
+    emailButton: 'Send an email',
+    creativeTitle: 'Art director & visual designer',
+    creativeSubtitle:
+      'Identity, color and playful ideas for brands with something to say.',
+    workText:
+      'A selection of identity and editorial explorations. Each project starts with a conversation and grows through sketches, experiments and a little curiosity.\n\nThese sample images mark the space for your work. Add your own projects and tell the story behind each one.',
+    creativeContact:
+      'Let us make something memorable. I collaborate with brands, cultural organizations and independent teams on identity and visual storytelling.',
+    galleryAlts: [
+      'Editorial identity in warm orange',
+      'Typography study in deep blue',
+      'Packaging concept in soft green',
+      'Poster exploration in violet',
+      'Brand system in golden yellow',
+      'Art direction in rose',
+    ],
+    avatarAlt: 'Portrait placeholder',
+  },
+};
+export const templatePt: typeof templateEn = {
+  showcase: showcasePt,
+  viewExample: 'Ver exemplo',
+  useTemplate: 'Usar este template',
+  closePreview: 'Fechar',
+  previewTitle: 'Exemplo · {name}',
+  loadingPreview: 'Carregando exemplo do template',
+  heading: 'Escolha um ponto de partida',
+  intro: 'Dê sua identidade com sua história, seus trabalhos e suas cores.',
+  banner: 'Escolha um template para começar mais rápido',
+  appearance: 'Aparência',
+  accent: 'Cor de destaque',
+  typography: 'Tipografia',
+  fontSample: 'Sua história, contada com cuidado',
+  heroLayout: 'Layout do hero',
+  center: 'Centrado',
+  left: 'À esquerda',
+  section: 'Template',
+  choose: 'Escolher template',
+  applyStyle: 'Aplicar estilo',
+  applyContent: 'Aplicar conteúdo',
+  contentNote:
+    'Cria {count} páginas com conteúdo de exemplo. Substitua os exemplos pelo seu conteúdo.',
+  contentDisabled:
+    'Seu portfólio tem edições. Apenas o estilo pode ser aplicado; seu conteúdo será preservado.',
+  created: 'Portfólio criado a partir de {name}',
+  styleApplied: 'Estilo aplicado.',
+  contentSkipped: 'Estilo aplicado. Seu conteúdo existente foi preservado.',
+  saved: 'Aparência salva.',
+  names: {
+    blank: 'Começar em branco',
+    minimal: 'Minimalista',
+    professional: 'Profissional',
+    creative: 'Criativo',
+    executive: 'Profissional · Executivo',
+    studio: 'Criativo · Estúdio',
+    scientist: 'Cientista',
+    developer: 'Desenvolvedor',
+  },
+  descriptions: {
+    blank: 'Uma apresentação simples, pronta para suas ideias.',
+    minimal: 'Tipografia delicada e espaço para sua história.',
+    professional: 'Sua experiência, habilidades e próxima oportunidade.',
+    creative: 'Seus trabalhos visuais em destaque.',
+    executive:
+      'Presença editorial para estratégia, especialidades e trajetória.',
+    studio: 'Um universo visual para identidades e direção de arte.',
+    scientist: 'Pesquisa, métodos e publicações com clareza.',
+    developer: 'Interfaces, arquitetura e estudos de caso técnicos.',
+  },
+  content: {
+    home: 'Início',
+    homeSlug: 'inicio',
+    about: 'Sobre',
+    aboutSlug: 'sobre',
+    experience: 'Experiência',
+    experienceSlug: 'experiencia',
+    work: 'Trabalhos',
+    workSlug: 'trabalhos',
+    contact: 'Contato',
+    contactSlug: 'contato',
+    name: 'Marina Costa',
+    email: 'marina@example.com',
+    minimalTitle: 'Escritora e pesquisadora independente',
+    minimalSubtitle:
+      'Transformo ideias complexas em histórias que aproximam pessoas.',
+    minimalText:
+      'Escrevo sobre cidades, cultura e os modos como vivemos juntos. Meu trabalho começa com uma boa pergunta e a disposição para ouvir.\n\nAqui você encontra um pouco do meu percurso e das ideias que estou explorando. Estou aberta a projetos editoriais e colaborações cuidadosas.',
+    aboutText:
+      'Em São Paulo, combino pesquisa, entrevistas e escrita clara para tornar novas perspectivas acessíveis.\n\nFora da mesa de trabalho, gosto de visitar sebos e caminhar por um bairro novo. Conte no que você está trabalhando — vou adorar conhecer sua ideia.',
+    professionalTitle: 'Designer de produto',
+    professionalSubtitle:
+      'Ajudo equipes a transformar desafios do dia a dia em produtos digitais úteis.',
+    professionalText:
+      'Conecto pesquisa, estratégia e design para criar experiências em que as pessoas confiam. Nos últimos seis anos, trabalhei com equipes pequenas e empresas em crescimento para simplificar serviços complexos.',
+    cv: 'Baixar CV',
+    experienceText:
+      'Designer de Produto Sênior · Estúdio Norte · 2022–atual\n- Liderei a descoberta e o design de uma plataforma de atendimento.\n- Construí um sistema de design com a equipe de engenharia.\n- Orientei designers e facilitei sessões de pesquisa.\n\nDesigner de Produto · Laboratório Claro · 2020–2022\n- Desenhei fluxos acessíveis de cadastro e gestão de conta.\n- Testei protótipos com clientes e melhorei jornadas essenciais.',
+    contactText:
+      'Tem um desafio de produto ou uma oportunidade em mente? Compartilhe um pouco sobre sua equipe e o que deseja construir. Estou disponível para consultoria e novos projetos.',
+    emailButton: 'Enviar email',
+    creativeTitle: 'Diretora de arte e designer visual',
+    creativeSubtitle:
+      'Identidade, cor e ideias curiosas para marcas que têm algo a dizer.',
+    workText:
+      'Uma seleção de explorações de identidade e design editorial. Cada projeto começa com uma conversa e cresce entre esboços, experimentos e um pouco de curiosidade.\n\nEstas imagens de exemplo reservam o espaço dos seus trabalhos. Adicione seus projetos e conte a história por trás de cada um.',
+    creativeContact:
+      'Vamos criar algo memorável. Colaboro com marcas, organizações culturais e equipes independentes em projetos de identidade e narrativa visual.',
+    galleryAlts: [
+      'Identidade editorial em laranja quente',
+      'Estudo tipográfico em azul profundo',
+      'Conceito de embalagem em verde suave',
+      'Exploração de cartaz em violeta',
+      'Sistema de marca em amarelo dourado',
+      'Direção de arte em rosa',
+    ],
+    avatarAlt: 'Retrato de exemplo',
+  },
+};
