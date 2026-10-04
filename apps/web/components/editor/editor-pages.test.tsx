@@ -14,6 +14,7 @@ import en from '../../lib/i18n/en';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   vi.unstubAllGlobals();
   vi.useRealTimers();
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
@@ -51,9 +52,82 @@ function mount() {
       },
     ],
   };
-  render(<Editor document={document} pageId={first} d={en} locale="en" />);
+  return render(
+    <Editor document={document} pageId={first} d={en} locale="en" />,
+  );
 }
 describe('editor page switching and autosave', () => {
+  it('closes an open page menu on collapse and opens it normally after restoring the sidebar', async () => {
+    mount();
+    const user = userEvent.setup();
+    const options = en.editor.pages.moreOptions.replace('{title}', 'Home');
+    await user.click(screen.getByRole('button', { name: options }));
+    expect(screen.getByRole('menu')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /Hide sidebar/ }));
+    expect(
+      screen.queryByRole('menu', { hidden: true }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Show sidebar/ }));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: options }));
+    expect(screen.getByRole('menu')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+  it('toggles the sidebar, preserves the canvas and restores the stored preference on remount', () => {
+    const get = vi.spyOn(Storage.prototype, 'getItem');
+    const set = vi.spyOn(Storage.prototype, 'setItem');
+    const view = mount();
+    const sidebar = screen.getByRole('complementary');
+    const canvas = screen.getByRole('textbox', { name: 'Text' });
+    const toggle = screen.getByRole('button', { name: /Hide sidebar/ });
+    expect(sidebar).toBeVisible();
+    expect(get).toHaveBeenCalledWith('folyo.editor.sidebar');
+    fireEvent.click(toggle);
+    expect(sidebar.parentElement).toHaveAttribute('aria-hidden', 'true');
+    expect(sidebar.parentElement).toHaveAttribute('inert');
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('textbox', { name: 'Text' })).toBe(canvas);
+    expect(canvas).toHaveValue('Home text');
+    expect(set).toHaveBeenCalledWith('folyo.editor.sidebar', 'closed');
+    view.unmount();
+    mount();
+    expect(
+      screen.getByRole('button', { name: /Show sidebar/ }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(screen.getByRole('button', { name: /Show sidebar/ }));
+    expect(screen.getByRole('complementary')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(set).toHaveBeenLastCalledWith('folyo.editor.sidebar', 'open');
+    vi.restoreAllMocks();
+  });
+  it.each(['ctrlKey', 'metaKey'])(
+    'toggles with %s + backslash and moves sidebar focus to the topbar',
+    (modifier) => {
+      mount();
+      screen.getByRole('button', { name: 'Home' }).focus();
+      fireEvent.keyDown(window, {
+        key: '\\',
+        code: 'Backslash',
+        [modifier]: true,
+      });
+      const toggle = screen.getByRole('button', { name: /Show sidebar/ });
+      expect(toggle).toHaveFocus();
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(toggle).toHaveAttribute(
+        'title',
+        expect.stringContaining(en.editor.sidebarShortcut),
+      );
+      fireEvent.keyDown(window, { key: '\\', [modifier]: true });
+      expect(screen.getByRole('complementary')).toBeVisible();
+    },
+  );
   it('flushes exactly one pending PUT before replacing the canvas and preserves edits when returning', async () => {
     vi.useFakeTimers();
     let complete!: (response: Response) => void;
@@ -208,5 +282,135 @@ describe('editor page switching and autosave', () => {
         .parentElement,
     ).toHaveAttribute('title', en.editor.pages.limit);
     vi.restoreAllMocks();
+  });
+});
+
+describe('editor inline page rename', () => {
+  it('uses the existing PATCH actor without changing slug or issuing a block save', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      Response.json({
+        id: first,
+        siteId: first,
+        title: 'New Home',
+        slug: 'home',
+        position: 0,
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+    const user = userEvent.setup();
+    mount();
+    await user.click(
+      screen.getByRole('button', {
+        name: en.editor.pages.moreOptions.replace('{title}', 'Home'),
+      }),
+    );
+    await user.click(
+      screen.getByRole('menuitem', {
+        name: en.editor.pages.renameLabel.replace('{title}', 'Home'),
+      }),
+    );
+    await user.keyboard('New Home{Enter}');
+    expect(
+      await screen.findByRole('button', { name: 'New Home' }),
+    ).toHaveFocus();
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/pages/${first}`,
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ title: 'New Home' }),
+      }),
+    );
+    expect(
+      screen.queryByRole('textbox', {
+        name: en.editor.pages.renameLabel.replace('{title}', 'Home'),
+      }),
+    ).not.toBeInTheDocument();
+  });
+  it('shows failed rename inline without the global editor alert', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({ error: 'unavailable' }, { status: 503 }),
+        ),
+    );
+    const user = userEvent.setup();
+    mount();
+    await user.click(
+      screen.getByRole('button', {
+        name: en.editor.pages.moreOptions.replace('{title}', 'Home'),
+      }),
+    );
+    await user.click(
+      screen.getByRole('menuitem', {
+        name: en.editor.pages.renameLabel.replace('{title}', 'Home'),
+      }),
+    );
+    await user.keyboard('Draft{Enter}');
+    expect(
+      await screen.findByText(en.editor.pages.renameError),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', {
+        name: en.editor.pages.renameLabel.replace('{title}', 'Home'),
+      }),
+    ).toHaveValue('Draft');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Projects' })).toBeEnabled();
+  });
+});
+
+describe('editor page deletion focus', () => {
+  it('restores focus to the surviving active row after confirmed deletion', async () => {
+    Object.defineProperties(HTMLDialogElement.prototype, {
+      showModal: {
+        configurable: true,
+        value: function (this: HTMLDialogElement) {
+          this.open = true;
+        },
+      },
+      close: {
+        configurable: true,
+        value: function (this: HTMLDialogElement) {
+          this.open = false;
+        },
+      },
+    });
+    const fetch = vi.fn().mockResolvedValue(Response.json({ ok: true }));
+    vi.stubGlobal('fetch', fetch);
+    const user = userEvent.setup();
+    mount();
+    await user.click(
+      screen.getByRole('button', {
+        name: en.editor.pages.moreOptions.replace('{title}', 'Home'),
+      }),
+    );
+    await user.click(
+      screen.getByRole('menuitem', {
+        name: en.editor.pages.deleteLabel.replace('{title}', 'Home'),
+      }),
+    );
+    expect(fetch).not.toHaveBeenCalled();
+    await user.click(
+      screen.getByRole('button', { name: en.editor.pages.confirm }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Projects' })).toHaveFocus(),
+    );
+    expect(screen.getByRole('button', { name: 'Projects' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getByRole('textbox', { name: 'Text' })).toHaveValue(
+      'Projects text',
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/pages/${first}`,
+      expect.objectContaining({ method: 'DELETE' }),
+    );
   });
 });

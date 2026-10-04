@@ -61,6 +61,9 @@ const ptBR: Dictionary = {
   busy: 'Aguarde…',
   home: 'Início',
   editor: {
+    hideSidebar: 'Ocultar barra lateral',
+    showSidebar: 'Mostrar barra lateral',
+    sidebarShortcut: 'Ctrl+\\ / Cmd+\\',
     upload: {
       select: 'Escolher imagem',
       selecting: 'Selecione uma imagem JPEG, PNG ou WebP.',
@@ -74,6 +77,14 @@ const ptBR: Dictionary = {
       defaultAlt: 'Imagem',
     },
     pages: {
+      moreOptions: 'Mais opções da página {title}',
+      renameLabel: 'Renomear página {title}',
+      moveUpLabel: 'Mover página {title} para cima',
+      moveDownLabel: 'Mover página {title} para baixo',
+      deleteLabel: 'Excluir página {title}',
+      titleRequired: 'Informe um título para a página.',
+      renameError: 'Não foi possível renomear esta página. Tente novamente.',
+
       label: 'Páginas',
       newPage: '+ Nova página',
       title: 'Título da página',

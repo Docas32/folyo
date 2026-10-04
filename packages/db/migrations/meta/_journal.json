@@ -15,6 +15,13 @@
       "when": 1791056839541,
       "tag": "0001_auth_account",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791127697416,
+      "tag": "0002_secret_wild_child",
+      "breakpoints": true
     }
   ]
 }

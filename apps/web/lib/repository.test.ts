@@ -37,6 +37,7 @@ beforeEach(() => {
     update,
     delete: deleteFn,
     batch,
+    execute: (query: SQL) => ({ getSQL: () => query }),
   } as unknown as ReturnType<typeof createDb>);
 });
 describe('Drizzle account repository', () => {
@@ -77,7 +78,11 @@ describe('Drizzle account repository', () => {
     const repo = createRepository('postgres://test:test@localhost/db');
     await repo.deleteUser(user.id);
     expect(deleteFn).toHaveBeenCalledWith(users);
-    expect(batch).toHaveBeenCalledWith([deleteQuery]);
+    expect(batch.mock.calls[0]?.[0]).toHaveLength(2);
+    expect(batch.mock.calls[0]?.[0][0]).toEqual(deleteQuery);
+    const gc = new PgDialect().sqlToQuery(batch.mock.calls[0]?.[0][1].getSQL());
+    expect(gc.sql).toContain('update assets');
+    expect(gc.params).toContain(user.id);
     const query = new PgDialect().sqlToQuery(
       deleteWhere.mock.calls[0]?.[0] as SQL,
     );

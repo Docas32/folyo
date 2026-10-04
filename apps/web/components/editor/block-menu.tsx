@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '../ui/button';
+
 import { useEffect, useRef, useState } from 'react';
 import { BLOCK_TYPES, type BlockType } from '@folyo/core';
 import type { Dictionary } from '../../lib/i18n';
@@ -50,7 +52,11 @@ export function BlockTypeMenu({
           setSelectedIndex((prev) => (prev + 1) % Math.max(1, items.length));
         } else if (event.key === 'ArrowUp') {
           event.preventDefault();
-          setSelectedIndex((prev) => (prev - 1 + Math.max(1, items.length)) % Math.max(1, items.length));
+          setSelectedIndex(
+            (prev) =>
+              (prev - 1 + Math.max(1, items.length)) %
+              Math.max(1, items.length),
+          );
         } else if (event.key === 'Enter') {
           event.preventDefault();
           const type = items[selectedIndex];
@@ -59,7 +65,8 @@ export function BlockTypeMenu({
       }}
     >
       {items.map((type, index) => (
-        <button
+        <Button
+          variant="ghost"
           type="button"
           key={type}
           ref={(el) => {
@@ -76,7 +83,7 @@ export function BlockTypeMenu({
             <strong>{d.types[type].name}</strong>
             <small>{d.types[type].description}</small>
           </span>
-        </button>
+        </Button>
       ))}
       {items.length === 0 && <div className="no-results">{d.noResults}</div>}
     </div>
@@ -123,7 +130,8 @@ export function AddBlock({
         if (event.key === 'Escape') close();
       }}
     >
-      <button
+      <Button
+        variant="ghost"
         type="button"
         ref={trigger}
         className="add-block-trigger"
@@ -133,7 +141,7 @@ export function AddBlock({
       >
         <span aria-hidden="true">＋ </span>
         {d.addBlock}
-      </button>
+      </Button>
       {open && (
         <div className="block-menu-popover">
           <BlockTypeMenu
@@ -143,9 +151,9 @@ export function AddBlock({
               close();
             }}
           />
-          <button type="button" onClick={close}>
+          <Button variant="ghost" type="button" onClick={close}>
             {d.closeMenu}
-          </button>
+          </Button>
         </div>
       )}
     </div>

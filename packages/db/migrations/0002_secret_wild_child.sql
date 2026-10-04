@@ -1,0 +1,2 @@
+ALTER TABLE "assets" ADD COLUMN "orphaned_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "idx_assets_orphaned" ON "assets" USING btree ("orphaned_at") WHERE "assets"."orphaned_at" is not null;

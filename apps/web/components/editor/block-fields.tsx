@@ -1,4 +1,7 @@
 'use client';
+import { Button } from '../ui/button';
+
+import { Select } from '../ui/select';
 import { ImageUploader } from './image-uploader';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -194,9 +197,9 @@ function TextComposer({
               onChange(editorBlockWithType(block, type, locale));
             }}
           />
-          <button type="button" onClick={close}>
+          <Button variant="ghost" type="button" onClick={close}>
             {d.closeMenu}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -319,26 +322,27 @@ function Fields({
           />
           <label className="block-field">
             <span>{d.fields.level}</span>
-            <select
+            <Select
+              aria-label={d.fields.level}
               value={block.content.level}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 onChange({
                   ...block,
                   content: {
                     ...block.content,
                     level: headingContentSchema.shape.level.parse(
-                      Number(event.target.value),
+                      Number(value),
                     ),
                   },
                 })
               }
-            >
-              {headingContentSchema.shape.level.options.map((level) => (
-                <option key={level.value} value={level.value}>
-                  {d.levels[level.value]}
-                </option>
-              ))}
-            </select>
+              options={headingContentSchema.shape.level.options.map(
+                (level) => ({
+                  value: level.value,
+                  label: d.levels[level.value],
+                }),
+              )}
+            />
           </label>
         </>
       );
@@ -416,7 +420,8 @@ function Fields({
                   onChange={(caption) => update({ caption })}
                 />
                 <ImagePreview url={item.url} alt={item.alt} d={d} />
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   className="editor-secondary"
                   disabled={activeUploads > 0}
@@ -432,11 +437,12 @@ function Fields({
                   }
                 >
                   {d.removeImage}
-                </button>
+                </Button>
               </div>
             );
           })}
-          <button
+          <Button
+            variant="ghost"
             type="button"
             disabled={block.content.items.length >= MAX_GALLERY_ITEMS}
             onClick={() =>
@@ -452,7 +458,7 @@ function Fields({
             }
           >
             {d.addImage}
-          </button>
+          </Button>
         </>
       );
     case 'button':
@@ -474,26 +480,23 @@ function Fields({
           />
           <label className="block-field">
             <span>{d.fields.style}</span>
-            <select
+            <Select
+              aria-label={d.fields.style}
               value={block.content.style}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 onChange({
                   ...block,
                   content: {
                     ...block.content,
-                    style: buttonContentSchema.shape.style.parse(
-                      event.target.value,
-                    ),
+                    style: buttonContentSchema.shape.style.parse(value),
                   },
                 })
               }
-            >
-              {buttonContentSchema.shape.style.options.map((style) => (
-                <option key={style} value={style}>
-                  {d.styles[style]}
-                </option>
-              ))}
-            </select>
+              options={buttonContentSchema.shape.style.options.map((style) => ({
+                value: style,
+                label: d.styles[style],
+              }))}
+            />
           </label>
         </>
       );
@@ -504,9 +507,10 @@ function Fields({
             <div className="block-list-item" key={index}>
               <label className="block-field">
                 <span>{d.fields.platform}</span>
-                <select
+                <Select
+                  aria-label={d.fields.platform}
                   value={link.platform}
-                  onChange={(event) =>
+                  onValueChange={(value) =>
                     onChange({
                       ...block,
                       content: {
@@ -514,22 +518,18 @@ function Fields({
                           i === index
                             ? {
                                 ...current,
-                                platform: socialPlatformSchema.parse(
-                                  event.target.value,
-                                ),
+                                platform: socialPlatformSchema.parse(value),
                               }
                             : current,
                         ),
                       },
                     })
                   }
-                >
-                  {SOCIAL_PLATFORMS.map((platform) => (
-                    <option key={platform} value={platform}>
-                      {d.platforms[platform]}
-                    </option>
-                  ))}
-                </select>
+                  options={SOCIAL_PLATFORMS.map((platform) => ({
+                    value: platform,
+                    label: d.platforms[platform],
+                  }))}
+                />
               </label>
               <Field
                 label={d.fields.url}
@@ -545,7 +545,8 @@ function Fields({
                   })
                 }
               />
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 className="editor-secondary"
                 onClick={() =>
@@ -558,10 +559,11 @@ function Fields({
                 }
               >
                 {d.removeLink}
-              </button>
+              </Button>
             </div>
           ))}
-          <button
+          <Button
+            variant="ghost"
             type="button"
             disabled={block.content.links.length >= MAX_SOCIAL_LINKS}
             onClick={() => {
@@ -574,7 +576,7 @@ function Fields({
             }}
           >
             {d.addLink}
-          </button>
+          </Button>
         </>
       );
     case 'divider':
@@ -590,25 +592,21 @@ function Fields({
           <p>{d.spacerHint}</p>
           <label className="block-field">
             <span>{d.fields.height}</span>
-            <select
+            <Select
+              aria-label={d.fields.height}
               value={block.content.height}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 onChange({
                   ...block,
                   content: {
-                    height: spacerContentSchema.shape.height.parse(
-                      event.target.value,
-                    ),
+                    height: spacerContentSchema.shape.height.parse(value),
                   },
                 })
               }
-            >
-              {spacerContentSchema.shape.height.options.map((height) => (
-                <option key={height} value={height}>
-                  {d.heights[height]}
-                </option>
-              ))}
-            </select>
+              options={spacerContentSchema.shape.height.options.map(
+                (height) => ({ value: height, label: d.heights[height] }),
+              )}
+            />
           </label>
         </>
       );

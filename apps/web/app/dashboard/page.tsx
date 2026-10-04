@@ -15,7 +15,9 @@ export default async function Dashboard() {
       <h1>{d.dashboardHeading}</h1>
       <div data-ad-slot="dashboard-top" />
       <section>
-        <p>{site.status === 'published' ? d.published : d.draft}</p>
+        <p className="status-pill">
+          {site.status === 'published' ? d.published : d.draft}
+        </p>
         <h2>{site.handle}</h2>
         <a href={url} aria-label={d.publicLink}>
           {url}

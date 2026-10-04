@@ -60,6 +60,9 @@ const en = {
   busy: 'Please wait…',
   home: 'Home',
   editor: {
+    hideSidebar: 'Hide sidebar',
+    showSidebar: 'Show sidebar',
+    sidebarShortcut: 'Ctrl+\\ / Cmd+\\',
     upload: {
       select: 'Choose image',
       selecting: 'Select a JPEG, PNG or WebP image.',
@@ -73,6 +76,14 @@ const en = {
       defaultAlt: 'Image',
     },
     pages: {
+      moreOptions: 'More options for page {title}',
+      renameLabel: 'Rename page {title}',
+      moveUpLabel: 'Move page {title} up',
+      moveDownLabel: 'Move page {title} down',
+      deleteLabel: 'Delete page {title}',
+      titleRequired: 'Enter a page title.',
+      renameError: 'Could not rename this page. Please try again.',
+
       label: 'Pages',
       newPage: '+ New page',
       title: 'Page title',

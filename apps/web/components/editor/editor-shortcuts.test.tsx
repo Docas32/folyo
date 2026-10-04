@@ -47,7 +47,9 @@ describe('editor composer shortcuts', () => {
     expect(heading.tagName).toBe('INPUT');
     expect(heading).toHaveValue('');
     expect(heading).toHaveFocus();
-    expect(within(card).getByRole('combobox')).toHaveValue(level);
+    expect(
+      within(card).getByRole('button', { name: en.editor.fields.level }),
+    ).toHaveTextContent(en.editor.levels[Number(level) as 1 | 2 | 3]);
     await user.keyboard('Ola');
     expect(heading).toHaveValue('Ola');
   });

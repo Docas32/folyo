@@ -1,3 +1,4 @@
+import { Button } from '../components/ui/button';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signIn } from '../auth';
@@ -33,7 +34,7 @@ export default async function Home({
           await signIn('google', { redirectTo: '/post-login' });
         }}
       >
-        <button>{d.googleLogin}</button>
+        <Button type="submit">{d.googleLogin}</Button>
       </form>
     </main>
   );

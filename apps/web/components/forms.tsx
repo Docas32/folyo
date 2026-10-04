@@ -1,4 +1,6 @@
 'use client';
+import { Button } from './ui/button';
+
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -58,7 +60,9 @@ export function TermsForm({ d, locale }: { d: Dictionary; locale: string }) {
   }
   return (
     <form onSubmit={submit}>
-      <button disabled={busy}>{busy ? d.busy : d.accept}</button>
+      <Button type="submit" variant="primary" disabled={busy}>
+        {busy ? d.busy : d.accept}
+      </Button>
       <p role="alert">{error}</p>
     </form>
   );
@@ -194,7 +198,8 @@ export function HandleForm({
           )}
         </p>
       )}
-      <button
+      <Button
+        type="submit"
         disabled={
           busy ||
           blocked ||
@@ -203,7 +208,7 @@ export function HandleForm({
         }
       >
         {busy ? d.busy : initial ? d.changeHandle : d.createSite}
-      </button>
+      </Button>
       <p role="alert">{error}</p>
     </form>
   );
@@ -257,7 +262,9 @@ export function MetadataForm({
           setValues({ ...values, description: event.target.value })
         }
       />
-      <button disabled={busy}>{busy ? d.busy : d.save}</button>
+      <Button type="submit" disabled={busy}>
+        {busy ? d.busy : d.save}
+      </Button>
       <p role="status">{message}</p>
     </form>
   );
@@ -302,8 +309,9 @@ export function DeleteAccountForm({
     <section>
       <h2>{d.deleteHeading}</h2>
       <p>{d.deleteSummary}</p>
-      <button
-        className="danger"
+      <Button
+        type="button"
+        variant="destructive"
         onClick={() => {
           setConfirmation('');
           setError('');
@@ -311,7 +319,7 @@ export function DeleteAccountForm({
         }}
       >
         {d.deleteButton}
-      </button>
+      </Button>
       <dialog
         ref={dialog}
         onCancel={(event) => {
@@ -331,19 +339,20 @@ export function DeleteAccountForm({
             autoComplete="off"
             disabled={busy || deleted}
           />
-          <button
-            className="danger"
+          <Button
+            type="submit"
+            variant="destructive"
             disabled={busy || (!deleted && confirmation !== handle)}
           >
             {busy ? d.busy : deleted ? d.signOut : d.confirmDelete}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             disabled={busy || deleted}
             onClick={() => dialog.current?.close()}
           >
             {d.cancel}
-          </button>
+          </Button>
           <p role="alert">{error}</p>
         </form>
       </dialog>
@@ -354,7 +363,8 @@ export function CopyLink({ url, d }: { url: string; d: Dictionary }) {
   const [message, setMessage] = useState('');
   return (
     <>
-      <button
+      <Button
+        type="button"
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(url);
@@ -365,7 +375,7 @@ export function CopyLink({ url, d }: { url: string; d: Dictionary }) {
         }}
       >
         {d.copy}
-      </button>
+      </Button>
       <p role="status">{message}</p>
     </>
   );

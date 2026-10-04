@@ -186,6 +186,7 @@ F1 e F2 foram validadas E2E no projeto antes desta frente. O checklist acima per
 - **Drag & drop**: Usa `@dnd-kit/core` + `@dnd-kit/sortable` com sensor de ponteiro e sensor de teclado habilitado. O handle de arraste (⠿) fica visível no hover dos cards e a reordenação otimista é aplicada apenas na soltura; o autosave existente mantém debounce pós-drop (sem enfileirar saves intermediários). A lógica de reordenação usa função pura `arrayMove` em `packages/core/src/array-move.ts`, testável sem DOM.
 - **Comando "/"**: Em um bloco de texto vazio, digitar "/" no início abre o mesmo componente `BlockTypeMenu` (reutilizado de F3a), com filtro por nome/tipo (case-insensitive, substring), navegação por teclado (↑/↓/Enter/Esc), seleção que converte o bloco atual ou insere abaixo, foco no primeiro campo do novo bloco e fechamento ao clicar fora (limpando "/").
 - **Atalhos markdown**: Parser puro `parseMarkdownShortcut` em `packages/core/src/markdown-parser.ts` consome o texto no início de um bloco de texto vazio: `"# "` → heading 1, `"## "` → heading 2, `"### "` → heading 3 (restante vai para o texto do heading); `"- "` e `"> "` mantêm o prefixo no conteúdo (comportamento documentado para que F4 trate linhas iniciadas por `- ` como lista e `"> "` como citação). Só dispara com prefixo exato + espaço.
+- **Layout do shell (padrão Notion)**: sidebar e topbar ficam permanentemente visíveis e apenas o canvas rola. `.editor-layout` é o grid de duas colunas com `height: 100dvh` e `overflow: hidden`; dentro dele, `.sidebar` (220px, `overflow-y: auto`, rolagem própria e independente) e `.editor-main` (`flex-direction: column`, `overflow: hidden`). O único elemento rolável da página é `.editor-canvas-scroll` (`flex: 1; min-height: 0; overflow-y: auto`), que envolve o `fieldset.editor-canvas`; o `.editor-topbar` é `flex-shrink: 0`, irmão do scroller, portanto não rola. `html`/`body` recebem `height: 100%; overflow: hidden` via `html:has(.editor-layout)`, sem JavaScript e já no SSR — um seletor `:has()` puro evita o flash de janela rolável antes da hidratação, ao contrário de alternar classe em `<body>` por efeito. Como o `.editor-canvas-scroll` passa a ser o ancestral rolável dos cards, o autoScroll do dnd-kit passa a rolar o canvas (e não a janela) ao arrastar para as bordas superior/inferior, sem configuração adicional. O menu ⋯ das páginas é posicionado no viewport via `getBoundingClientRect`, então não consegue acompanhar o canvas rolando por baixo: ele fecha no `scroll` do `.editor-canvas-scroll` em vez de ficar deslocado. Os testes estruturais em `apps/web/components/editor/editor-layout.test.tsx` travam esse contrato.
 
 ## F3a — editor de blocos e autosave
 
@@ -345,3 +346,62 @@ Checklist de navegador:
 - [ ] Conferir objeto no bucket folyo-assets e linha em assets; abrir URL sem sessão e conferir cache immutable.
 - [ ] Criar até cinco páginas, testar tooltip, rename mantendo slug, setas e delete confirmado; a única página não pode ser excluída.
 - [ ] Editar e trocar antes do debounce; conferir PUT antes da troca e texto ao voltar. Simular erro de rede: manter página/conteúdo e informar bloqueio.
+
+### UX da sidebar de páginas
+
+A sidebar usa uma lista compacta: título com ellipsis, linha ativa destacada e ações sob demanda no menu `⋯`. O botão de opções aparece no hover, na página ativa, no foco de teclado e em dispositivos touch; clicar nele não troca de página. O menu reutiliza os handlers da F3c para rename, reorder e delete, sem alterar APIs, schemas, slug, limite de cinco páginas ou flush do autosave.
+
+`Renomear` vira input inline com título atual focado/selecionado: Enter ou blur confirma uma única vez, Esc cancela e título vazio/falha de rede mostra erro junto ao campo (sem alerta global). A exclusão continua exigindo o modal de confirmação, sem undo. Ações de mover para cima/baixo ficam ausentes nas extremidades. `+ Nova página` permanece no rodapé com tooltip no limite.
+
+As linhas navegam com ↑/↓/Home/End; Tab alcança `⋯`, Enter/Space abre o menu, ↑/↓ no botão abre no primeiro/último item, e Shift+F10 abre a partir da linha. O dropdown tem roles menu/menuitem, setas com retorno circular, Home/End, fechamento por Esc/clique-fora e restauração de foco ao botão ⋯ após fechamento (rename mantém foco no input e exclusão da página usa a linha sobrevivente). Tab fecha o menu e continua a navegação. Os rótulos acessíveis incluem o título da página e vêm dos dicionários pt-BR/en. Cores usam a paleta A global; a edição inline WYSIWYG continua reservada à F4.
+
+RTL cobre menu, ações, limites, foco/teclado, rename por Enter/blur, cancelamento por Esc, erro inline e confirmação de delete. A integração verifica PATCH de rename sem PUT extra e mantém o teste do único PUT pendente antes da troca de página.
+
+### Paleta A global e renderização do editor
+
+`apps/web/app/globals.css` define a paleta A para todo o app: `--ink`, `--paper`,
+`--coral`, `--coral-hover`, `--gray-100`, `--gray-500`, `--gray-700`, `--border`,
+`--danger` e `--radius` (8px). `--surface` é o branco dos cards/dropdowns; estados
+neutros e sombras derivam desses tokens. Os aliases `--app-*` apontam à mesma paleta.
+Editor, dashboard, settings, onboarding e termos compartilham esses estilos.
+Botões são neutros por padrão; `.button-primary` reserva coral ao CTA principal
+(Adicionar hero no editor vazio). Inter é carregada e hospedada por `next/font`,
+com fallback system-ui; não há requisição de fonte ao Google no navegador.
+
+O componente raiz `Editor` renderiza apenas um skeleton no servidor e no primeiro
+render do cliente. Após o mount, inicia o editor completo com dnd-kit, evitando
+comparar IDs `DndDescribedBy-*` entre SSR e hidratação. O skeleton usa as mesmas
+colunas e espaçamentos do editor. APIs, autosave, formulários de blocos e regras de
+páginas permanecem intactos; WYSIWYG depende do renderizador da F4.
+
+O dropdown de páginas usa coordenadas fixas e `getMenuPosition` puro com dimensões
+explícitas do viewport: direita com gap de 8px, flip à esquerda e clamp nos dois
+eixos. CSS limita o menu ao viewport, com scroll em janelas menores que o conteúdo,
+itens nowrap e recálculo em resize/scroll. A sidebar oculta permanece inert e sem
+menu visível; ao reabrir, as coordenadas são atualizadas.
+
+### Coleta diferida de assets
+
+Ao salvar blocos ou excluir uma página, a mesma transação recalcula referências de
+**todas** as páginas do usuário. Assets sem referência recebem `orphaned_at`, sem
+apagar o objeto R2; reanexar ou desfazer restaura `NULL`. Isso protege undo e imagens
+compartilhadas. Exclusão de conta mantém a limpeza imediata de todos os objetos e o
+cascade das linhas de assets (sem órfãos residuais).
+
+Aplique as migrations com `pnpm db:migrate`. Configure `CRON_SECRET` e
+`GC_GRACE_DAYS` (padrão 7, número positivo). Em desenvolvimento:
+
+```sh
+curl -X POST http://localhost:3000/api/cron/assets-gc \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+O endpoint retorna `{deleted, keys}` e remove primeiro o objeto R2, depois a linha.
+Falhas individuais são registradas e tentadas novamente na próxima execução;
+objetos já ausentes são tratados como sucesso. Só assets órfãos anteriores à janela
+são elegíveis. Em produção, agendar via cron-job.org ou Cloudflare Cron Trigger
+chamando o endpoint com o bearer token; a escolha do scheduler fica adiada.
+
+**F4:** publicações também referenciam assets. Antes de implementar publicação,
+registrar um snapshot de keys em `publications` e excluir da coleta as keys da
+versão publicada atual. Hoje a janela de sete dias cobre o MVP.

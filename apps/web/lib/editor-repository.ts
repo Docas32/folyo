@@ -1,6 +1,13 @@
 import { AccountError } from './account-service';
 import { and, asc, eq, sql } from 'drizzle-orm';
-import { createDb, pages, blocks, sites, type Database } from '@folyo/db';
+import {
+  createDb,
+  recomputeOrphansQuery,
+  pages,
+  blocks,
+  sites,
+  type Database,
+} from '@folyo/db';
 import type { EditorRepository } from './editor-service';
 import { initialPage } from './editor-service';
 export function createEditorRepository(databaseUrl: string): EditorRepository {
@@ -75,9 +82,15 @@ export function editorRepositoryFromDb(db: Database): EditorRepository {
             lock(siteId),
             deletion,
             db.insert(blocks).values(values),
+            recomputeOrphansQuery(db, { siteId }),
             touch,
           ])
-        : await db.batch([lock(siteId), deletion, touch]);
+        : await db.batch([
+            lock(siteId),
+            deletion,
+            recomputeOrphansQuery(db, { siteId }),
+            touch,
+          ]);
       const timestamps = results[results.length - 1];
       // The final query always returns updated_at; batch tuple variants differ.
       const saved = Array.isArray(timestamps) ? timestamps[0] : undefined;

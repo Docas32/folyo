@@ -1,4 +1,7 @@
 'use client';
+import { Button } from '../ui/button';
+
+import { FileTrigger } from '../ui/file-trigger';
 import { useEffect, useRef, useState } from 'react';
 import {
   imageMimeSchema,
@@ -97,22 +100,20 @@ export function ImageUploader({
   }, [busy, onBusyChange]);
   return (
     <div className="image-uploader">
-      <label className="block-field">
-        <span>{d.upload.select}</span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          disabled={busy}
-          onChange={(event) => {
-            const file = event.currentTarget.files?.[0];
-            event.currentTarget.value = '';
-            if (!file) return;
-            original.current = file;
-            prepared.current = null;
-            void send(file);
-          }}
-        />
-      </label>
+      <FileTrigger
+        accept="image/jpeg,image/png,image/webp"
+        disabled={busy}
+        onChange={(event) => {
+          const file = event.currentTarget.files?.[0];
+          event.currentTarget.value = '';
+          if (!file) return;
+          original.current = file;
+          prepared.current = null;
+          void send(file);
+        }}
+      >
+        {d.upload.select}
+      </FileTrigger>
       <p role="status">
         {d.upload[status]}
         {fileInfo && ` · ${fileInfo}`}
@@ -120,14 +121,15 @@ export function ImageUploader({
       {status === 'error' && (
         <>
           <p role="alert">{error}</p>
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => {
               if (original.current) void send(original.current, true);
             }}
           >
             {d.upload.retry}
-          </button>
+          </Button>
         </>
       )}
     </div>

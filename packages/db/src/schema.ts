@@ -8,6 +8,7 @@ import {
   jsonb,
   unique,
   check,
+  index,
 } from 'drizzle-orm/pg-core';
 import type { TemplateId, SiteStatus, BlockType } from '@folyo/core';
 const id = () => uuid('id').defaultRandom().primaryKey();
@@ -86,21 +87,30 @@ export const blocks = pgTable('blocks', {
   content: jsonb('content').$type<Record<string, unknown>>().notNull(),
   position: integer('position').notNull(),
 });
-export const assets = pgTable('assets', {
-  id: id(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, {
-      onDelete: 'cascade',
-    }),
-  r2Key: text('r2_key').unique().notNull(),
-  mime: text('mime').notNull(),
-  size: integer('size').notNull(),
-  width: integer('width'),
-  height: integer('height'),
-  alt: text('alt'),
-  createdAt: createdAt(),
-});
+export const assets = pgTable(
+  'assets',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'cascade',
+      }),
+    r2Key: text('r2_key').unique().notNull(),
+    mime: text('mime').notNull(),
+    size: integer('size').notNull(),
+    width: integer('width'),
+    height: integer('height'),
+    alt: text('alt'),
+    orphanedAt: timestamp('orphaned_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    index('idx_assets_orphaned')
+      .on(table.orphanedAt)
+      .where(sql`${table.orphanedAt} is not null`),
+  ],
+);
 export const publications = pgTable(
   'publications',
   {

@@ -5,8 +5,10 @@ import * as schema from './schema';
 // HTTP has no persistent TCP pool in Workers; use Neon's pooled URL upstream.
 export function createDb(databaseUrl: string) {
   return drizzle(neon(databaseUrlSchema.parse(databaseUrl)), {
-    schema
+    schema,
   });
 }
 export * from './schema';
 export type Database = ReturnType<typeof createDb>;
+
+export * from './asset-gc';

@@ -1,5 +1,11 @@
 import { and, eq, ne, or, isNull, lte } from 'drizzle-orm';
-import { createDb, sites, users, reservedHandles } from '@folyo/db';
+import {
+  createDb,
+  recomputeOrphansQuery,
+  sites,
+  users,
+  reservedHandles,
+} from '@folyo/db';
 import { HANDLE_COOLDOWN_MS, type Repository } from './account-service';
 export function createRepository(databaseUrl: string): Repository {
   const db = createDb(databaseUrl);
@@ -77,7 +83,11 @@ export function createRepository(databaseUrl: string): Repository {
     async deleteUser(userId) {
       // Neon HTTP batch executes in a transaction; ON DELETE CASCADE covers all
       // tables related to this account, with no interactive socket.
-      await db.batch([db.delete(users).where(eq(users.id, userId))]);
+      await db.batch([
+        db.delete(users).where(eq(users.id, userId)),
+        // Cascade removed all owned assets; keep the terminal GC hook explicit.
+        recomputeOrphansQuery(db, { userId }),
+      ]);
     },
   };
 }

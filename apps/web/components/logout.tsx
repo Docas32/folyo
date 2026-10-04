@@ -1,3 +1,4 @@
+import { Button } from './ui/button';
 import { signOut } from '../auth';
 export function Logout({ label }: { label: string }) {
   return (
@@ -7,7 +8,7 @@ export function Logout({ label }: { label: string }) {
         await signOut({ redirectTo: '/' });
       }}
     >
-      <button>{label}</button>
+      <Button type="submit">{label}</Button>
     </form>
   );
 }

@@ -112,7 +112,8 @@ describe('editor transaction plans', () => {
     expect(queries[2]?.params).toContain(block.id);
     expect(queries[2]?.params).toContain(page.id);
     expect(queries[2]?.sql).not.toContain('on conflict');
-    expect(queries[3]?.sql).toContain('clock_timestamp()');
+    expect(queries[3]?.sql).toContain('update assets');
+    expect(queries[4]?.sql).toContain('clock_timestamp()');
   });
   it('supports an empty list without an invalid zero-row INSERT', async () => {
     const { repo, batch } = dbWithMockBatch();
@@ -123,7 +124,7 @@ describe('editor transaction plans', () => {
     ]);
     await repo.replaceBlocks(site.id, page.id, []);
     const queries = (batch.mock.calls[0]?.[0] as unknown[]).map(compile);
-    expect(queries).toHaveLength(3);
+    expect(queries).toHaveLength(4);
     expect(queries.some((query) => query.sql.includes('insert'))).toBe(false);
   });
   it('propagates transaction failures without returning a successful save', async () => {

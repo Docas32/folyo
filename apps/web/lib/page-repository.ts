@@ -1,5 +1,10 @@
 import { and, asc, eq, sql } from 'drizzle-orm';
-import { createDb, pages, type Database } from '@folyo/db';
+import {
+  createDb,
+  recomputeOrphansQuery,
+  pages,
+  type Database,
+} from '@folyo/db';
 import { MAX_PAGES, slugify, type EditorPage } from '@folyo/core';
 export interface PageRepository {
   list(siteId: string): Promise<EditorPage[]>;
@@ -77,6 +82,7 @@ export function pageRepositoryFromDb(db: Database): PageRepository {
             ),
           )
           .returning({ id: pages.id }),
+        recomputeOrphansQuery(db, { siteId }),
       ]);
       return rows.length === 1;
     },
