@@ -18,14 +18,57 @@ const icons: Record<BlockType, string> = {
 export function BlockTypeMenu({
   d,
   onSelect,
+  filter = '',
 }: {
   d: EditorDictionary;
   onSelect: (type: BlockType) => void;
+  filter?: string;
 }) {
+  const filtered = BLOCK_TYPES.filter((type) => {
+    const term = filter.toLowerCase().trim();
+    if (!term) return true;
+    const name = d.types[type].name.toLowerCase();
+    return name.includes(term) || type.includes(term);
+  });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const buttonsRef = useRef<HTMLButtonElement[]>([]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+    buttonsRef.current = [];
+  }, [filter]);
+
+  const items = filtered;
   return (
-    <div className="block-type-menu" role="group" aria-label={d.menuLabel}>
-      {BLOCK_TYPES.map((type) => (
-        <button type="button" key={type} onClick={() => onSelect(type)}>
+    <div
+      className="block-type-menu"
+      role="group"
+      aria-label={d.menuLabel}
+      onKeyDown={(event) => {
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          setSelectedIndex((prev) => (prev + 1) % Math.max(1, items.length));
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          setSelectedIndex((prev) => (prev - 1 + Math.max(1, items.length)) % Math.max(1, items.length));
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          const type = items[selectedIndex];
+          if (type) onSelect(type);
+        }
+      }}
+    >
+      {items.map((type, index) => (
+        <button
+          type="button"
+          key={type}
+          ref={(el) => {
+            if (el) buttonsRef.current[index] = el;
+          }}
+          onClick={() => onSelect(type)}
+          className={index === selectedIndex ? 'selected' : ''}
+          aria-selected={index === selectedIndex}
+        >
           <span className="block-icon" aria-hidden="true">
             {icons[type]}
           </span>
@@ -35,6 +78,7 @@ export function BlockTypeMenu({
           </span>
         </button>
       ))}
+      {items.length === 0 && <div className="no-results">{d.noResults}</div>}
     </div>
   );
 }

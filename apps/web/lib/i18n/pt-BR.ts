@@ -87,8 +87,13 @@ const ptBR: Dictionary = {
     previewError: 'Não foi possível carregar a imagem',
     dividerHint: 'Uma linha entre seções',
     spacerHint: 'Espaço entre seções',
+    dragHandle: 'Arrastar bloco',
+    commandMenuLabel: 'Comandos de bloco',
+    typeToFilter: 'Digite para filtrar',
+    noResults: 'Nenhum resultado',
+    selectBlock: 'Selecionar bloco',
     closeMenu: 'Fechar menu de blocos',
-    fields: {
+        fields: {
       name: 'Nome',
       title: 'Título profissional',
       subtitle: 'Subtítulo',

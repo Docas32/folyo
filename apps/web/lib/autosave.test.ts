@@ -204,3 +204,23 @@ describe('autosave queue', () => {
     expect(send).toHaveBeenCalledOnce();
   });
 });
+
+  it('autosave after drag - rapidly moving 2 blocks generates exactly 1 PUT with final order', async () => {
+    const send = vi.fn<SaveSender>().mockResolvedValue(ack);
+    const queue = new AutosaveQueue(send);
+    const blocks1 = [
+      { ...block, position: 0, content: { text: 'a' } },
+      { ...block, id: '30000000-0000-4000-8000-000000000004', position: 1, content: { text: 'b' } },
+    ];
+    const blocks2 = [
+      { ...block, id: '30000000-0000-4000-8000-000000000004', position: 0, content: { text: 'b' } },
+      { ...block, position: 1, content: { text: 'a' } },
+    ];
+    // Simulate drag: update to intermediate? Or just final - "arrastar 2 blocos rapidamente" means final state
+    queue.update(blocks1);
+    await vi.advanceTimersByTimeAsync(500);
+    queue.update(blocks2); // final order after drop
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(send).toHaveBeenCalledOnce();
+    expect(send).toHaveBeenCalledWith(blocks2);
+  });

@@ -179,6 +179,14 @@ R2 e PostgreSQL não podem participar da mesma transação. Por isso a limpeza R
 
 F1 e F2 foram validadas E2E no projeto antes desta frente. O checklist acima permanece como referência para regressões de autenticação e conta.
 
+## F3b — drag & drop, comando "/" e atalhos markdown
+
+### Decisões técnicas
+
+- **Drag & drop**: Usa `@dnd-kit/core` + `@dnd-kit/sortable` com sensor de ponteiro e sensor de teclado habilitado. O handle de arraste (⠿) fica visível no hover dos cards e a reordenação otimista é aplicada apenas na soltura; o autosave existente mantém debounce pós-drop (sem enfileirar saves intermediários). A lógica de reordenação usa função pura `arrayMove` em `packages/core/src/array-move.ts`, testável sem DOM.
+- **Comando "/"**: Em um bloco de texto vazio, digitar "/" no início abre o mesmo componente `BlockTypeMenu` (reutilizado de F3a), com filtro por nome/tipo (case-insensitive, substring), navegação por teclado (↑/↓/Enter/Esc), seleção que converte o bloco atual ou insere abaixo, foco no primeiro campo do novo bloco e fechamento ao clicar fora (limpando "/").
+- **Atalhos markdown**: Parser puro `parseMarkdownShortcut` em `packages/core/src/markdown-parser.ts` consome o texto no início de um bloco de texto vazio: `"# "` → heading 1, `"## "` → heading 2, `"### "` → heading 3 (restante vai para o texto do heading); `"- "` e `"> "` mantêm o prefixo no conteúdo (comportamento documentado para que F4 trate linhas iniciadas por `- ` como lista e `"> "` como citação). Só dispara com prefixo exato + espaço.
+
 ## F3a — editor de blocos e autosave
 
 Depois do onboarding, abra `/editor` diretamente no Next (`pnpm dev:auth`, porta 3000). Não há nova migration nesta frente: as tabelas `pages` e `blocks` da F1 já possuem as colunas necessárias.

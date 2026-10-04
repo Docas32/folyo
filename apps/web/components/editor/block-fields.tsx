@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import {
+  editorBlockSchema,
   buttonContentSchema,
   externalUrlSchema,
   headingContentSchema,
@@ -10,15 +11,25 @@ import {
   createDefaultBlock,
   MAX_GALLERY_ITEMS,
   MAX_SOCIAL_LINKS,
+  parseMarkdownShortcut,
   type EditorBlock,
 } from '@folyo/core';
-import type { EditorDictionary } from './block-menu';
+import { BlockTypeMenu, type EditorDictionary } from './block-menu';
 function Textarea({
   value,
   onChange,
+  onKeyDown,
+  onFocus,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
+  onKeyDown?:
+    | React.KeyboardEventHandler<HTMLTextAreaElement | HTMLInputElement>
+    | undefined;
+  onFocus?:
+    React.FocusEventHandler<HTMLTextAreaElement | HTMLInputElement> | undefined;
+  placeholder?: string | undefined;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -33,6 +44,9 @@ function Textarea({
       value={value}
       rows={3}
       onChange={(event) => onChange(event.target.value)}
+      onKeyDown={onKeyDown}
+      onFocus={onFocus}
+      placeholder={placeholder}
     />
   );
 }
@@ -41,21 +55,39 @@ function Field({
   value,
   onChange,
   multiline = false,
+  onKeyDown,
+  onFocus,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   multiline?: boolean;
+  onKeyDown?:
+    | React.KeyboardEventHandler<HTMLTextAreaElement | HTMLInputElement>
+    | undefined;
+  onFocus?:
+    React.FocusEventHandler<HTMLTextAreaElement | HTMLInputElement> | undefined;
+  placeholder?: string | undefined;
 }) {
   return (
     <label className="block-field">
       <span>{label}</span>
       {multiline ? (
-        <Textarea value={value} onChange={onChange} />
+        <Textarea
+          value={value}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          onFocus={onFocus}
+          placeholder={placeholder}
+        />
       ) : (
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onKeyDown={onKeyDown as React.KeyboardEventHandler<HTMLInputElement>}
+          onFocus={onFocus as React.FocusEventHandler<HTMLInputElement>}
+          placeholder={placeholder}
         />
       )}
     </label>
@@ -88,7 +120,129 @@ function ImagePreview({
     />
   );
 }
-export function BlockFields({
+function TextComposer({
+  block,
+  onChange,
+  d,
+  locale,
+}: {
+  block: Extract<EditorBlock, { type: 'text' }>;
+  onChange: (block: EditorBlock) => void;
+  d: EditorDictionary;
+  locale: string;
+}) {
+  const eligible = useRef(block.content.text === '');
+  const [filter, setFilter] = useState<string | null>(null);
+  const composer = useRef<HTMLDivElement>(null);
+  function close() {
+    setFilter(null);
+    composer.current?.querySelector('textarea')?.focus();
+  }
+  return (
+    <div
+      className="text-composer"
+      ref={composer}
+      onKeyDown={(event) => {
+        if (filter !== null && event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        }
+      }}
+    >
+      <Field
+        label={d.fields.text}
+        value={filter === null ? block.content.text : `/${filter}`}
+        multiline
+        onKeyDown={(event) => {
+          if (
+            event.key === '/' &&
+            event.currentTarget.value === '' &&
+            !event.nativeEvent.isComposing
+          ) {
+            event.preventDefault();
+            setFilter('');
+          }
+        }}
+        onChange={(text) => {
+          if (filter !== null) {
+            if (text.startsWith('/')) setFilter(text.slice(1));
+            else close();
+            return;
+          }
+          const shortcut = parseMarkdownShortcut(text);
+          if (eligible.current && shortcut.action === 'convert-heading') {
+            onChange({
+              ...block,
+              type: 'heading',
+              content: { text: shortcut.text, level: shortcut.level },
+            });
+            return;
+          }
+          eligible.current =
+            text === '' || (eligible.current && /^#{1,3}$/.test(text));
+          onChange({ ...block, content: { text } });
+        }}
+      />
+      {filter !== null && (
+        <div className="block-menu-popover">
+          <BlockTypeMenu
+            d={d}
+            filter={filter}
+            onSelect={(type) => {
+              close();
+              onChange(editorBlockWithType(block, type, locale));
+            }}
+          />
+          <button type="button" onClick={close}>
+            {d.closeMenu}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+function editorBlockWithType(
+  block: EditorBlock,
+  type: EditorBlock['type'],
+  locale: string,
+): EditorBlock {
+  return editorBlockSchema.parse({
+    ...block,
+    type,
+    content: createDefaultBlock(type, locale),
+  });
+}
+export function BlockFields(props: {
+  block: EditorBlock;
+  onChange: (block: EditorBlock) => void;
+  d: EditorDictionary;
+  locale: string;
+}) {
+  const container = useRef<HTMLDivElement>(null);
+  const focusAfterConversion = useRef(false);
+  useEffect(() => {
+    if (focusAfterConversion.current) {
+      container.current
+        ?.querySelector<HTMLElement>('input, textarea, select, button')
+        ?.focus();
+      focusAfterConversion.current = false;
+    }
+  }, [props.block.type]);
+  return (
+    <div ref={container}>
+      <Fields
+        {...props}
+        onChange={(updated) => {
+          focusAfterConversion.current =
+            updated.type !== props.block.type &&
+            !!container.current?.contains(document.activeElement);
+          props.onChange(updated);
+        }}
+      />
+    </div>
+  );
+}
+function Fields({
   block,
   onChange,
   d,
@@ -178,12 +332,7 @@ export function BlockFields({
       );
     case 'text':
       return (
-        <Field
-          label={d.fields.text}
-          value={block.content.text}
-          multiline
-          onChange={(text) => onChange({ ...block, content: { text } })}
-        />
+        <TextComposer block={block} onChange={onChange} d={d} locale={locale} />
       );
     case 'image':
       return (

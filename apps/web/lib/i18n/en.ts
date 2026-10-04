@@ -86,8 +86,13 @@ const en = {
     previewError: 'Image could not be loaded',
     dividerHint: 'A divider between sections',
     spacerHint: 'Space between sections',
+    dragHandle: 'Drag block',
+    commandMenuLabel: 'Block commands',
+    typeToFilter: 'Type to filter',
+    noResults: 'No results',
+    selectBlock: 'Select block',
     closeMenu: 'Close block menu',
-    fields: {
+        fields: {
       name: 'Name',
       title: 'Professional title',
       subtitle: 'Subtitle',

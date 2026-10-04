@@ -69,3 +69,5 @@ export const messages = {
   },
 };
 export const defaultMessages = messages['pt-BR'];
+export * from './markdown-parser';
+export * from './array-move';

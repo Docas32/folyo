@@ -16,6 +16,88 @@ import { AutosaveQueue, SaveFailure } from '../../lib/autosave';
 import type { Dictionary } from '../../lib/i18n';
 import { BlockFields } from './block-fields';
 import { AddBlock } from './block-menu';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { arrayMove } from '@folyo/core';
+
+function SortableBlock({ block, index, children, d, onMove, onDelete, total }: {
+  block: EditorBlock;
+  index: number;
+  children: React.ReactNode;
+  d: Dictionary;
+  onMove: (index: number, offset: number) => void;
+  onDelete: (index: number) => void;
+  total: number;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <article
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="editor-block sortable-block"
+      aria-label={`${d.editor.types[block.type].name} ${index + 1}`}
+    >
+      <div className="block-heading">
+        <button
+          type="button"
+          className="drag-handle"
+          aria-label={d.editor.dragHandle}
+          title={d.editor.dragHandle}
+          {...listeners}
+        >
+          ⠿
+        </button>
+        <h2>{d.editor.types[block.type].name}</h2>
+        <div className="block-controls">
+          <button
+            type="button"
+            disabled={index === 0}
+            aria-label={d.editor.moveUp}
+            title={d.editor.moveUp}
+            onClick={() => onMove(index, -1)}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            disabled={index === total - 1}
+            aria-label={d.editor.moveDown}
+            title={d.editor.moveDown}
+            onClick={() => onMove(index, 1)}
+          >
+            ↓
+          </button>
+          <button
+            type="button"
+            aria-label={d.editor.delete}
+            title={d.editor.delete}
+            onClick={() => onDelete(index)}
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      {children}
+    </article>
+  );
+}
+
 export function Editor({
   document,
   pageId,
@@ -60,6 +142,14 @@ export function Editor({
   } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maxBlocks = MAX_BLOCKS;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
   useEffect(() => {
     const unsubscribe = queue.subscribe(setSaveState);
     const beforeUnload = (event: BeforeUnloadEvent) => {
@@ -76,12 +166,14 @@ export function Editor({
       if (undoTimer.current !== null) clearTimeout(undoTimer.current);
     };
   }, [queue]);
+
   function commit(next: EditorBlock[]) {
     const ordered = next.map((block, position) => ({ ...block, position }));
     blocksRef.current = ordered;
     setBlocks(ordered);
     queue.update(ordered);
   }
+
   function add(type: BlockType, index: number) {
     if (blocksRef.current.length >= maxBlocks) return;
     const block = editorBlockSchema.parse({
@@ -94,6 +186,7 @@ export function Editor({
     next.splice(index, 0, block);
     commit(next);
   }
+
   function move(index: number, offset: number) {
     const next = [...blocksRef.current];
     const block = next[index];
@@ -102,6 +195,19 @@ export function Editor({
     next.splice(index + offset, 0, block);
     commit(next);
   }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = blocksRef.current.findIndex((b) => b.id === active.id);
+      const newIndex = blocksRef.current.findIndex((b) => b.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const reordered = arrayMove([...blocksRef.current], oldIndex, newIndex);
+        commit(reordered);
+      }
+    }
+  }
+
   function remove(index: number) {
     const block = blocksRef.current[index];
     if (!block) return;
@@ -113,6 +219,7 @@ export function Editor({
       undoTimer.current = null;
     }, 5000);
   }
+
   function undo() {
     if (!removed || blocksRef.current.length >= maxBlocks) return;
     const next = [...blocksRef.current];
@@ -122,6 +229,7 @@ export function Editor({
     if (undoTimer.current !== null) clearTimeout(undoTimer.current);
     undoTimer.current = null;
   }
+
   const e = d.editor;
   const invalid = new Set(
     blocks.flatMap((block, index) =>
@@ -151,6 +259,7 @@ export function Editor({
                   }),
                 )
               : e.ready;
+
   return (
     <main className="editor-shell">
       <header className="editor-topbar">
@@ -206,71 +315,48 @@ export function Editor({
             </button>
           </div>
         )}
-        {blocks.map((block, index) => (
-          <Fragment key={block.id}>
-            <AddBlock
-              d={e}
-              onSelect={(type) => add(type, index)}
-              disabled={blocks.length >= maxBlocks}
-              quiet
-            />
-            <article
-              className={`editor-block ${invalid.has(index) ? 'editor-block-invalid' : ''}`}
-              aria-label={`${e.types[block.type].name} ${index + 1}`}
-            >
-              <div className="block-heading">
-                <h2>{e.types[block.type].name}</h2>
-                <div className="block-controls">
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    aria-label={e.moveUp}
-                    title={e.moveUp}
-                    onClick={() => move(index, -1)}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    disabled={index === blocks.length - 1}
-                    aria-label={e.moveDown}
-                    title={e.moveDown}
-                    onClick={() => move(index, 1)}
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={e.delete}
-                    title={e.delete}
-                    onClick={() => remove(index)}
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              <div className="block-fields">
-                <BlockFields
-                  block={block}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+            {blocks.map((block, index) => (
+              <Fragment key={block.id}>
+                <AddBlock
                   d={e}
-                  locale={locale}
-                  onChange={(updated) =>
-                    commit(
-                      blocksRef.current.map((current) =>
-                        current.id === updated.id ? updated : current,
-                      ),
-                    )
-                  }
+                  onSelect={(type) => add(type, index)}
+                  disabled={blocks.length >= maxBlocks}
+                  quiet
                 />
-              </div>
-              {invalid.has(index) && (
-                <p className="block-error">
-                  {e.invalidBlock.replace('{number}', String(index + 1))}
-                </p>
-              )}
-            </article>
-          </Fragment>
-        ))}
+                <SortableBlock
+                  block={block}
+                  index={index}
+                  d={d}
+                  onMove={move}
+                  onDelete={remove}
+                  total={blocks.length}
+                >
+                  <div className="block-fields">
+                    <BlockFields
+                      block={block}
+                      d={e}
+                      locale={locale}
+                      onChange={(updated) =>
+                        commit(
+                          blocksRef.current.map((current) =>
+                            current.id === updated.id ? updated : current,
+                          ),
+                        )
+                      }
+                    />
+                  </div>
+                  {invalid.has(index) && (
+                    <p className="block-error">
+                      {e.invalidBlock.replace('{number}', String(index + 1))}
+                    </p>
+                  )}
+                </SortableBlock>
+              </Fragment>
+            ))}
+          </SortableContext>
+        </DndContext>
         <AddBlock
           d={e}
           onSelect={(type) => add(type, blocks.length)}

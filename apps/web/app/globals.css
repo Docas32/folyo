@@ -330,3 +330,7 @@ dialog::backdrop {
     padding: 1rem;
   }
 }
+
+.text-composer {
+  position: relative;
+}
