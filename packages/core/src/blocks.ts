@@ -80,6 +80,8 @@ export const socialPlatformSchema = z.enum(SOCIAL_PLATFORMS);
 // protocols per platform before turning these values into links.
 export const socialContentSchema = z
   .object({
+    layout: z.enum(['row', 'column']).default('row'),
+    align: z.enum(['start', 'center', 'end']).default('start'),
     links: z
       .array(
         z.object({ platform: socialPlatformSchema, url: z.string() }).strict(),
@@ -145,7 +147,11 @@ export function createDefaultBlock<T extends BlockType>(
       ],
     },
     button: { label: p.button, url: 'https://example.com', style: 'primary' },
-    social: { links: [{ platform: 'site', url: 'https://example.com' }] },
+    social: {
+      layout: 'row',
+      align: 'start',
+      links: [{ platform: 'site', url: 'https://example.com' }],
+    },
     divider: {},
     spacer: { height: 'md' },
   };

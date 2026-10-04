@@ -77,3 +77,6 @@ export * from './editor-management';
 export * from './menu-position';
 
 export * from './asset-keys';
+export * from './theme';
+
+export * from './inline-markdown';

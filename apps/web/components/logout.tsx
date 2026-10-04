@@ -8,7 +8,9 @@ export function Logout({ label }: { label: string }) {
         await signOut({ redirectTo: '/' });
       }}
     >
-      <Button type="submit">{label}</Button>
+      <Button type="submit" variant="ghost">
+        {label}
+      </Button>
     </form>
   );
 }

@@ -23,7 +23,10 @@ class BodyValidationError extends AccountError {
     super('invalid', 400);
   }
 }
-export async function body<T>(request: Request, schema: z.ZodType<T>) {
+export async function body<T extends z.ZodTypeAny>(
+  request: Request,
+  schema: T,
+): Promise<z.output<T>> {
   const json: unknown = await request.json().catch(() => {
     throw new AccountError('invalid', 400);
   });

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ButtonLink, PreviewIcon } from '../../components/ui/button';
 import { redirect } from 'next/navigation';
 import { pageAccount } from '../../lib/session';
 import { serverEnv } from '../../lib/runtime';
@@ -19,16 +19,29 @@ export default async function Dashboard() {
           {site.status === 'published' ? d.published : d.draft}
         </p>
         <h2>{site.handle}</h2>
-        <a href={url} aria-label={d.publicLink}>
-          {url}
-        </a>
-        <CopyLink url={url} d={d} />
+        <div className="dashboard-link-row">
+          <span className="dashboard-url" title={url}>
+            <a href={url} aria-label={d.publicLink}>
+              {url}
+            </a>
+          </span>
+          <CopyLink url={url} d={d} />
+          <ButtonLink
+            href={`/p/${site.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {d.preview} <PreviewIcon />
+          </ButtonLink>
+        </div>
       </section>
-      <nav>
-        <Link href="/editor">{d.edit}</Link>
-        <Link href="/settings">{d.settings}</Link>
+      <nav className="dashboard-actions">
+        <ButtonLink href="/editor">{d.edit}</ButtonLink>
+        <ButtonLink href="/settings" variant="ghost">
+          {d.settings}
+        </ButtonLink>
+        <Logout label={d.signOut} />
       </nav>
-      <Logout label={d.signOut} />
     </main>
   );
 }

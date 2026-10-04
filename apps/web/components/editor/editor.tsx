@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '../ui/button';
+import { Button, ButtonLink, PreviewIcon } from '../ui/button';
 
 import {
   Fragment,
@@ -582,6 +582,15 @@ function PageCanvas({
             </div>
           </div>
           <div className="editor-save">
+            <ButtonLink
+              variant="ghost"
+              size="sm"
+              href={`/p/${document.site.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <PreviewIcon /> {e.preview}
+            </ButtonLink>
             <p
               role="status"
               aria-live="polite"

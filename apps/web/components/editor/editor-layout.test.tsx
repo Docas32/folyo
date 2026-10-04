@@ -38,6 +38,14 @@ function mount() {
 }
 
 describe('editor shell layout', () => {
+  it('opens the draft preview in a new tab without flushing autosave', () => {
+    mount();
+    const preview = screen.getByRole('link', { name: en.editor.preview });
+    expect(preview).toHaveAttribute('href', `/p/${pageId}`);
+    expect(preview).toHaveAttribute('target', '_blank');
+    expect(preview).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('keeps sidebar and topbar outside the single scrollable canvas', () => {
     const { container } = mount();
 

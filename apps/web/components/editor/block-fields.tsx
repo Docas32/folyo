@@ -11,6 +11,7 @@ import {
   headingContentSchema,
   spacerContentSchema,
   socialPlatformSchema,
+  socialContentSchema,
   SOCIAL_PLATFORMS,
   createDefaultBlock,
   MAX_GALLERY_ITEMS,
@@ -187,6 +188,7 @@ function TextComposer({
           onChange({ ...block, content: { text } });
         }}
       />
+      <p className="text-link-hint">{d.textLinkHint}</p>
       {filter !== null && (
         <div className="block-menu-popover">
           <BlockTypeMenu
@@ -503,6 +505,35 @@ function Fields({
     case 'social':
       return (
         <>
+          {(['layout', 'align'] as const).map((field) => (
+            <label className="block-field" key={field}>
+              <span>{d.fields[field]}</span>
+              <Select
+                aria-label={d.fields[field]}
+                value={block.content[field]}
+                options={socialContentSchema.shape[field]
+                  .removeDefault()
+                  .options.map((value) => ({
+                    value,
+                    label:
+                      field === 'layout'
+                        ? d.socialLayouts[value as 'row' | 'column']
+                        : d.socialAlignments[
+                            value as 'start' | 'center' | 'end'
+                          ],
+                  }))}
+                onValueChange={(value) =>
+                  onChange({
+                    ...block,
+                    content: {
+                      ...block.content,
+                      [field]: socialContentSchema.shape[field].parse(value),
+                    },
+                  })
+                }
+              />
+            </label>
+          ))}
           {block.content.links.map((link, index) => (
             <div className="block-list-item" key={index}>
               <label className="block-field">
@@ -514,6 +545,7 @@ function Fields({
                     onChange({
                       ...block,
                       content: {
+                        ...block.content,
                         links: block.content.links.map((current, i) =>
                           i === index
                             ? {
@@ -538,6 +570,7 @@ function Fields({
                   onChange({
                     ...block,
                     content: {
+                      ...block.content,
                       links: block.content.links.map((current, i) =>
                         i === index ? { ...current, url } : current,
                       ),
@@ -553,6 +586,7 @@ function Fields({
                   onChange({
                     ...block,
                     content: {
+                      ...block.content,
                       links: block.content.links.filter((_, i) => i !== index),
                     },
                   })
@@ -571,7 +605,10 @@ function Fields({
               if (link)
                 onChange({
                   ...block,
-                  content: { links: [...block.content.links, link] },
+                  content: {
+                    ...block.content,
+                    links: [...block.content.links, link],
+                  },
                 });
             }}
           >

@@ -59,7 +59,10 @@ const en = {
   cancel: 'Cancel',
   busy: 'Please wait…',
   home: 'Home',
+  preview: 'View preview',
+  siteChrome: { navigation: 'Site pages', madeWith: 'Made with Folyo' },
   editor: {
+    preview: 'Preview',
     hideSidebar: 'Hide sidebar',
     showSidebar: 'Show sidebar',
     sidebarShortcut: 'Ctrl+\\ / Cmd+\\',
@@ -136,7 +139,12 @@ const en = {
     noResults: 'No results',
     selectBlock: 'Select block',
     closeMenu: 'Close block menu',
+    textLinkHint: 'Tip: [text](url) creates a link',
+    socialLayouts: { row: 'Horizontal', column: 'Vertical' },
+    socialAlignments: { start: 'Left', center: 'Center', end: 'Right' },
     fields: {
+      layout: 'Orientation',
+      align: 'Alignment',
       name: 'Name',
       title: 'Professional title',
       subtitle: 'Subtitle',

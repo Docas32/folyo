@@ -1,3 +1,4 @@
+import { createPreviewRepository } from './preview-repository';
 import {
   createAssetBucket,
   createStorage,
@@ -43,4 +44,8 @@ export function objectStorage() {
 }
 export function pageRepository() {
   return createPageRepository(serverEnv().DATABASE_URL);
+}
+
+export function previewRepository() {
+  return createPreviewRepository(serverEnv().DATABASE_URL);
 }

@@ -362,7 +362,7 @@ export function DeleteAccountForm({
 export function CopyLink({ url, d }: { url: string; d: Dictionary }) {
   const [message, setMessage] = useState('');
   return (
-    <>
+    <div className="copy-link">
       <Button
         type="button"
         onClick={async () => {
@@ -376,7 +376,9 @@ export function CopyLink({ url, d }: { url: string; d: Dictionary }) {
       >
         {d.copy}
       </Button>
-      <p role="status">{message}</p>
-    </>
+      <span className="copy-link-status" role="status">
+        {message}
+      </span>
+    </div>
   );
 }

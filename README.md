@@ -405,3 +405,43 @@ chamando o endpoint com o bearer token; a escolha do scheduler fica adiada.
 **F4:** publicações também referenciam assets. Antes de implementar publicação,
 registrar um snapshot de keys em `publications` e excluir da coleta as keys da
 versão publicada atual. Hoje a janela de sete dias cobre o MVP.
+
+### F4a — render compartilhado e preview do rascunho
+
+Os componentes ficam em `apps/web/components/render`, próximos ao consumidor Next
+atual. Não dependem de Next, sessão, banco, estado de cliente ou hooks do editor;
+`index.ts` exporta os nove renders, `BlockRender`, `SiteRender` e `SITE_CSS`.
+Essa mesma implementação deve gerar o HTML publicado na F4b e compor o canvas da F5.
+Não criar uma segunda implementação de markup ou estilos para publicação.
+
+Contrato por bloco: `{ content: ContentByType[T], theme: Theme }`, usando os schemas
+Zod de `@folyo/core`. `BlockRender` recebe `{ block: BlockContent, theme }`.
+`SiteRender` recebe somente dados serializáveis: tema armazenado, locale, páginas
+ordenadas `{id,title,slug}`, `activePageId`, blocos da página ordenados com `id`,
+`basePath`, `appUrl` e `chrome: {navigation,madeWith}` do dicionário do dono.
+Para o preview, `basePath=/p/<siteId>` e `appUrl=/`; na publicação, usar `basePath=''`
+e a URL absoluta da raiz do app. A primeira página é home; a URL sem slug a seleciona.
+A navegação usa os mesmos slugs em ambos os contextos e desaparece com uma só página.
+A F4b pode chamar `renderToStaticMarkup(<SiteRender {...props} />)` sem cliente React.
+`SITE_CSS` já é incluído como CSS estático pelo wrapper, com escopo `.folyo-site`.
+
+`themeSchema`, `resolveTheme` e `themeToCssVars` ficam em `packages/core/src/theme.ts`.
+Temas inválidos retornam integralmente ao default blank. `themeToStyle` fornece as
+mesmas variáveis para o style inline do React. As fontes Inter, Lora, Playfair Display
+e Source Sans 3 são carregadas por `next/font` no preview (Inter no layout raiz).
+A F4b deve incluir as mesmas fontes e definir `--font-inter`, `--font-lora`,
+`--font-playfair`, `--font-source-sans` no HTML estático; os valores gerados pelo tema
+possuem fallback nominal. O contraste do texto do botão primário acompanha o accent.
+
+`/p/[siteId]/[[...slug]]` lê o banco em cada request, sem exigir sessão ou gerar
+publicação/snapshot. Dashboard e editor abrem `/p/<siteId>` em nova aba, usando o
+rascunho já persistido pelo autosave. Não há save extra ao abrir o preview. A rota
+usa title/description do site e metadata `robots: noindex,nofollow`.
+As consultas são limitadas ao site solicitado e projetam somente os campos públicos
+necessários, incluindo o idioma do dono; o rodapé não expõe dados da conta.
+
+Texto é renderizado com nós React escapados, sem `dangerouslySetInnerHTML`; o parser
+aceita parágrafos, listas `- `, citações `> `, `**negrito**` e `*itálico*`.
+Links sociais aceitam HTTP(S), e `mailto:` somente para email; URLs incompletas ou
+protocolos executáveis ficam sem href. Não há lightbox; eventual interação é da F5.
+A F4a não altera o roteador edge nem implementa publicação ou múltiplos templates.

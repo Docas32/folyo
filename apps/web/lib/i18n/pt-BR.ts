@@ -60,7 +60,10 @@ const ptBR: Dictionary = {
   cancel: 'Cancelar',
   busy: 'Aguarde…',
   home: 'Início',
+  preview: 'Ver preview',
+  siteChrome: { navigation: 'Páginas do site', madeWith: 'Feito com Folyo' },
   editor: {
+    preview: 'Preview',
     hideSidebar: 'Ocultar barra lateral',
     showSidebar: 'Mostrar barra lateral',
     sidebarShortcut: 'Ctrl+\\ / Cmd+\\',
@@ -137,7 +140,12 @@ const ptBR: Dictionary = {
     noResults: 'Nenhum resultado',
     selectBlock: 'Selecionar bloco',
     closeMenu: 'Fechar menu de blocos',
+    textLinkHint: 'Dica: [texto](url) cria um link',
+    socialLayouts: { row: 'Horizontal', column: 'Vertical' },
+    socialAlignments: { start: 'Esquerda', center: 'Centro', end: 'Direita' },
     fields: {
+      layout: 'Orientação',
+      align: 'Alinhamento',
       name: 'Nome',
       title: 'Título profissional',
       subtitle: 'Subtítulo',
