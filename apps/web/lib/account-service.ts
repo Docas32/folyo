@@ -19,7 +19,11 @@ export type ErrorCode =
   | 'conflict'
   | 'unavailable'
   | 'origin'
-  | 'notFound';
+  | 'notFound'
+  | 'storageConfig'
+  | 'storageUnavailable'
+  | 'uploadPersistenceFailed'
+  | 'uploadFailed';
 export class AccountError extends Error {
   constructor(
     public code: ErrorCode,

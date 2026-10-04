@@ -26,7 +26,7 @@ function mount(text = '') {
     pages: [
       { id: block.id, siteId: block.id, title: 'Home', slug: '', position: 0 },
     ],
-    blocks: [block],
+    blocks: [{ ...block, pageId: block.id }],
   };
   render(<Editor document={document} pageId={block.id} d={en} locale="en" />);
   return screen.getByRole('textbox', { name: en.editor.fields.text });

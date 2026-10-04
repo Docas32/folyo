@@ -198,7 +198,7 @@ No primeiro acesso, o servidor cria a página **Início** (`inicio`) para `pt-BR
 `packages/core/src/blocks.ts` exporta os nove schemas de conteúdo, `blockContentSchema` (union discriminada `{type, content}`), `BlockType`, os tipos inferidos e a validação do envelope de salvamento. Editor, API e futuro renderizador F4 devem importar esses schemas; não crie validadores paralelos. `createDefaultBlock(type, locale)` retorna o conteúdo do tipo com placeholders localizados, compartilhados com os dicionários web por `getBlockPlaceholders`.
 
 - hero, heading e text: texto simples; o editor nunca interpreta HTML.
-- image e gallery: URLs externas com preview; sem uploads. Galeria: 1–12 itens.
+- image e gallery: uploads R2 e URLs externas com preview. Galeria: 1–12 itens.
 - button: texto, URL e estilo primary/outline.
 - social: 1–10 links, com plataforma e string de URL, incluindo email/WhatsApp.
 - divider: objeto estritamente vazio; spacer: tamanho sm/md/lg.
@@ -207,10 +207,10 @@ URLs de imagens, avatar e botão devem ser HTTP(S), além de URLs válidas. Prot
 
 ### API e persistência
 
-| Endpoint                         | Contrato                                                                                                                                                   |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/editor`                | `{site, pages, blocks}`: resumo do site (id, title, handle, status), páginas ordenadas e blocos da primeira página; `Cache-Control: no-store`              |
-| `PUT /api/pages/[pageId]/blocks` | `{blocks:[{id,type,content,position}]}`, com UUIDs distintos, até 100 blocos e `position` igual ao índice no array; retorna `{ok:true,savedAt}` em ISO UTC |
+| Endpoint                         | Contrato                                                                                                                                                                    |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/editor`                | `{site, pages, blocks}`: resumo do site (id, title, handle, status), páginas ordenadas e blocos de todas as páginas (cada bloco inclui `pageId`); `Cache-Control: no-store` |
+| `PUT /api/pages/[pageId]/blocks` | `{blocks:[{id,type,content,position}]}`, com UUIDs distintos, até 100 blocos e `position` igual ao índice no array; retorna `{ok:true,savedAt}` em ISO UTC                  |
 
 Ambas as APIs exigem sessão, conta existente, termos e site. Ownership é verificado no servidor; um site cujo dono não coincide com a sessão retorna 403, e página inexistente/de outro site retorna 404. O PUT também exige Origin da mesma origem. Conteúdo inválido retorna 400 com `issues:[{path,code}]`, por exemplo `['blocks',0,'content','url']`. IDs de usuário/site e outras propriedades extras no body são rejeitados.
 
@@ -248,4 +248,100 @@ pnpm build
 
 A validação automatizada de bootstrap e persistência nesta entrega usa DB mockado; o checklist de navegador/Neon acima não foi executado neste ambiente.
 
-Editor nesta frente opera apenas na primeira página. Não há drag & drop, gerência de páginas, upload, templates, publicação ou renderização pública.
+O MVP não implementa templates, publicação ou renderização pública nesta frente.
+
+## F3c — uploads R2 e gerência de páginas
+
+### Upload — configuração e diagnóstico
+
+As três variáveis são obrigatórias no `.env` da **raiz**:
+
+```dotenv
+R2_ACCOUNT_ID=ID_DA_CONTA_CLOUDFLARE_32_HEX
+R2_ACCESS_KEY_ID=ACCESS_KEY_ID_DO_TOKEN_S3_R2
+R2_SECRET_ACCESS_KEY=SECRET_ACCESS_KEY_DO_TOKEN_S3_R2
+```
+
+Use credenciais **S3 do R2**, com leitura/escrita de objetos no bucket existente `folyo-assets`; um API token genérico da Cloudflare não substitui esse par de chaves. Em produção configure as mesmas variáveis como secrets do Worker web. Não use `NEXT_PUBLIC_`.
+
+`pnpm dev:auth` e `pnpm dev` carregam o `.env` da raiz por dotenv **somente no boot**. Depois de editar esse arquivo, encerre o processo inteiro com Ctrl+C e reinicie `pnpm dev:auth` (ou `pnpm dev`). Hot reload do Next não recarrega o ambiente injetado por dotenv. Executar apenas `pnpm --filter @folyo/web dev` não carrega esse `.env` da raiz. O probe roda em um novo processo e lê o arquivo atualizado; portanto probe OK com dev falhando pode indicar processo dev antigo ou iniciado pelo comando errado. A limpeza de fixtures de teste não altera `.env` nem revoga credenciais.
+
+Para testar o mesmo cliente **aws4fetch** usado em `/api/upload`, execute na raiz:
+
+```sh
+pnpm storage:probe
+```
+
+Esse comando carrega `.env`, envia um PNG de 1px com UUID exclusivo ao bucket `folyo-assets`, lê e compara os bytes e remove apenas esse objeto. Não cria registros no banco. Sucesso termina com código 0:
+
+```text
+[r2-probe] PUT OK {"bucket":"folyo-assets","key":"assets/<uuid>/<uuid>.png"}
+[r2-probe] GET OK
+[r2-probe] DELETE OK (temporary object removed)
+```
+
+Falha termina com código 1 e `[r2-probe] failure`: `fields` identifica configuração ausente/inválida, `upstreamStatus` e `responseBody` mostram a resposta sanitizada do R2, ou `causeCode` identifica rede/DNS sem resposta HTTP. Se DELETE falhar, há também `[r2-probe] cleanup failure` com a key que precisa ser removida. O probe nunca lista valores de credenciais nem headers assinados.
+
+No terminal do dev, um upload completamente salvo gera:
+
+```text
+[upload] success {"status":201,"key":"assets/<userId>/<uuid>.webp","assetId":"<uuid>","mime":"image/webp","size":12345}
+POST /api/upload 201 ...
+```
+
+Credencial incorreta/permissão insuficiente pode gerar um HTTP 403 do R2 (o código XML exato depende da falha):
+
+```text
+[upload] failure {"stage":"storage-put","key":"assets/<userId>/<uuid>.webp","status":503,"cause":"Object storage unavailable","method":"PUT","upstreamStatus":403,"responseBody":"<Error><Code>SignatureDoesNotMatch</Code>...</Error>","causeCode":null}
+POST /api/upload 503 ...
+```
+
+O PUT envia `Content-Length` explicitamente com `body.byteLength`: R2 exige esse header, e os adapters fetch do Next/Workers podem não inferi-lo. Uma resposta 411 `MissingContentLength` indica ausência desse header, não rejeição de credenciais.
+
+O body real permanece no log com campos sensíveis removidos e limite de 4096 caracteres. `SignatureDoesNotMatch`, `InvalidAccessKeyId`, `AccessDenied` e `NoSuchBucket` distinguem assinatura, chave, permissão e bucket, respectivamente. Sem resposta HTTP, `upstreamStatus`/`responseBody` são null; examine `causeCode` e `causeMessage`.
+
+Configuração ausente/inválida aparece como `[upload] failure` com `stage: "storage-config"`, `cause: "R2 configuration missing or invalid"` e `fields: [{name: "R2_SECRET_ACCESS_KEY", reason: "missing"}]`, sem valores. Retorna 503 `{error:"storageConfig"}`; indisponibilidade/rejeição do storage retorna 503 `{error:"storageUnavailable"}`. **No upload, 503 fica reservado a storage/configuração R2**. Falha de persistência no banco retorna 500 `{error:"uploadPersistenceFailed"}` com `stage: "asset-insert"`; falhas inesperadas de outras etapas retornam 500 `{error:"uploadFailed"}`. Validação/auth preservam 400/401/403/413/415 e também são logadas. Falha de compensação gera um log independente `storage-cleanup`, preservando a resposta da falha original. A UI continua exibindo mensagem genérica; detalhes de infraestrutura ficam apenas no servidor.
+
+### Storage e imagens
+
+Configure `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` e `R2_SECRET_ACCESS_KEY` no `.env` local e como secrets no Worker web. O bucket remoto existente é **folyo-assets**. O cliente `@folyo/db/storage` usa [aws4fetch](https://github.com/mhart/aws4fetch), assinatura SigV4 (`service: s3`, `region: auto`) e o endpoint `https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com/folyo-assets`. Usamos a [API S3 do R2](https://developers.cloudflare.com/r2/api/s3/api/) em Node e Workers para executar o mesmo código contra o mesmo bucket em dev e produção. Upload/leitura/limpeza de assets não dependem de binding R2 nem do emulador local. O binding de sites da F2 continua atendendo a limpeza do prefixo de publicações; publicação permanece fora desta frente.
+
+`POST /api/upload` recebe multipart `file`, `width`, `height`, `alt`. Exige sessão e usuário existente, Origin da mesma origem, MIME JPEG/PNG/WebP, arquivo não vazio com até 5 MiB e metadata validada pelos schemas core. O objeto recebe a key `assets/{userId}/{uuid}.{ext}`, e a tabela `assets` registra MIME, bytes, dimensões finais informadas pelo client e alt inicial. Retorna `{url, assetId}`, com URL relativa `/api/assets/assets/{userId}/{uuid}.{ext}`. Falha de storage não insere metadata; falha do insert tenta remover o objeto como compensação. Não há transação distribuída entre R2 e Neon.
+
+`GET /api/assets/[...key]` aceita somente keys de imagem desse namespace, transmite o body do R2, mantém o MIME e retorna `Cache-Control: public, max-age=31536000, immutable` e `X-Content-Type-Options: nosniff`. É público por design, sem sessão/ownership, para uso futuro em sites publicados. Objeto ausente retorna 404. URLs relativas são aceitas apenas nos campos de imagem/galeria; links de botão e avatar mantêm os contratos anteriores. Novos uploads usam UUIDs e nunca sobrescrevem uma imagem existente, compatível com cache immutable.
+
+O `ImageUploader` é reutilizado no bloco image e em cada item gallery. Canvas limita o maior lado a 1600px, mantém proporção e usa WebP a quality 0.85. PNG pequeno (até 1 MiB, sem resize) mantém o original; PNG com transparência mantém PNG após resize. Por isso PNGs transparentes podem ficar maiores que JPEGs equivalentes; o limite final continua sendo 5 MiB. O nome do arquivo fornece alt inicial editável. Compressão acontece **antes** do limite do upload, permitindo selecionar JPEGs maiores que 5 MiB. O componente informa compressão/envio/nome/tamanho, permite retry manual reutilizando o arquivo comprimido e preserva o input de URL externa. Navegação entre páginas fica desabilitada durante compressão/envio.
+
+A exclusão de conta limpa o prefixo remoto `assets/{userId}/` pela mesma API S3, com paginação, antes do cascade no banco. Isso substitui a limpeza do antigo bucket local de assets da F2. Uploads simultâneos com exclusão de conta ainda exigiriam coordenação distribuída futura; o MVP não fornece merge entre abas/dispositivos.
+
+### Páginas e autosave
+
+Não há migration: as tabelas `pages`, `blocks` e `assets` da F1 já suportam os campos usados. `MAX_PAGES = 5` e os payloads Zod ficam em `packages/core`.
+
+| Endpoint                     | Contrato                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| `POST /api/pages`            | `{title}`; 201 com página e zero blocos; 400 na sexta página              |
+| `PATCH /api/pages/[pageId]`  | `{title}`; renomeia somente título                                        |
+| `DELETE /api/pages/[pageId]` | exclui com cascade dos blocos; 400 para a única página                    |
+| `PUT /api/pages/reorder`     | `{pageIds}`; exige permutação exata sem duplicatas                        |
+| `GET /api/editor`            | `{site, pages, blocks}`; páginas ordenadas e todos os blocos com `pageId` |
+
+Todas as mutações exigem sessão, termos, site/ownership e Origin. IDs de páginas externas retornam 404 antes da validação do conteúdo. Títulos têm 1–120 caracteres após trim. Slugs são gerados por slugify (acentos removidos, lowercase, hífens, fallback `page`) com sufixos `-2`, `-3` etc. **Slug é imutável após criação**: renomear o título não pode quebrar links publicados. O primeiro slug de bootstrap continua localizado (`inicio`/`home`).
+
+Criação, rename, delete, reorder, bootstrap e save compartilham `pg_advisory_xact_lock` de `editor:{siteId}` dentro de `db.batch`. O limite de cinco, a busca de slug livre, a proteção da única página e a validação da permutação são executados no banco depois de adquirir o lock. Reorder atualiza todas as posições em um único UPDATE transacional; listas incompletas não alteram nada.
+
+A sidebar destaca a página ativa, oferece criação/rename e confirmação modal de exclusão definitiva (sem undo), e reordena com setas. O botão de criação fica desabilitado no limite com tooltip. Cada página mantém seus blocos no estado client. Antes de trocar/criar/excluir, o editor aguarda `AutosaveQueue.flush()` da página ativa; falha ou conteúdo inválido bloqueia a navegação e mostra erro. O canvas fica desabilitado durante a operação para impedir edições enquanto a página é trocada. O PUT continua enviando apenas blocos da página ativa, sem `pageId` no body. Uma página criada vazia usa o empty state já existente. Entre abas, continua valendo a última transação concluída.
+
+### Validação F3c
+
+Nesta entrega passaram `pnpm lint`, `pnpm typecheck`, os **268 testes em 24 arquivos** (incluindo os 222 anteriores) e `pnpm build` (OpenNext web e dry-run do Worker edge).
+
+Vitest cobre upload com storage/DB mockados, auth, MIME/tamanho/metadata, compensação, leitura pública/cache, regras de páginas, planos SQL transacionais, schemas e assinatura real do cliente S3 com fetch mockado. RTL monta o editor com duas páginas e uma resposta PUT atrasada: verifica exatamente uma requisição antes da troca, ausência de troca antecipada, retorno ao conteúdo editado, bloqueio em erro/validação e limite da sidebar. A validação com Neon/R2 reais usou uma conta temporária e confirmou upload/leitura, registro em assets, headers da rota pública, persistência da URL ao recarregar, criação concorrente, slugs únicos, limite de cinco, rename, reorder e cascade; a conta e o objeto foram removidos ao final. Testes do uploader verificam metadata pós-compressão e retry; testes de canvas verificam escala/quality/preservação PNG (a codificação é mockada, não um benchmark de compressão real).
+
+Checklist de navegador:
+
+- [ ] Enviar JPEG de 8 MB; conferir dimensões finais ≤1600px, tamanho reduzido, preview, alt editável e persistência após reload.
+- [ ] Enviar PNG transparente e imagens para múltiplos itens gallery; misturar upload e URL externa.
+- [ ] Conferir objeto no bucket folyo-assets e linha em assets; abrir URL sem sessão e conferir cache immutable.
+- [ ] Criar até cinco páginas, testar tooltip, rename mantendo slug, setas e delete confirmado; a única página não pode ser excluída.
+- [ ] Editar e trocar antes do debounce; conferir PUT antes da troca e texto ao voltar. Simular erro de rede: manter página/conteúdo e informar bloqueio.

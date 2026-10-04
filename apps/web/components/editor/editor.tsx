@@ -1,5 +1,5 @@
 'use client';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,17 +11,41 @@ import {
   type EditorBlock,
   type BlockType,
   type EditorDocument,
+  editorPageSchema,
+  type EditorPage,
 } from '@folyo/core';
 import { AutosaveQueue, SaveFailure } from '../../lib/autosave';
 import type { Dictionary } from '../../lib/i18n';
 import { BlockFields } from './block-fields';
+import { PageSidebar } from './page-sidebar';
 import { AddBlock } from './block-menu';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@folyo/core';
 
-function SortableBlock({ block, index, children, d, onMove, onDelete, total }: {
+function SortableBlock({
+  block,
+  index,
+  children,
+  d,
+  onMove,
+  onDelete,
+  total,
+}: {
   block: EditorBlock;
   index: number;
   children: React.ReactNode;
@@ -109,7 +133,158 @@ export function Editor({
   d: Dictionary;
   locale: string;
 }) {
-  const [blocks, setBlocks] = useState(document.blocks);
+  const [pages, setPages] = useState(document.pages);
+  const [activeId, setActiveId] = useState(pageId);
+  const [busy, setBusy] = useState(false);
+  const locked = useRef(false);
+  const [uploads, setUploads] = useState(0);
+  const onUploadBusyChange = useCallback((active: boolean) => {
+    setUploads((count) => count + (active ? 1 : -1));
+  }, []);
+  const [error, setError] = useState('');
+  const flushRef = useRef<(() => Promise<boolean>) | null>(null);
+  const pageBlocks = useRef<Record<string, EditorBlock[]>>({});
+  const [initial] = useState(() => {
+    for (const page of document.pages) pageBlocks.current[page.id] = [];
+    for (const { pageId: ownerId, ...block } of document.blocks) {
+      pageBlocks.current[ownerId]?.push(block);
+    }
+    return pageBlocks.current[pageId] ?? [];
+  });
+  const [activeBlocks, setActiveBlocks] = useState(initial);
+  function activate(id: string) {
+    setActiveBlocks(pageBlocks.current[id] ?? []);
+    setActiveId(id);
+  }
+  async function operation(
+    work: () => Promise<void>,
+    flush = false,
+  ): Promise<boolean> {
+    if (locked.current || uploads > 0) return false;
+    locked.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      if (flush && !(await flushRef.current?.())) {
+        setError(d.editor.pages.switchError);
+        return false;
+      }
+      await work();
+      return true;
+    } catch {
+      setError(d.editor.pages.error);
+      return false;
+    } finally {
+      locked.current = false;
+      setBusy(false);
+    }
+  }
+  async function mutate(url: string, method: string, input?: unknown) {
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      ...(input === undefined ? {} : { body: JSON.stringify(input) }),
+    });
+    if (!response.ok) throw new Error('Page operation failed');
+    return response.json() as Promise<unknown>;
+  }
+  return (
+    <div className="editor-layout">
+      <PageSidebar
+        pages={pages}
+        activeId={activeId}
+        busy={busy || uploads > 0}
+        d={d.editor}
+        onSwitch={(id) => {
+          if (id !== activeId) void operation(async () => activate(id), true);
+        }}
+        onCreate={(title) =>
+          operation(async () => {
+            const page = editorPageSchema.parse(
+              await mutate('/api/pages', 'POST', { title }),
+            );
+            setPages((current) => [...current, page]);
+            pageBlocks.current[page.id] = [];
+            activate(page.id);
+          }, true)
+        }
+        onRename={(id, title) =>
+          operation(async () => {
+            const page = editorPageSchema.parse(
+              await mutate(`/api/pages/${id}`, 'PATCH', { title }),
+            );
+            setPages((current) =>
+              current.map((item) => (item.id === id ? page : item)),
+            );
+          })
+        }
+        onDelete={(id) =>
+          operation(async () => {
+            await mutate(`/api/pages/${id}`, 'DELETE');
+            const next = pages.filter((page) => page.id !== id);
+            setPages(next);
+            delete pageBlocks.current[id];
+            if (id === activeId && next[0]) activate(next[0].id);
+          }, true)
+        }
+        onReorder={(ids) => {
+          void operation(async () => {
+            await mutate('/api/pages/reorder', 'PUT', { pageIds: ids });
+            const next: EditorPage[] = [];
+            for (const [position, id] of ids.entries()) {
+              const page = pages.find((item) => item.id === id);
+              if (page) next.push({ ...page, position });
+            }
+            setPages(next);
+          });
+        }}
+      />
+      <div className="editor-workspace">
+        {error && (
+          <div className="editor-page-error" role="alert">
+            {error}
+          </div>
+        )}
+        <PageCanvas
+          key={activeId}
+          document={document}
+          pageId={activeId}
+          d={d}
+          locale={locale}
+          onUploadBusyChange={onUploadBusyChange}
+          initialBlocks={activeBlocks}
+          disabled={busy}
+          flushRef={flushRef}
+          onBlocksChange={(blocks) => {
+            pageBlocks.current[activeId] = blocks;
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+function PageCanvas({
+  document,
+  pageId,
+  d,
+  locale,
+  initialBlocks,
+  onBlocksChange,
+  disabled,
+  flushRef,
+  onUploadBusyChange,
+}: {
+  onUploadBusyChange: (busy: boolean) => void;
+  initialBlocks: EditorBlock[];
+  onBlocksChange: (blocks: EditorBlock[]) => void;
+  disabled: boolean;
+  flushRef: React.RefObject<(() => Promise<boolean>) | null>;
+  document: EditorDocument;
+  pageId: string;
+  d: Dictionary;
+  locale: string;
+}) {
+  const [blocks, setBlocks] = useState(initialBlocks);
   const blocksRef = useRef(blocks);
   const router = useRouter();
   const [queue] = useState(
@@ -151,6 +326,7 @@ export function Editor({
   );
 
   useEffect(() => {
+    flushRef.current = () => queue.flush();
     const unsubscribe = queue.subscribe(setSaveState);
     const beforeUnload = (event: BeforeUnloadEvent) => {
       if (queue.snapshot().status !== 'saved') {
@@ -160,17 +336,19 @@ export function Editor({
     };
     window.addEventListener('beforeunload', beforeUnload);
     return () => {
+      flushRef.current = null;
       unsubscribe();
       queue.dispose();
       window.removeEventListener('beforeunload', beforeUnload);
       if (undoTimer.current !== null) clearTimeout(undoTimer.current);
     };
-  }, [queue]);
+  }, [queue, flushRef]);
 
   function commit(next: EditorBlock[]) {
     const ordered = next.map((block, position) => ({ ...block, position }));
     blocksRef.current = ordered;
     setBlocks(ordered);
+    onBlocksChange(ordered);
     queue.update(ordered);
   }
 
@@ -303,7 +481,7 @@ export function Editor({
           </Link>
         </div>
       </header>
-      <div className="editor-canvas">
+      <fieldset className="editor-canvas" disabled={disabled}>
         {blocks.length === 0 && (
           <div className="editor-empty">
             <h2>{e.empty}</h2>
@@ -315,8 +493,15 @@ export function Editor({
             </button>
           </div>
         )}
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={blocks.map((b) => b.id)}
+            strategy={verticalListSortingStrategy}
+          >
             {blocks.map((block, index) => (
               <Fragment key={block.id}>
                 <AddBlock
@@ -338,6 +523,7 @@ export function Editor({
                       block={block}
                       d={e}
                       locale={locale}
+                      onUploadBusyChange={onUploadBusyChange}
                       onChange={(updated) =>
                         commit(
                           blocksRef.current.map((current) =>
@@ -365,7 +551,7 @@ export function Editor({
         {blocks.length >= maxBlocks && (
           <p>{e.limit.replace('{count}', String(maxBlocks))}</p>
         )}
-      </div>
+      </fieldset>
       {removed && (
         <div className="editor-toast" role="status">
           <span>{e.deleted}</span>

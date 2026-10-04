@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { ImageUploader } from './image-uploader';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   editorBlockSchema,
   buttonContentSchema,
-  externalUrlSchema,
+  imageUrlSchema,
   headingContentSchema,
   spacerContentSchema,
   socialPlatformSchema,
@@ -106,7 +107,7 @@ function ImagePreview({
   useEffect(() => {
     setFailed(false);
   }, [url]);
-  if (!externalUrlSchema.safeParse(url).success) return null;
+  if (!imageUrlSchema.safeParse(url).success) return null;
   return failed ? (
     <p className="preview-error">{d.previewError}</p>
   ) : (
@@ -217,6 +218,7 @@ export function BlockFields(props: {
   onChange: (block: EditorBlock) => void;
   d: EditorDictionary;
   locale: string;
+  onUploadBusyChange?: ((busy: boolean) => void) | undefined;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const focusAfterConversion = useRef(false);
@@ -247,12 +249,22 @@ function Fields({
   onChange,
   d,
   locale,
+  onUploadBusyChange,
 }: {
   block: EditorBlock;
   onChange: (block: EditorBlock) => void;
   d: EditorDictionary;
   locale: string;
+  onUploadBusyChange?: ((busy: boolean) => void) | undefined;
 }) {
+  const [activeUploads, setActiveUploads] = useState(0);
+  const handleUploadBusyChange = useCallback(
+    (busy: boolean) => {
+      setActiveUploads((count) => count + (busy ? 1 : -1));
+      onUploadBusyChange?.(busy);
+    },
+    [onUploadBusyChange],
+  );
   switch (block.type) {
     case 'hero': {
       const content = block.content;
@@ -337,6 +349,13 @@ function Fields({
     case 'image':
       return (
         <>
+          <ImageUploader
+            d={d}
+            onBusyChange={handleUploadBusyChange}
+            onUpload={(url, alt) =>
+              onChange({ ...block, content: { ...block.content, url, alt } })
+            }
+          />
           <Field
             label={d.fields.url}
             value={block.content.url}
@@ -376,6 +395,11 @@ function Fields({
               });
             return (
               <div className="block-list-item" key={index}>
+                <ImageUploader
+                  d={d}
+                  onBusyChange={handleUploadBusyChange}
+                  onUpload={(url, alt) => update({ url, alt })}
+                />
                 <Field
                   label={d.fields.url}
                   value={item.url}
@@ -395,6 +419,7 @@ function Fields({
                 <button
                   type="button"
                   className="editor-secondary"
+                  disabled={activeUploads > 0}
                   onClick={() =>
                     onChange({
                       ...block,

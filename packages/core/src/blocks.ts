@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assetUrlSchema, MAX_PAGES } from './editor-management';
 import { getBlockPlaceholders } from './block-placeholders';
 export const MAX_BLOCKS = 100;
 export const MAX_GALLERY_ITEMS = 12;
@@ -38,16 +39,17 @@ export const headingContentSchema = z
 export const textContentSchema = z
   .object({ text: z.string().max(5000) })
   .strict();
+export const imageUrlSchema = z.union([externalUrlSchema, assetUrlSchema]);
 export const imageContentSchema = z
   .object({
-    url: externalUrlSchema,
+    url: imageUrlSchema,
     alt: z.string().min(1).max(200),
     caption: z.string().max(200).optional(),
   })
   .strict();
 export const galleryItemSchema = z
   .object({
-    url: externalUrlSchema,
+    url: imageUrlSchema,
     alt: z.string().min(1).max(200),
     caption: z.string().optional(),
   })
@@ -197,6 +199,17 @@ export const editorPageSchema = z.object({
   slug: z.string(),
   position: z.number().int(),
 });
+export const documentBlockSchema = z.discriminatedUnion('type', [
+  variants[0].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[1].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[2].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[3].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[4].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[5].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[6].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[7].extend({ ...identity, pageId: z.string().uuid() }),
+  variants[8].extend({ ...identity, pageId: z.string().uuid() }),
+]);
 export const editorDocumentSchema = z.object({
   site: z.object({
     id: z.string().uuid(),
@@ -204,8 +217,8 @@ export const editorDocumentSchema = z.object({
     title: z.string().nullable(),
     status: z.enum(['draft', 'published']),
   }),
-  pages: z.array(editorPageSchema).min(1),
-  blocks: z.array(editorBlockSchema).max(MAX_BLOCKS),
+  pages: z.array(editorPageSchema).min(1).max(MAX_PAGES),
+  blocks: z.array(documentBlockSchema).max(MAX_BLOCKS * MAX_PAGES),
 });
 export type EditorPage = z.infer<typeof editorPageSchema>;
 export type EditorDocument = z.infer<typeof editorDocumentSchema>;

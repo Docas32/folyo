@@ -27,7 +27,10 @@ function mockEditorRepo() {
   return {
     bootstrapAndRead: vi
       .fn<EditorRepository['bootstrapAndRead']>()
-      .mockResolvedValue({ pages: [page], blocks: [block] }),
+      .mockResolvedValue({
+        pages: [page],
+        blocks: [{ ...block, pageId: page.id }],
+      }),
     findPage: vi.fn<EditorRepository['findPage']>().mockResolvedValue(page),
     replaceBlocks: vi
       .fn<EditorRepository['replaceBlocks']>()
@@ -67,7 +70,7 @@ describe('editor API authorization and validation', () => {
         status: site.status,
       },
       pages: [page],
-      blocks: [block],
+      blocks: [{ ...block, pageId: page.id }],
     });
     expect(repo.bootstrapAndRead).toHaveBeenCalledWith(site.id, 'pt-BR');
     expect(response.headers.get('cache-control')).toBe('no-store');
@@ -188,7 +191,7 @@ describe('editor API authorization and validation', () => {
   });
   it('uses the same bootstrap entrypoint for SSR and the API', async () => {
     expect((await loadEditor(repo, user.id, site, 'pt-BR')).blocks).toEqual([
-      block,
+      { ...block, pageId: page.id },
     ]);
     await GET(new Request('http://localhost:3000/api/editor'));
     expect(repo.bootstrapAndRead).toHaveBeenCalledTimes(2);

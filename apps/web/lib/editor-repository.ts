@@ -35,16 +35,14 @@ export function editorRepositoryFromDb(db: Database): EditorRepository {
         db
           .select({
             id: blocks.id,
+            pageId: blocks.pageId,
             type: blocks.type,
             content: blocks.content,
             position: blocks.position,
           })
           .from(blocks)
           .where(
-            eq(
-              blocks.pageId,
-              sql`(select id from pages where site_id = ${siteId}::uuid order by position, id limit 1)`,
-            ),
+            sql`${blocks.pageId} in (select id from pages where site_id = ${siteId}::uuid)`,
           )
           .orderBy(asc(blocks.position), asc(blocks.id)),
       ]);

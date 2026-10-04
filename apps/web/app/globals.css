@@ -334,3 +334,58 @@ dialog::backdrop {
 .text-composer {
   position: relative;
 }
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.page-sidebar {
+  padding: 1rem;
+  background: white;
+  border-right: 1px solid #dce0e7;
+}
+.page-sidebar ol {
+  list-style: none;
+  padding: 0;
+}
+.page-sidebar li {
+  margin-bottom: 1rem;
+}
+.page-sidebar button[aria-current='page'] {
+  background: #e9eefb;
+  font-weight: bold;
+}
+.page-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+.page-controls button {
+  font-size: 0.8rem;
+}
+.editor-workspace {
+  min-width: 0;
+}
+fieldset.editor-canvas {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.editor-page-error {
+  padding: 1rem;
+  color: #a32424;
+}
+.image-uploader {
+  margin-bottom: 1rem;
+}
+@media (max-width: 760px) {
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+  .page-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #dce0e7;
+  }
+}

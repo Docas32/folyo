@@ -61,6 +61,39 @@ const ptBR: Dictionary = {
   busy: 'Aguarde…',
   home: 'Início',
   editor: {
+    upload: {
+      select: 'Escolher imagem',
+      selecting: 'Selecione uma imagem JPEG, PNG ou WebP.',
+      compressing: 'Comprimindo…',
+      uploading: 'Enviando…',
+      ok: 'Imagem enviada.',
+      error: 'Não foi possível enviar a imagem. Tente novamente.',
+      retry: 'Tentar envio novamente',
+      mimeError: 'Use uma imagem JPEG, PNG ou WebP.',
+      sizeError: 'A imagem comprimida deve ter no máximo 5 MB.',
+      defaultAlt: 'Imagem',
+    },
+    pages: {
+      label: 'Páginas',
+      newPage: '+ Nova página',
+      title: 'Título da página',
+      create: 'Criar página',
+      rename: 'Renomear página',
+      delete: 'Excluir página',
+      confirmDelete:
+        'Excluir “{title}” e todos os seus blocos? Esta ação não pode ser desfeita.',
+      confirm: 'Excluir permanentemente',
+      cancel: 'Cancelar',
+      save: 'Salvar título',
+      limit: 'Limite de cinco páginas atingido.',
+      onlyPage: 'Mantenha pelo menos uma página.',
+      moveUp: 'Mover página para cima',
+      moveDown: 'Mover página para baixo',
+      error: 'Não foi possível atualizar as páginas. Tente novamente.',
+      switchError:
+        'Não foi possível salvar suas alterações. A troca foi bloqueada; corrija o conteúdo ou tente salvar novamente.',
+    },
+
     heading: 'Editor do portfólio',
     addBlock: 'Adicionar bloco',
     menuLabel: 'Escolha um tipo de bloco',
@@ -93,7 +126,7 @@ const ptBR: Dictionary = {
     noResults: 'Nenhum resultado',
     selectBlock: 'Selecionar bloco',
     closeMenu: 'Fechar menu de blocos',
-        fields: {
+    fields: {
       name: 'Nome',
       title: 'Título profissional',
       subtitle: 'Subtítulo',
@@ -148,7 +181,7 @@ const ptBR: Dictionary = {
       },
       image: {
         name: 'Imagem',
-        description: 'Mostre uma imagem de uma URL externa.',
+        description: 'Envie uma imagem ou use uma URL externa.',
       },
       gallery: {
         name: 'Galeria',
@@ -174,6 +207,12 @@ const ptBR: Dictionary = {
     placeholders: getBlockPlaceholders('pt-BR'),
   },
   errors: {
+    storageConfig: 'Não foi possível enviar a imagem. Tente novamente.',
+    storageUnavailable: 'Não foi possível enviar a imagem. Tente novamente.',
+    uploadPersistenceFailed:
+      'Não foi possível enviar a imagem. Tente novamente.',
+    uploadFailed: 'Não foi possível enviar a imagem. Tente novamente.',
+
     notFound: 'Página não encontrada.',
     unauthorized: 'Entre novamente para continuar.',
     termsRequired: 'Aceite os termos antes de continuar.',

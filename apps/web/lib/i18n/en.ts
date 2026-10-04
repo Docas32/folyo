@@ -60,6 +60,39 @@ const en = {
   busy: 'Please wait…',
   home: 'Home',
   editor: {
+    upload: {
+      select: 'Choose image',
+      selecting: 'Select a JPEG, PNG or WebP image.',
+      compressing: 'Compressing…',
+      uploading: 'Uploading…',
+      ok: 'Image uploaded.',
+      error: 'Could not upload the image. Please try again.',
+      retry: 'Retry upload',
+      mimeError: 'Use a JPEG, PNG or WebP image.',
+      sizeError: 'The compressed image must be at most 5 MB.',
+      defaultAlt: 'Image',
+    },
+    pages: {
+      label: 'Pages',
+      newPage: '+ New page',
+      title: 'Page title',
+      create: 'Create page',
+      rename: 'Rename page',
+      delete: 'Delete page',
+      confirmDelete:
+        'Delete “{title}” and all its blocks? This cannot be undone.',
+      confirm: 'Delete permanently',
+      cancel: 'Cancel',
+      save: 'Save title',
+      limit: 'Maximum of five pages reached.',
+      onlyPage: 'Keep at least one page.',
+      moveUp: 'Move page up',
+      moveDown: 'Move page down',
+      error: 'Could not update the pages. Please try again.',
+      switchError:
+        'Could not save your changes. Page switch blocked; correct the content or retry saving.',
+    },
+
     heading: 'Portfolio editor',
     addBlock: 'Add block',
     menuLabel: 'Choose a block type',
@@ -92,7 +125,7 @@ const en = {
     noResults: 'No results',
     selectBlock: 'Select block',
     closeMenu: 'Close block menu',
-        fields: {
+    fields: {
       name: 'Name',
       title: 'Professional title',
       subtitle: 'Subtitle',
@@ -147,7 +180,7 @@ const en = {
       },
       image: {
         name: 'Image',
-        description: 'Show an image from an external URL.',
+        description: 'Upload an image or use an external URL.',
       },
       gallery: {
         name: 'Gallery',
@@ -173,6 +206,11 @@ const en = {
     placeholders: getBlockPlaceholders('en'),
   },
   errors: {
+    storageConfig: 'Could not upload the image. Please try again.',
+    storageUnavailable: 'Could not upload the image. Please try again.',
+    uploadPersistenceFailed: 'Could not upload the image. Please try again.',
+    uploadFailed: 'Could not upload the image. Please try again.',
+
     notFound: 'Page not found.',
     unauthorized: 'Please sign in again.',
     termsRequired: 'Accept the terms before continuing.',

@@ -46,7 +46,8 @@ describe('editor transaction plans', () => {
       JSON.stringify(createDefaultBlock('hero', 'pt-BR')),
     );
     expect(queries[2]?.params).toContain(site.id);
-    expect(queries[3]?.sql).toContain('order by position, id limit 1');
+    expect(queries[3]?.sql).toContain('in (select id from pages where site_id');
+    expect(queries[3]?.sql).not.toContain('limit 1');
   });
   it('serializes concurrent bootstrap calls in a mocked transaction and preserves intentionally empty pages', async () => {
     const { repo, batch } = dbWithMockBatch();

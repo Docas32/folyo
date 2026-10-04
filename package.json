@@ -15,7 +15,8 @@
     "db:generate": "pnpm --filter @folyo/db generate",
     "db:migrate": "pnpm --filter @folyo/db migrate",
     "db:seed": "pnpm --filter @folyo/db seed",
-    "dev:auth": "dotenv -e .env -- pnpm --filter @folyo/web dev"
+    "dev:auth": "dotenv -e .env -- pnpm --filter @folyo/web dev",
+    "storage:probe": "dotenv -e .env -- pnpm --filter @folyo/db storage:probe"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

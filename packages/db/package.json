@@ -7,20 +7,23 @@
     "typecheck": "tsc --noEmit",
     "generate": "drizzle-kit generate",
     "migrate": "node --import tsx src/migrate.ts",
-    "seed": "node --import tsx src/seed.ts"
+    "seed": "node --import tsx src/seed.ts",
+    "storage:probe": "node --import tsx src/probe-storage.ts"
   },
   "dependencies": {
     "@folyo/core": "workspace:*",
     "@neondatabase/serverless": "^1.0.2",
+    "aws4fetch": "^1.0.20",
     "drizzle-orm": "^0.45.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.8",
-    "tsx": "^4.21.0",
-    "dotenv": "^17.2.3"
+    "tsx": "^4.21.0"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./storage": "./src/storage.ts"
   }
 }
