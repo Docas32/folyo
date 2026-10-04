@@ -51,7 +51,8 @@ describe('editor hydration gate', () => {
       expect(
         container.querySelector('[aria-describedby^="DndDescribedBy-"]'),
       ).not.toBeNull();
-      expect(container.querySelector('textarea')).toHaveValue('Draft');
+      expect(container.querySelector('textarea')).toBeNull();
+      expect(container.querySelector('.site-text')).toHaveTextContent('Draft');
     } finally {
       await act(async () => root?.unmount());
       container.remove();

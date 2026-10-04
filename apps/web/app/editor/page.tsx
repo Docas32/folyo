@@ -20,6 +20,7 @@ export default async function EditorPage() {
     <Editor
       key={page.id}
       document={document}
+      theme={site.theme}
       pageId={page.id}
       d={getDictionary(user.locale)}
       locale={supportedLocale(user.locale)}

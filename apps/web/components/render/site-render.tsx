@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { resolveTheme, themeToStyle, type BlockContent } from '@folyo/core';
 import { BlockRender } from './blocks';
 import { SITE_CSS } from './styles';
@@ -15,6 +15,7 @@ export type SiteRenderProps = {
   onPageChange?: (pageId: string) => void;
   relativeNavigation?: boolean;
   embedCss?: boolean;
+  children?: ReactNode;
   chrome: { navigation: string; madeWith: string };
 };
 export function pageHref(basePath: string, slug: string) {
@@ -37,6 +38,7 @@ export function SiteRender({
   basePath,
   appUrl,
   chrome,
+  children,
   onPageChange,
   relativeNavigation = false,
   embedCss = true,
@@ -85,9 +87,10 @@ export function SiteRender({
         </header>
       )}
       <main className="site-main">
-        {blocks.map((block) => (
-          <BlockRender key={block.id} block={block} theme={theme} />
-        ))}
+        {children ??
+          blocks.map((block) => (
+            <BlockRender key={block.id} block={block} theme={theme} />
+          ))}
       </main>
       <footer className="site-footer">
         <a href={appUrl}>{chrome.madeWith}</a>

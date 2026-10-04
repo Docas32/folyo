@@ -6,6 +6,7 @@ import { ImageUploader } from './image-uploader';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   editorBlockSchema,
+  externalUrlSchema,
   buttonContentSchema,
   imageUrlSchema,
   headingContentSchema,
@@ -125,7 +126,7 @@ function ImagePreview({
     />
   );
 }
-function TextComposer({
+export function TextComposer({
   block,
   onChange,
   d,
@@ -139,6 +140,29 @@ function TextComposer({
   const eligible = useRef(block.content.text === '');
   const [filter, setFilter] = useState<string | null>(null);
   const composer = useRef<HTMLDivElement>(null);
+  const [link, setLink] = useState<{
+    start: number;
+    end: number;
+    text: string;
+    url: string;
+  } | null>(null);
+  function openLink() {
+    const textarea = composer.current?.querySelector('textarea');
+    if (!textarea) return;
+    const start = textarea.selectionStart,
+      end = textarea.selectionEnd;
+    setLink({
+      start,
+      end,
+      text: block.content.text.slice(start, end),
+      url: '',
+    });
+  }
+  function closeLink() {
+    setLink(null);
+    composer.current?.querySelector('textarea')?.focus();
+  }
+
   function close() {
     setFilter(null);
     composer.current?.querySelector('textarea')?.focus();
@@ -148,8 +172,15 @@ function TextComposer({
       className="text-composer"
       ref={composer}
       onKeyDown={(event) => {
+        if (link && event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          closeLink();
+          return;
+        }
         if (filter !== null && event.key === 'Escape') {
           event.preventDefault();
+          event.stopPropagation();
           close();
         }
       }}
@@ -188,7 +219,63 @@ function TextComposer({
           onChange({ ...block, content: { text } });
         }}
       />
-      <p className="text-link-hint">{d.textLinkHint}</p>
+      <div className="inline-toolbar">
+        <Button
+          variant="ghost"
+          type="button"
+          title={d.inline.link}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={openLink}
+        >
+          {d.inline.link}
+        </Button>
+        <p className="text-link-hint">{d.textLinkHint}</p>
+      </div>
+      {link && (
+        <div
+          className="inline-link-panel"
+          role="group"
+          aria-label={d.inline.link}
+        >
+          <Field
+            label={d.inline.linkText}
+            value={link.text}
+            onChange={(text) => setLink({ ...link, text })}
+          />
+          <Field
+            label={d.inline.linkUrl}
+            value={link.url}
+            onChange={(url) => setLink({ ...link, url })}
+          />
+          <Button
+            variant="ghost"
+            disabled={
+              !link.text.trim() ||
+              !externalUrlSchema.safeParse(link.url).success
+            }
+            onClick={() => {
+              const markdown = `[${link.text}](${link.url})`;
+              const text =
+                block.content.text.slice(0, link.start) +
+                markdown +
+                block.content.text.slice(link.end);
+              onChange({ ...block, content: { text } });
+              const position = link.start + markdown.length;
+              closeLink();
+              requestAnimationFrame(() =>
+                composer.current
+                  ?.querySelector('textarea')
+                  ?.setSelectionRange(position, position),
+              );
+            }}
+          >
+            {d.inline.insertLink}
+          </Button>
+          <Button variant="ghost" onClick={closeLink}>
+            {d.inline.cancel}
+          </Button>
+        </div>
+      )}
       {filter !== null && (
         <div className="block-menu-popover">
           <BlockTypeMenu
@@ -224,6 +311,9 @@ export function BlockFields(props: {
   d: EditorDictionary;
   locale: string;
   onUploadBusyChange?: ((busy: boolean) => void) | undefined;
+  compact?: boolean | undefined;
+  itemIndex?: number | undefined;
+  onItemIndexChange?: ((index: number) => void) | undefined;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const focusAfterConversion = useRef(false);
@@ -255,12 +345,18 @@ function Fields({
   d,
   locale,
   onUploadBusyChange,
+  compact = false,
+  itemIndex,
+  onItemIndexChange,
 }: {
   block: EditorBlock;
   onChange: (block: EditorBlock) => void;
   d: EditorDictionary;
   locale: string;
   onUploadBusyChange?: ((busy: boolean) => void) | undefined;
+  compact?: boolean | undefined;
+  itemIndex?: number | undefined;
+  onItemIndexChange?: ((index: number) => void) | undefined;
 }) {
   const [activeUploads, setActiveUploads] = useState(0);
   const handleUploadBusyChange = useCallback(
@@ -383,13 +479,20 @@ function Fields({
               onChange({ ...block, content: { ...block.content, caption } })
             }
           />
-          <ImagePreview url={block.content.url} alt={block.content.alt} d={d} />
+          {!compact && (
+            <ImagePreview
+              url={block.content.url}
+              alt={block.content.alt}
+              d={d}
+            />
+          )}
         </>
       );
     case 'gallery':
       return (
         <>
           {block.content.items.map((item, index) => {
+            if (itemIndex !== undefined && index !== itemIndex) return null;
             const update = (patch: Partial<typeof item>) =>
               onChange({
                 ...block,
@@ -421,7 +524,36 @@ function Fields({
                   value={item.caption ?? ''}
                   onChange={(caption) => update({ caption })}
                 />
-                <ImagePreview url={item.url} alt={item.alt} d={d} />
+                {!compact && (
+                  <ImagePreview url={item.url} alt={item.alt} d={d} />
+                )}
+                {compact && (
+                  <div className="inline-toolbar">
+                    {([-1, 1] as const).map((offset) => (
+                      <Button
+                        key={offset}
+                        variant="ghost"
+                        disabled={
+                          activeUploads > 0 ||
+                          index + offset < 0 ||
+                          index + offset >= block.content.items.length
+                        }
+                        aria-label={offset < 0 ? d.moveUp : d.moveDown}
+                        onClick={() => {
+                          const items = [...block.content.items];
+                          const target = items[index + offset];
+                          if (!target) return;
+                          items[index] = target;
+                          items[index + offset] = item;
+                          onChange({ ...block, content: { items } });
+                          onItemIndexChange?.(index + offset);
+                        }}
+                      >
+                        {offset < 0 ? '↑' : '↓'}
+                      </Button>
+                    ))}
+                  </div>
+                )}
                 <Button
                   variant="ghost"
                   type="button"
@@ -443,24 +575,26 @@ function Fields({
               </div>
             );
           })}
-          <Button
-            variant="ghost"
-            type="button"
-            disabled={block.content.items.length >= MAX_GALLERY_ITEMS}
-            onClick={() =>
-              onChange({
-                ...block,
-                content: {
-                  items: [
-                    ...block.content.items,
-                    createDefaultBlock('image', locale),
-                  ],
-                },
-              })
-            }
-          >
-            {d.addImage}
-          </Button>
+          {!compact && (
+            <Button
+              variant="ghost"
+              type="button"
+              disabled={block.content.items.length >= MAX_GALLERY_ITEMS}
+              onClick={() =>
+                onChange({
+                  ...block,
+                  content: {
+                    items: [
+                      ...block.content.items,
+                      createDefaultBlock('image', locale),
+                    ],
+                  },
+                })
+              }
+            >
+              {d.addImage}
+            </Button>
+          )}
         </>
       );
     case 'button':

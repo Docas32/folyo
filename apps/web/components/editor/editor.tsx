@@ -3,6 +3,8 @@ import { Button, ButtonLink, PreviewIcon } from '../ui/button';
 
 import {
   Fragment,
+  memo,
+  useMemo,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -22,10 +24,13 @@ import {
   type EditorDocument,
   editorPageSchema,
   type EditorPage,
+  type Theme,
 } from '@folyo/core';
 import { AutosaveQueue, SaveFailure } from '../../lib/autosave';
 import type { Dictionary } from '../../lib/i18n';
-import { BlockFields } from './block-fields';
+import { InlineBlock } from './inline-block';
+import { SiteRender } from '../render/site-render';
+import { resolveTheme } from '@folyo/core';
 import { PageSidebar } from './page-sidebar';
 import { AddBlock } from './block-menu';
 import {
@@ -54,6 +59,10 @@ function SortableBlock({
   onMove,
   onDelete,
   total,
+  editing,
+  onEdit,
+  onConfirm,
+  onCancel,
 }: {
   block: EditorBlock;
   index: number;
@@ -62,6 +71,10 @@ function SortableBlock({
   onMove: (index: number, offset: number) => void;
   onDelete: (index: number) => void;
   total: number;
+  editing: boolean;
+  onEdit: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
 }) {
   const {
     attributes,
@@ -81,12 +94,28 @@ function SortableBlock({
   return (
     <article
       ref={setNodeRef}
+      data-block-id={block.id}
+      onKeyDown={(event) => {
+        if (!editing || event.defaultPrevented || event.nativeEvent.isComposing)
+          return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          onCancel();
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+          event.preventDefault();
+          onConfirm();
+        }
+      }}
       style={style}
       {...attributes}
-      className="editor-block sortable-block"
+      className={`editor-block sortable-block wysiwyg-card ${editing ? 'is-editing' : ''}`}
       aria-label={`${d.editor.types[block.type].name} ${index + 1}`}
     >
-      <div className="block-heading">
+      <div
+        className="block-heading"
+        onClick={(event) => event.stopPropagation()}
+      >
         <Button
           variant="ghost"
           type="button"
@@ -99,6 +128,13 @@ function SortableBlock({
         </Button>
         <h2>{d.editor.types[block.type].name}</h2>
         <div className="block-controls">
+          <Button
+            variant="ghost"
+            title={d.editor.inline.confirmHint}
+            onClick={onEdit}
+          >
+            {d.editor.inline.edit}
+          </Button>
           <Button
             variant="ghost"
             type="button"
@@ -135,11 +171,101 @@ function SortableBlock({
   );
 }
 
+type CanvasBlockProps = {
+  block: EditorBlock;
+  index: number;
+  total: number;
+  editing: boolean;
+  invalid: boolean;
+  d: Dictionary;
+  locale: string;
+  theme: Theme;
+  onBegin: (id: string) => void;
+  onDraft: (block: EditorBlock) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+  onMove: (index: number, offset: number) => void;
+  onDelete: (index: number) => void;
+  onUploadBusyChange: (active: boolean) => void;
+};
+const CanvasBlock = memo(function CanvasBlock({
+  block,
+  index,
+  total,
+  editing,
+  invalid,
+  d,
+  locale,
+  theme,
+  onBegin,
+  onDraft,
+  onConfirm,
+  onCancel,
+  onMove,
+  onDelete,
+  onUploadBusyChange,
+}: CanvasBlockProps) {
+  const begin = useCallback(() => onBegin(block.id), [onBegin, block.id]);
+  return (
+    <SortableBlock
+      block={block}
+      index={index}
+      total={total}
+      d={d}
+      editing={editing}
+      onEdit={begin}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      onMove={onMove}
+      onDelete={onDelete}
+    >
+      <InlineBlock
+        block={block}
+        theme={theme}
+        editing={editing}
+        d={d.editor}
+        locale={locale}
+        onUploadBusyChange={onUploadBusyChange}
+        onBegin={begin}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+        onChange={onDraft}
+      />
+      {invalid && (
+        <p className="block-error">
+          {d.editor.invalidBlock.replace('{number}', String(index + 1))}
+        </p>
+      )}
+    </SortableBlock>
+  );
+});
+
+const BlockInsertion = memo(function BlockInsertion({
+  index,
+  onAdd,
+  d,
+  disabled,
+  quiet = false,
+}: {
+  index: number;
+  onAdd: (type: BlockType, index: number) => void;
+  d: Dictionary['editor'];
+  disabled: boolean;
+  quiet?: boolean;
+}) {
+  const select = useCallback(
+    (type: BlockType) => onAdd(type, index),
+    [onAdd, index],
+  );
+  return <AddBlock d={d} onSelect={select} disabled={disabled} quiet={quiet} />;
+});
+
 type EditorProps = {
   document: EditorDocument;
   pageId: string;
   d: Dictionary;
   locale: string;
+  theme?: unknown;
 };
 
 // SSR and the first hydration render share only this skeleton. The dnd-kit
@@ -173,7 +299,7 @@ export function Editor(props: EditorProps) {
     );
   return <MountedEditor {...props} />;
 }
-function MountedEditor({ document, pageId, d, locale }: EditorProps) {
+function MountedEditor({ document, pageId, d, locale, theme }: EditorProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarSlot = useRef<HTMLDivElement>(null);
   const sidebarToggle = useRef<HTMLButtonElement>(null);
@@ -213,6 +339,7 @@ function MountedEditor({ document, pageId, d, locale }: EditorProps) {
     window.addEventListener('keydown', shortcut);
     return () => window.removeEventListener('keydown', shortcut);
   }, [toggleSidebar]);
+  const [viewing, setViewing] = useState(false);
   const [pages, setPages] = useState(document.pages);
   const [activeId, setActiveId] = useState(pageId);
   const [busy, setBusy] = useState(false);
@@ -347,6 +474,13 @@ function MountedEditor({ document, pageId, d, locale }: EditorProps) {
           onToggleSidebar={toggleSidebar}
           key={activeId}
           document={document}
+          theme={theme}
+          pages={pages}
+          onPageChange={(id) => {
+            if (id !== activeId) void operation(async () => activate(id), true);
+          }}
+          viewing={viewing}
+          onViewChange={setViewing}
           pageId={activeId}
           d={d}
           locale={locale}
@@ -367,6 +501,11 @@ function PageCanvas({
   sidebarOpen,
   sidebarToggle,
   onToggleSidebar,
+  theme: storedTheme,
+  pages,
+  onPageChange,
+  viewing,
+  onViewChange,
   document,
   pageId,
   d,
@@ -377,6 +516,11 @@ function PageCanvas({
   flushRef,
   onUploadBusyChange,
 }: {
+  theme: unknown;
+  pages: EditorPage[];
+  onPageChange: (id: string) => void;
+  viewing: boolean;
+  onViewChange: (viewing: boolean) => void;
   sidebarOpen: boolean;
   sidebarToggle: React.RefObject<HTMLButtonElement | null>;
   onToggleSidebar: () => void;
@@ -392,6 +536,25 @@ function PageCanvas({
 }) {
   const [blocks, setBlocks] = useState(initialBlocks);
   const blocksRef = useRef(blocks);
+  const theme = useMemo(() => resolveTheme(storedTheme), [storedTheme]);
+  const changeBlocks = useRef(onBlocksChange);
+  changeBlocks.current = onBlocksChange;
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
+  const [editingId, setEditingId] = useState<string | null>(null);
+  // A rollback snapshot is not a second editable model. All inputs/renderers
+  // read blocks; only confirmation schedules that same list for autosave.
+  const editSession = useRef<{ id: string; before: EditorBlock } | null>(null);
+  const uploadCount = useRef(0);
+  const [viewBusy, setViewBusy] = useState(false);
+  const [viewError, setViewError] = useState('');
+  const uploadBusyChange = useCallback(
+    (active: boolean) => {
+      uploadCount.current += active ? 1 : -1;
+      onUploadBusyChange(active);
+    },
+    [onUploadBusyChange],
+  );
   const canvasScrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [queue] = useState(
@@ -425,18 +588,91 @@ function PageCanvas({
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maxBlocks = MAX_BLOCKS;
 
+  const keyboardSensorOptions = useMemo(
+    () => ({ coordinateGetter: sortableKeyboardCoordinates }),
+    [],
+  );
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    useSensor(KeyboardSensor, keyboardSensorOptions),
   );
 
+  const updateState = useCallback((next: EditorBlock[]) => {
+    blocksRef.current = next;
+    setBlocks(next);
+    changeBlocks.current(next);
+  }, []);
+  const updateDraft = useCallback(
+    (updated: EditorBlock) => {
+      updateState(
+        blocksRef.current.map((current) =>
+          current.id === updated.id ? updated : current,
+        ),
+      );
+    },
+    [updateState],
+  );
+  const finishEditing = useCallback(() => {
+    const session = editSession.current;
+    if (!session || uploadCount.current > 0) return;
+    const card = window.document.querySelector<HTMLElement>(
+      `[data-block-id="${session.id}"]`,
+    );
+    if (card?.contains(window.document.activeElement))
+      card.querySelector<HTMLElement>('.drag-handle')?.focus();
+    editSession.current = null;
+    setEditingId(null);
+    const current = blocksRef.current.find((block) => block.id === session.id);
+    if (
+      (current &&
+        JSON.stringify(current.content) !==
+          JSON.stringify(session.before.content)) ||
+      (current && current.type !== session.before.type)
+    )
+      queue.update(blocksRef.current);
+  }, [queue]);
+  const beginEditing = useCallback(
+    (id: string) => {
+      if (
+        editSession.current?.id === id ||
+        disabledRef.current ||
+        uploadCount.current > 0
+      )
+        return;
+      finishEditing();
+      const before = blocksRef.current.find((block) => block.id === id);
+      if (before) {
+        editSession.current = { id, before };
+        setEditingId(id);
+      }
+    },
+    [finishEditing],
+  );
+  const cancelEditing = useCallback(() => {
+    const session = editSession.current;
+    if (!session || uploadCount.current > 0) return;
+    const card = window.document.querySelector<HTMLElement>(
+      `[data-block-id="${session.id}"]`,
+    );
+    card?.querySelector<HTMLElement>('.drag-handle')?.focus();
+    editSession.current = null;
+    setEditingId(null);
+    updateState(
+      blocksRef.current.map((block) =>
+        block.id === session.id
+          ? { ...session.before, position: block.position }
+          : block,
+      ),
+    );
+  }, [updateState]);
   useEffect(() => {
-    flushRef.current = () => queue.flush();
+    flushRef.current = () => {
+      finishEditing();
+      return queue.flush();
+    };
     const unsubscribe = queue.subscribe(setSaveState);
     const beforeUnload = (event: BeforeUnloadEvent) => {
-      if (queue.snapshot().status !== 'saved') {
+      if (editSession.current || queue.snapshot().status !== 'saved') {
         event.preventDefault();
         event.returnValue = '';
       }
@@ -449,39 +685,70 @@ function PageCanvas({
       window.removeEventListener('beforeunload', beforeUnload);
       if (undoTimer.current !== null) clearTimeout(undoTimer.current);
     };
-  }, [queue, flushRef]);
+  }, [queue, flushRef, finishEditing]);
 
-  function commit(next: EditorBlock[]) {
-    const ordered = next.map((block, position) => ({ ...block, position }));
-    blocksRef.current = ordered;
-    setBlocks(ordered);
-    onBlocksChange(ordered);
-    queue.update(ordered);
+  async function toggleView(next: boolean) {
+    if (disabled || viewBusy || uploadCount.current > 0) return;
+    setViewError('');
+    if (!next) {
+      onViewChange(false);
+      return;
+    }
+    finishEditing();
+    setViewBusy(true);
+    try {
+      if (await queue.flush()) onViewChange(true);
+      else setViewError(d.editor.inline.previewError);
+    } finally {
+      setViewBusy(false);
+    }
   }
+  const commit = useCallback(
+    (next: EditorBlock[]) => {
+      editSession.current = null;
+      setEditingId(null);
+      const ordered = next.map((block, position) => ({ ...block, position }));
+      blocksRef.current = ordered;
+      setBlocks(ordered);
+      changeBlocks.current(ordered);
+      queue.update(ordered);
+    },
+    [queue],
+  );
 
-  function add(type: BlockType, index: number) {
-    if (blocksRef.current.length >= maxBlocks) return;
-    const block = editorBlockSchema.parse({
-      id: crypto.randomUUID(),
-      type,
-      content: createDefaultBlock(type, locale),
-      position: index,
-    });
-    const next = [...blocksRef.current];
-    next.splice(index, 0, block);
-    commit(next);
-  }
+  const add = useCallback(
+    (type: BlockType, index: number) => {
+      if (uploadCount.current > 0) return;
+      if (blocksRef.current.length >= maxBlocks) return;
+      const block = editorBlockSchema.parse({
+        id: crypto.randomUUID(),
+        type,
+        content: createDefaultBlock(type, locale),
+        position: index,
+      });
+      const next = [...blocksRef.current];
+      next.splice(index, 0, block);
+      commit(next);
+      beginEditing(block.id);
+    },
+    [maxBlocks, locale, commit, beginEditing],
+  );
 
-  function move(index: number, offset: number) {
-    const next = [...blocksRef.current];
-    const block = next[index];
-    if (!block || index + offset < 0 || index + offset >= next.length) return;
-    next.splice(index, 1);
-    next.splice(index + offset, 0, block);
-    commit(next);
-  }
+  const move = useCallback(
+    (index: number, offset: number) => {
+      if (uploadCount.current > 0) return;
+      const next = [...blocksRef.current];
+      const block = next[index];
+      if (!block || index + offset < 0 || index + offset >= next.length) return;
+      next.splice(index, 1);
+      next.splice(index + offset, 0, block);
+      commit(next);
+    },
+    [commit],
+  );
 
   function handleDragEnd(event: DragEndEvent) {
+    if (uploadCount.current > 0) return;
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const oldIndex = blocksRef.current.findIndex((b) => b.id === active.id);
@@ -493,19 +760,24 @@ function PageCanvas({
     }
   }
 
-  function remove(index: number) {
-    const block = blocksRef.current[index];
-    if (!block) return;
-    commit(blocksRef.current.filter((_, i) => i !== index));
-    setRemoved({ block, index });
-    if (undoTimer.current !== null) clearTimeout(undoTimer.current);
-    undoTimer.current = setTimeout(() => {
-      setRemoved(null);
-      undoTimer.current = null;
-    }, 5000);
-  }
+  const remove = useCallback(
+    (index: number) => {
+      if (uploadCount.current > 0) return;
+      const block = blocksRef.current[index];
+      if (!block) return;
+      commit(blocksRef.current.filter((_, i) => i !== index));
+      setRemoved({ block, index });
+      if (undoTimer.current !== null) clearTimeout(undoTimer.current);
+      undoTimer.current = setTimeout(() => {
+        setRemoved(null);
+        undoTimer.current = null;
+      }, 5000);
+    },
+    [commit],
+  );
 
   function undo() {
+    if (uploadCount.current > 0) return;
     if (!removed || blocksRef.current.length >= maxBlocks) return;
     const next = [...blocksRef.current];
     next.splice(Math.min(removed.index, next.length), 0, removed.block);
@@ -515,6 +787,11 @@ function PageCanvas({
     undoTimer.current = null;
   }
 
+  const idsKey = blocks.map((block) => block.id).join(',');
+  const sortableIds = useMemo(
+    () => (idsKey ? idsKey.split(',') : []),
+    [idsKey],
+  );
   const e = d.editor;
   const invalid = new Set(
     blocks.flatMap((block, index) =>
@@ -523,27 +800,41 @@ function PageCanvas({
   );
   if (saveState.status === 'invalid' && saveState.invalidIndex !== null)
     invalid.add(saveState.invalidIndex);
+  const activeEdit = editSession.current;
+  const editingDirty =
+    activeEdit &&
+    blocks.some(
+      (block) =>
+        block.id === activeEdit.id &&
+        (block.type !== activeEdit.before.type ||
+          JSON.stringify(block.content) !==
+            JSON.stringify(activeEdit.before.content)),
+    );
   const status =
-    saveState.status === 'saving'
-      ? e.saving
-      : saveState.status === 'dirty'
+    invalid.size > 0
+      ? e.invalidBlock.replace('{number}', String(Math.min(...invalid) + 1))
+      : editingDirty
         ? e.pending
-        : saveState.status === 'error'
-          ? e.notSaved
-          : saveState.status === 'invalid'
-            ? e.invalidBlock.replace(
-                '{number}',
-                String((saveState.invalidIndex ?? 0) + 1),
-              )
-            : saveState.savedAt
-              ? e.saved.replace(
-                  '{time}',
-                  new Date(saveState.savedAt).toLocaleTimeString(locale, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  }),
-                )
-              : e.ready;
+        : saveState.status === 'saving'
+          ? e.saving
+          : saveState.status === 'dirty'
+            ? e.pending
+            : saveState.status === 'error'
+              ? e.notSaved
+              : saveState.status === 'invalid'
+                ? e.invalidBlock.replace(
+                    '{number}',
+                    String((saveState.invalidIndex ?? 0) + 1),
+                  )
+                : saveState.savedAt
+                  ? e.saved.replace(
+                      '{time}',
+                      new Date(saveState.savedAt).toLocaleTimeString(locale, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }),
+                    )
+                  : e.ready;
 
   return (
     <>
@@ -582,6 +873,28 @@ function PageCanvas({
             </div>
           </div>
           <div className="editor-save">
+            <div
+              className="editor-mode-toggle"
+              role="group"
+              aria-label={e.inline.mode}
+            >
+              <Button
+                variant="ghost"
+                aria-pressed={!viewing}
+                disabled={viewBusy || disabled || uploadCount.current > 0}
+                onClick={() => void toggleView(false)}
+              >
+                {e.inline.edit}
+              </Button>
+              <Button
+                variant="ghost"
+                aria-pressed={viewing}
+                disabled={viewBusy || disabled || uploadCount.current > 0}
+                onClick={() => void toggleView(true)}
+              >
+                {e.inline.view}
+              </Button>
+            </div>
             <ButtonLink
               variant="ghost"
               size="sm"
@@ -612,8 +925,12 @@ function PageCanvas({
             <Link
               href="/dashboard"
               onClick={(event) => {
-                if (queue.snapshot().status !== 'saved') {
+                if (
+                  editSession.current ||
+                  queue.snapshot().status !== 'saved'
+                ) {
                   event.preventDefault();
+                  finishEditing();
                   void queue.flush().then((saved) => {
                     if (saved) router.push('/dashboard');
                   });
@@ -625,84 +942,110 @@ function PageCanvas({
           </div>
         </div>
       </header>
+      {viewError && (
+        <p className="editor-page-error" role="alert">
+          {viewError}
+        </p>
+      )}
       <div className="editor-canvas-scroll" ref={canvasScrollRef}>
-        <fieldset className="editor-canvas" disabled={disabled}>
-          {blocks.length === 0 && (
-            <div className="editor-empty">
-              <h2>{e.empty}</h2>
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => add('hero', 0)}
-              >
-                {e.addHero}
-              </Button>
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => add('text', 0)}
-              >
-                {e.addText}
-              </Button>
-            </div>
-          )}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={blocks.map((b) => b.id)}
-              strategy={verticalListSortingStrategy}
+        <fieldset
+          className="editor-canvas wysiwyg-canvas"
+          disabled={disabled || viewBusy}
+        >
+          {viewing ? (
+            <SiteRender
+              theme={theme}
+              locale={locale}
+              pages={pages}
+              onPageChange={onPageChange}
+              activePageId={pageId}
+              blocks={blocks}
+              basePath={`/p/${document.site.id}`}
+              appUrl="/"
+              chrome={d.siteChrome}
+            />
+          ) : (
+            <SiteRender
+              theme={theme}
+              locale={locale}
+              pages={pages}
+              onPageChange={onPageChange}
+              activePageId={pageId}
+              blocks={[]}
+              basePath={`/p/${document.site.id}`}
+              appUrl="/"
+              chrome={d.siteChrome}
             >
-              {blocks.map((block, index) => (
-                <Fragment key={block.id}>
-                  <AddBlock
-                    d={e}
-                    onSelect={(type) => add(type, index)}
-                    disabled={blocks.length >= maxBlocks}
-                    quiet
-                  />
-                  <SortableBlock
-                    block={block}
-                    index={index}
-                    d={d}
-                    onMove={move}
-                    onDelete={remove}
-                    total={blocks.length}
+              <div className="wysiwyg-blocks">
+                {blocks.length === 0 && (
+                  <div className="editor-empty">
+                    <h2>{e.empty}</h2>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => add('hero', 0)}
+                    >
+                      {e.addHero}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => add('text', 0)}
+                    >
+                      {e.addText}
+                    </Button>
+                  </div>
+                )}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={sortableIds}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <div className="block-fields">
-                      <BlockFields
-                        block={block}
-                        d={e}
-                        locale={locale}
-                        onUploadBusyChange={onUploadBusyChange}
-                        onChange={(updated) =>
-                          commit(
-                            blocksRef.current.map((current) =>
-                              current.id === updated.id ? updated : current,
-                            ),
-                          )
-                        }
-                      />
-                    </div>
-                    {invalid.has(index) && (
-                      <p className="block-error">
-                        {e.invalidBlock.replace('{number}', String(index + 1))}
-                      </p>
-                    )}
-                  </SortableBlock>
-                </Fragment>
-              ))}
-            </SortableContext>
-          </DndContext>
-          <AddBlock
-            d={e}
-            onSelect={(type) => add(type, blocks.length)}
-            disabled={blocks.length >= maxBlocks}
-          />
-          {blocks.length >= maxBlocks && (
-            <p>{e.limit.replace('{count}', String(maxBlocks))}</p>
+                    {blocks.map((block, index) => (
+                      <Fragment key={block.id}>
+                        <BlockInsertion
+                          d={e}
+                          index={index}
+                          onAdd={add}
+                          disabled={blocks.length >= maxBlocks}
+                          quiet
+                        />
+                        <CanvasBlock
+                          block={block}
+                          index={index}
+                          total={blocks.length}
+                          d={d}
+                          locale={locale}
+                          theme={theme}
+                          editing={editingId === block.id}
+                          invalid={invalid.has(index)}
+                          onBegin={beginEditing}
+                          onDraft={updateDraft}
+                          onConfirm={finishEditing}
+                          onCancel={cancelEditing}
+                          onMove={move}
+                          onDelete={remove}
+                          onUploadBusyChange={uploadBusyChange}
+                        />
+                      </Fragment>
+                    ))}
+                  </SortableContext>
+                </DndContext>
+                <BlockInsertion
+                  d={e}
+                  index={blocks.length}
+                  onAdd={add}
+                  disabled={blocks.length >= maxBlocks}
+                />
+                {blocks.length >= maxBlocks && (
+                  <p>{e.limit.replace('{count}', String(maxBlocks))}</p>
+                )}
+              </div>
+            </SiteRender>
           )}
         </fieldset>
       </div>

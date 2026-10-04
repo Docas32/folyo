@@ -667,3 +667,49 @@ unicidade existente continua sendo a fonte de verdade. **O cooldown de troca de
 handle não se aplica à recriação pós-exclusão**: o novo site começa sem o histórico
 de troca do antigo. O fluxo normal de termos, handle e template é reutilizado, sem
 excluir o usuário nem exigir um novo login.
+
+### Canvas WYSIWYG (F5b)
+
+O editor usa `SiteRender` como moldura e os mesmos nove renders de preview e
+publicação. Slots opcionais de React permitem inserir **inputs/textarea
+controlados** em `HeroRender`, `HeadingRender` e `TextRender`, e ações nas
+miniaturas de `GalleryRender`. Sem slots, o HTML e o comportamento dos renders
+continuam iguais. O tema vem do site na página do editor, sem mudar a API do
+documento ou o PUT de blocos.
+
+- O canvas começa no modo visual: clique no conteúdo ou em **Editar** no chrome
+  do card. Heading usa botões H1/H2/H3; texto mantém markdown, slash menu e os
+  atalhos de conversão de títulos; hero edita nome, título e subtítulo no render.
+- Imagem, galeria, botão, social, divisor e espaçador usam painéis compactos dentro
+  do card. A imagem continua visível. A galeria edita um item por vez, com troca,
+  alt, legenda, reordenação, remoção e tile de adicionar. O hero reutiliza o
+  uploader de imagem para o avatar. Selects e uploads existentes são preservados.
+- Existe uma única lista `blocks` editável: inputs e renders leem essa lista. Uma
+  sessão guarda somente a referência original do bloco para rollback. Alterações
+  do card entram na fila existente ao confirmar com blur/clique fora,
+  **Ctrl+Enter / Cmd+Enter** ou **Concluir**, mantendo o debounce de 1,5 s.
+  **Esc** ou **Cancelar** restaura só o card ativo, sem salvar o texto cancelado ou
+  descartar alterações confirmadas de outros cards. O foco retorna ao handle.
+- Tab segue o fluxo natural. Selects em portal continuam associados ao card via
+  `aria-controls`, de modo que escolher uma opção não confirma prematuramente o
+  card. Uma operação de upload impede desmontar ou cancelar o card até terminar.
+- Zod marca os campos inválidos e mostra **Corrija o bloco X**. A fila bloqueia o
+  autosave e o modo Visualizar até a correção. Os dados nunca passam por
+  `contentEditable` ou inserção de HTML do usuário.
+- O botão **Inserir link** captura a seleção/cursor do textarea, abre campos de
+  texto e URL HTTP(S) e insere `[texto](url)` na posição selecionada. A toolbar
+  de link foi entregue; o restante da formatação continua pela sintaxe markdown.
+- **Editar / Visualizar** confirma o card e flusha a mesma fila usada ao trocar
+  de página. Se o save falhar, o editor permanece acessível com erro. Visualizar
+  usa o `SiteRender` completo, sem wrappers/chrome de edição, com tema, nav e
+  footer idênticos aos do site. A página ativa pode mudar pela sidebar ou nav.
+  Voltar a Editar mantém os blocos atuais.
+
+A medição com React Profiler em JSDOM, em um canvas de 100 blocos alternando
+heading/text, mostrou aproximadamente 140 ms para uma alteração antes da
+memoização e 13 ms no teste isolado depois. Os cards/inserções são memoizados;
+callbacks, IDs ordenados e opções dos sensores dnd mantêm referências estáveis
+entre mudanças de conteúdo. Esses números são uma referência do ambiente de
+testes, não um benchmark de todos os dispositivos. A medição permanece no teste
+`editor-inline.test.tsx`; não há dependências novas, alterações no GC, na API,
+na fila de autosave ou no pipeline de publicação.

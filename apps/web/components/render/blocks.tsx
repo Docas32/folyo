@@ -10,9 +10,20 @@ import type {
   ContentByType,
   Theme,
 } from '@folyo/core';
+// Optional editor slots keep layout and safe rendering shared; defaults stay static.
+export type RenderSlots = {
+  name?: ReactNode;
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  avatar?: ReactNode;
+  text?: ReactNode;
+  galleryItem?: (index: number, image: ReactNode) => ReactNode;
+  galleryEnd?: ReactNode;
+};
 export type RenderProps<T extends BlockType> = {
   content: ContentByType[T];
   theme: Theme;
+  slots?: RenderSlots | undefined;
 };
 
 /** Never turn untrusted URLs into executable links. Social schemas intentionally
@@ -33,25 +44,32 @@ function safeImage(value: string): string | undefined {
     ? value
     : safeLink(value);
 }
-export function HeroRender({ content, theme }: RenderProps<'hero'>) {
+export function HeroAvatarRender({
+  content,
+}: Pick<RenderProps<'hero'>, 'content'>) {
+  return content.avatarUrl && safeImage(content.avatarUrl) ? (
+    <img
+      className="site-avatar"
+      src={safeImage(content.avatarUrl)}
+      alt={content.name}
+    />
+  ) : null;
+}
+export function HeroRender({ content, theme, slots }: RenderProps<'hero'>) {
   return (
     <section className={`site-hero site-hero-${theme.heroLayout}`}>
-      {content.avatarUrl && safeImage(content.avatarUrl) && (
-        <img
-          className="site-avatar"
-          src={safeImage(content.avatarUrl)}
-          alt={content.name}
-        />
+      {slots?.avatar ?? <HeroAvatarRender content={content} />}
+      <h1>{slots?.name ?? content.name}</h1>
+      <p className="site-profession">{slots?.title ?? content.title}</p>
+      {(slots?.subtitle || content.subtitle) && (
+        <p className="site-subtitle">{slots?.subtitle ?? content.subtitle}</p>
       )}
-      <h1>{content.name}</h1>
-      <p className="site-profession">{content.title}</p>
-      {content.subtitle && <p className="site-subtitle">{content.subtitle}</p>}
     </section>
   );
 }
-export function HeadingRender({ content }: RenderProps<'heading'>) {
+export function HeadingRender({ content, slots }: RenderProps<'heading'>) {
   const Tag = content.level === 1 ? 'h1' : content.level === 2 ? 'h2' : 'h3';
-  return <Tag className="site-heading">{content.text}</Tag>;
+  return <Tag className="site-heading">{slots?.text ?? content.text}</Tag>;
 }
 function renderTokens(tokens: InlineToken[]): ReactNode[] {
   return tokens.map((token, key) => {
@@ -70,7 +88,8 @@ function renderTokens(tokens: InlineToken[]): ReactNode[] {
 function inline(text: string): ReactNode[] {
   return renderTokens(parseInlineMarkdown(text));
 }
-export function TextRender({ content }: RenderProps<'text'>) {
+export function TextRender({ content, slots }: RenderProps<'text'>) {
+  if (slots?.text) return <div className="site-text">{slots.text}</div>;
   const output: ReactNode[] = [];
   let lines: string[] = [];
   let kind: 'paragraph' | 'list' | 'quote' | undefined;
@@ -128,15 +147,29 @@ export function ImageRender({ content }: RenderProps<'image'>) {
     </figure>
   );
 }
-export function GalleryRender({ content, theme }: RenderProps<'gallery'>) {
+export function GalleryRender({
+  content,
+  theme,
+  slots,
+}: RenderProps<'gallery'>) {
   // F5: optional lightbox can be added without changing the static content contract.
   return (
     <div
       className={`site-gallery site-gallery-${content.items.length < 3 ? 'two' : 'three'}`}
     >
-      {content.items.map((item, index) => (
-        <ImageRender key={index} content={item} theme={theme} />
-      ))}
+      {content.items.map((item, index) =>
+        slots?.galleryItem ? (
+          <div key={index}>
+            {slots.galleryItem(
+              index,
+              <ImageRender content={item} theme={theme} />,
+            )}
+          </div>
+        ) : (
+          <ImageRender key={index} content={item} theme={theme} />
+        ),
+      )}
+      {slots?.galleryEnd}
     </div>
   );
 }
@@ -240,28 +273,44 @@ export function SpacerRender({ content }: RenderProps<'spacer'>) {
 export function BlockRender({
   block,
   theme,
+  slots,
 }: {
   block: BlockContent;
   theme: Theme;
+  slots?: RenderSlots | undefined;
 }) {
   switch (block.type) {
     case 'hero':
-      return <HeroRender content={block.content} theme={theme} />;
+      return <HeroRender content={block.content} theme={theme} slots={slots} />;
     case 'heading':
-      return <HeadingRender content={block.content} theme={theme} />;
+      return (
+        <HeadingRender content={block.content} theme={theme} slots={slots} />
+      );
     case 'text':
-      return <TextRender content={block.content} theme={theme} />;
+      return <TextRender content={block.content} theme={theme} slots={slots} />;
     case 'image':
-      return <ImageRender content={block.content} theme={theme} />;
+      return (
+        <ImageRender content={block.content} theme={theme} slots={slots} />
+      );
     case 'gallery':
-      return <GalleryRender content={block.content} theme={theme} />;
+      return (
+        <GalleryRender content={block.content} theme={theme} slots={slots} />
+      );
     case 'button':
-      return <ButtonRender content={block.content} theme={theme} />;
+      return (
+        <ButtonRender content={block.content} theme={theme} slots={slots} />
+      );
     case 'social':
-      return <SocialRender content={block.content} theme={theme} />;
+      return (
+        <SocialRender content={block.content} theme={theme} slots={slots} />
+      );
     case 'divider':
-      return <DividerRender content={block.content} theme={theme} />;
+      return (
+        <DividerRender content={block.content} theme={theme} slots={slots} />
+      );
     case 'spacer':
-      return <SpacerRender content={block.content} theme={theme} />;
+      return (
+        <SpacerRender content={block.content} theme={theme} slots={slots} />
+      );
   }
 }

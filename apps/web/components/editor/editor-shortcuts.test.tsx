@@ -29,6 +29,11 @@ function mount(text = '') {
     blocks: [{ ...block, pageId: block.id }],
   };
   render(<Editor document={document} pageId={block.id} d={en} locale="en" />);
+  fireEvent.click(
+    screen
+      .getByLabelText('Text 1', { selector: 'article' })
+      .querySelector('.inline-block')!,
+  );
   return screen.getByRole('textbox', { name: en.editor.fields.text });
 }
 
@@ -48,8 +53,8 @@ describe('editor composer shortcuts', () => {
     expect(heading).toHaveValue('');
     expect(heading).toHaveFocus();
     expect(
-      within(card).getByRole('button', { name: en.editor.fields.level }),
-    ).toHaveTextContent(en.editor.levels[Number(level) as 1 | 2 | 3]);
+      within(card).getByRole('button', { name: `H${level}` }),
+    ).toHaveAttribute('aria-pressed', 'true');
     await user.keyboard('Ola');
     expect(heading).toHaveValue('Ola');
   });

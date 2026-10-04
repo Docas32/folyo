@@ -56,6 +56,18 @@ function mount() {
     <Editor document={document} pageId={first} d={en} locale="en" />,
   );
 }
+function textInput() {
+  let input = screen.queryByRole('textbox', { name: 'Text' });
+  if (!input) {
+    fireEvent.click(
+      screen
+        .getByLabelText('Text 1', { selector: 'article' })
+        .querySelector('.inline-block')!,
+    );
+    input = screen.getByRole('textbox', { name: 'Text' });
+  }
+  return input;
+}
 describe('editor page switching and autosave', () => {
   it('closes an open page menu on collapse and opens it normally after restoring the sidebar', async () => {
     mount();
@@ -81,7 +93,7 @@ describe('editor page switching and autosave', () => {
     const set = vi.spyOn(Storage.prototype, 'setItem');
     const view = mount();
     const sidebar = screen.getByRole('complementary');
-    const canvas = screen.getByRole('textbox', { name: 'Text' });
+    const canvas = textInput();
     const toggle = screen.getByRole('button', { name: /Hide sidebar/ });
     expect(sidebar).toBeVisible();
     expect(get).toHaveBeenCalledWith('folyo.editor.sidebar');
@@ -90,7 +102,7 @@ describe('editor page switching and autosave', () => {
     expect(sidebar.parentElement).toHaveAttribute('inert');
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByRole('textbox', { name: 'Text' })).toBe(canvas);
+    expect(textInput()).toBe(canvas);
     expect(canvas).toHaveValue('Home text');
     expect(set).toHaveBeenCalledWith('folyo.editor.sidebar', 'closed');
     view.unmount();
@@ -139,7 +151,7 @@ describe('editor page switching and autosave', () => {
     );
     vi.stubGlobal('fetch', fetch);
     mount();
-    fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), {
+    fireEvent.change(textInput(), {
       target: { value: 'Edited Home' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Projects' }));
@@ -154,9 +166,7 @@ describe('editor page switching and autosave', () => {
         body: expect.stringContaining('Edited Home'),
       }),
     );
-    expect(screen.getByRole('textbox', { name: 'Text' })).toHaveValue(
-      'Edited Home',
-    );
+    expect(screen.getByText('Edited Home')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'page',
@@ -166,9 +176,7 @@ describe('editor page switching and autosave', () => {
         Response.json({ ok: true, savedAt: '2026-10-03T12:00:00.000Z' }),
       );
     });
-    expect(screen.getByRole('textbox', { name: 'Text' })).toHaveValue(
-      'Projects text',
-    );
+    expect(textInput()).toHaveValue('Projects text');
     expect(screen.getByRole('button', { name: 'Projects' })).toHaveAttribute(
       'aria-current',
       'page',
@@ -180,9 +188,7 @@ describe('editor page switching and autosave', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Home' }));
     });
-    expect(screen.getByRole('textbox', { name: 'Text' })).toHaveValue(
-      'Edited Home',
-    );
+    expect(textInput()).toHaveValue('Edited Home');
     expect(fetch).toHaveBeenCalledOnce();
   });
   it('blocks switching on failed save and retains editable content', async () => {
@@ -196,14 +202,12 @@ describe('editor page switching and autosave', () => {
     );
     const user = userEvent.setup();
     mount();
-    await user.type(screen.getByRole('textbox', { name: 'Text' }), ' edited');
+    await user.type(textInput(), ' edited');
     await user.click(screen.getByRole('button', { name: 'Projects' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
       en.editor.pages.switchError,
     );
-    expect(screen.getByRole('textbox', { name: 'Text' })).toHaveValue(
-      'Home text edited',
-    );
+    expect(textInput()).toHaveValue('Home text edited');
     expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'page',
@@ -213,7 +217,7 @@ describe('editor page switching and autosave', () => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     mount();
-    fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), {
+    fireEvent.change(textInput(), {
       target: { value: 'x'.repeat(5001) },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Projects' }));
@@ -403,9 +407,7 @@ describe('editor page deletion focus', () => {
       'aria-current',
       'page',
     );
-    expect(screen.getByRole('textbox', { name: 'Text' })).toHaveValue(
-      'Projects text',
-    );
+    expect(textInput()).toHaveValue('Projects text');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(fetch).toHaveBeenCalledOnce();
     expect(fetch).toHaveBeenCalledWith(
