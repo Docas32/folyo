@@ -113,7 +113,7 @@ describe('account API', () => {
     expect((await acceptTerms(request)).status).toBe(200);
     expect(repo.acceptTerms).toHaveBeenCalledWith(
       user.id,
-      '2026-10-v1',
+      '2026-10-v2',
       expect.any(Date),
     );
   });
@@ -129,7 +129,7 @@ describe('account API', () => {
     );
     expect(repo.acceptTerms).toHaveBeenCalledWith(
       user.id,
-      '2026-10-v1',
+      '2026-10-v2',
       expect.any(Date),
     );
     expect(await response.json()).toEqual({ redirect: '/onboarding' });
@@ -201,4 +201,25 @@ describe('account API', () => {
     expect(await response.json()).toEqual({ redirect: '/' });
     expect(signOut).toHaveBeenCalledWith({ redirect: false });
   });
+});
+
+it('blocks app mutations until older terms are accepted and writes the new version on re-acceptance', async () => {
+  vi.mocked(accountContext).mockResolvedValue({
+    repo,
+    user: { ...user, termsVersion: '2026-10-v1' },
+    site,
+  });
+  expect(
+    (await PATCH(req('/api/site', 'PATCH', { title: 'New title' }))).status,
+  ).toBe(403);
+  const response = await acceptTerms(
+    req('/api/account/accept-terms', 'POST', { accepted: true }),
+  );
+  expect(response.status).toBe(200);
+  expect(repo.acceptTerms).toHaveBeenCalledWith(
+    user.id,
+    '2026-10-v2',
+    expect.any(Date),
+  );
+  expect(await response.json()).toEqual({ redirect: '/dashboard' });
 });

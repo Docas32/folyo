@@ -713,3 +713,218 @@ entre mudanças de conteúdo. Esses números são uma referência do ambiente de
 testes, não um benchmark de todos os dispositivos. A medição permanece no teste
 `editor-inline.test.tsx`; não há dependências novas, alterações no GC, na API,
 na fila de autosave ou no pipeline de publicação.
+
+### Legal, denúncias, identidade e SEO (F5c)
+
+**Os textos legais são rascunhos para revisão jurídica.** Termos e privacidade
+estão completos em pt-BR/en em `apps/web/lib/i18n/legal-content.ts`; títulos,
+labels e descrições ficam nos dicionários. São substituíveis nesses arquivos de
+conteúdo sem alterar a lógica das páginas. A identificação real do responsável e
+um contato monitorado devem ser fornecidos por `LEGAL_ENTITY_NAME` e
+`LEGAL_CONTACT_EMAIL`; enquanto não configurados, as páginas indicam a pendência,
+sem inventar uma empresa ou endereço. A revisão deve confirmar jurisdição, bases
+legais, contratos e transferências internacionais, retenção de logs/backups e
+procedimentos de atendimento aos titulares. Referências para revisão:
+[LGPD](https://planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm) e
+[direitos na União Europeia](https://commission.europa.eu/law/law-topic/data-protection/information-individuals_en).
+
+`TERMS_VERSION` tem fonte única em `packages/core/src/legal.ts`, atualmente
+`2026-10-v2`. Usuários com aceite ausente ou versão anterior voltam a
+`/accept-terms` no fluxo de páginas e login. As APIs autenticadas também impedem
+alterações antes do reaceite. O aceite atualiza timestamp e versão; uma versão
+posterior já gravada não é rebaixada. Ao publicar uma mudança material, altere a
+constante e os textos em conjunto.
+
+O app possui banner de cookies com **Aceitar** e **Essenciais apenas**, persistido
+por doze meses no cookie `folyo-cookie-choice`, `SameSite=Lax`, `Secure` em HTTPS.
+A escolha não ativa trackers: o MVP não integra publicidade nem analytics. O
+banner não aparece nos previews nem nos snapshots publicados. As integrações
+futuras podem usar a escolha como ponto de encaixe, mas precisam de avaliação
+própria; **antes de integrar AdSense, utilizar uma CMP certificada pelo Google**.
+Os slots de anúncios existentes permanecem sem integração.
+
+`/report` é público: recebe handle por query `?site=...` ou pelo formulário,
+motivo e detalhes de até 2.000 caracteres. `POST /api/reports` normaliza/valida o
+handle, resolve o site e registra `open`. Um handle inexistente recebe a mesma
+resposta neutra de sucesso. O honeypot `website` preenchido aceita e descarta.
+O limite MVP é cinco denúncias por minuto/IP, em memória por isolate, sem IP na
+linha da denúncia. Em produção configure **Cloudflare rate limiting** antes da
+rota; o limite local não é distribuído. O proxy de produção deve fornecer
+`CF-Connecting-IP`; o fallback `X-Forwarded-For` só é usado no ambiente `dev`.
+
+`ADMIN_EMAILS` é uma lista de emails autenticados separados por vírgulas, com
+comparação exata sem distinção de maiúsculas. Middleware e servidor retornam
+**404** para visitantes e não administradores. `/admin/reports` lista as cem
+últimas denúncias, com filtros `open/reviewed/actioned`; a API altera apenas o
+status para `reviewed` ou `actioned`. Isso não modifica nem despublica conteúdo;
+a intervenção continua manual pelas ferramentas operacionais existentes.
+
+O monograma está em `public/favicon.svg`, com alternativa `favicon.ico` e imagens
+OG localizadas leves. Settings permite favicon PNG, ICO ou SVG vetorial simples,
+até 256 KB, com preview circular e restauração do padrão. SVG com scripts,
+estilos, referências externas ou elementos não permitidos é recusado. A gravação
+reutiliza o lock do editor e registra o asset; falha de banco compensa o upload.
+O GC protege o favicon atual e o usado no snapshot publicado ou em publicação.
+Trocar o favicon do rascunho requer republicar para mudar o site no ar.
+
+Cada snapshot inclui `robots.txt`, `sitemap.xml` e meta `index,follow`. O sitemap
+usa URLs absolutas e o mesmo `published_at` do registro de publicação; a primeira
+página usa `/`. O edge serve esses objetos do prefixo apontado pelo KV, inclusive
+HEAD. Favicon e **Denunciar este site** usam URLs absolutas de `APP_PUBLIC_URL`.
+O preview permanece `noindex,nofollow`; robots do app bloqueia as rotas privadas,
+API, onboarding, templates, previews e administração. Não há scripts ou banner
+de cookies no HTML publicado.
+
+A landing utiliza os renders compartilhados em uma composição estática e assets
+SVG locais, metadata/OG localizados e o fluxo Google existente. Usuários já
+logados seguem seu próximo passo (dashboard, aceite ou onboarding). Há 404
+localizada e skeletons em dashboard/editor/settings, além dos títulos das rotas.
+
+### Pré-deploy
+
+- Definir domínio/base dos portfólios e `APP_PUBLIC_URL` público em HTTPS. Conferir
+  URLs OAuth, `AUTH_URL`, `AUTH_SECRET`, credenciais Google e cookies seguros.
+- Provisionar ambientes de produção, Neon e migrações; configurar bindings dos
+  buckets R2 e namespace **SITE_KV**, credenciais de storage e secrets de Workers.
+  Não reaproveitar dados ou KV de desenvolvimento.
+- Configurar `ADMIN_EMAILS`, responsável e contato legal reais. Revisar os textos
+  jurídicos, retenções e transferências internacionais antes do lançamento.
+- Configurar rate limiting distribuído para denúncias e validar o IP fornecido
+  pelo proxy. A fila de moderação precisa de responsável operacional.
+- Agendar cron GC/recuperação de exclusões com `CRON_SECRET` e intervalo adequado;
+  verificar `GC_GRACE_DAYS`, logs e alertas de falhas de limpeza.
+- Rodar os checks, publicar um portfólio de teste e conferir assets, favicon,
+  robots, sitemap e despublicação/exclusão. Repetir Lighthouse no domínio real;
+  medições locais não garantem o desempenho da infraestrutura de produção.
+- AdSense/analytics ficam para pós-MVP: avaliar consentimento, contratos,
+  documentação e CMP certificada antes de carregar scripts opcionais.
+
+Verificação F5c: `pnpm lint`, `pnpm typecheck`, `pnpm test` (628 testes em
+62 arquivos) e `pnpm build` (Next/OpenNext + edge dry-run) passam. A suíte limita
+seu paralelismo a dois workers para manter os testes JSDOM do editor estáveis em
+runners pequenos, sem aumentar timeouts nem reduzir verificações.
+
+### Lighthouse F5c — medição local
+
+Medição em **4 de outubro de 2026**, Lighthouse **13.5.0**, Chrome **152**, perfil
+**mobile**, throttling simulado padrão (CPU 4×), sem compilação ou testes
+concorrentes. Landing servida pelo `next start` do build de produção, visitante
+sem sessão/consentimento (banner presente), locale en. Portfólio: template
+`professional`, pt-BR, três páginas, tema original Space Grotesk/Inter, HTML/CSS
+produzidos diretamente por `renderPageHtml`/`renderSiteCss`, servidos localmente
+sem JavaScript e com fontes externas reais. Sem cache aquecido de navegador e
+sem bloquear recursos para melhorar artificialmente os scores.
+
+| Página                            | Desempenho | Acessibilidade | Boas práticas |     SEO |
+| --------------------------------- | ---------: | -------------: | ------------: | ------: |
+| Landing (produção local)          |     **91** |        **100** |       **100** | **100** |
+| Snapshot publicado (professional) |     **91** |        **100** |       **100** | **100** |
+
+HTML do portfólio: **3.405 bytes** na home, 2.713 bytes em Experiência e 2.452
+bytes em Contato, todos abaixo de 100 KB (sem arquivos de imagem). TBT: 220 ms
+na landing e 0 ms no snapshot. A correção de contraste nos números decorativos,
+a redução do payload do banner e preconnects das fontes fazem parte do polish.
+
+O resumo verificável está em `docs/audits/f5c-lighthouse.json`; relatórios
+completos da execução local estão em `/tmp/folyo-f5c-landing.report.html` e
+`/tmp/folyo-f5c-published.report.html` (com seus JSONs). Para repetir, iniciar o
+build com `next start`, servir um snapshot gerado pelos renders, e executar
+Lighthouse em cada URL, separadamente, com o perfil mobile padrão:
+
+```sh
+lighthouse http://127.0.0.1:3016 --chrome-flags="--headless --no-sandbox" --output=json --output=html
+lighthouse http://127.0.0.1:3017 --chrome-flags="--headless --no-sandbox" --output=json --output=html
+```
+
+A auditoria do snapshot usou um servidor estático local; o roteamento edge/R2/KV
+foi validado pelos testes e pelo build, não por publicação em produção. Scores
+variam com CPU, rede e recursos externos. Repetir no domínio final após o deploy.
+
+### Correções de uso real e dashboard (F5c.1)
+
+Diagnóstico **local** em 4 de outubro de 2026, para `joao.lvh.me:8787` (o prompt
+não informou outra URL): não havia listener na porta 8787; o curl fora do sandbox
+retornou `curl: (7) Failed to connect … port 8787`. Depois de iniciar
+`pnpm --filter @folyo/edge dev`, o mesmo curl retornou:
+
+```text
+GET http://joao.lvh.me:8787/             HTTP 200, text/html; charset=utf-8
+KV site:joao                          {"siteId":"8daa5a6a-b55e-4e7c-bd87-578f6c8aacb7","version":7}
+R2 snapshot                           sites/8daa5a6a-b55e-4e7c-bd87-578f6c8aacb7/v7/index.html
+GET http://joao.lvh.me:8787/robots.txt  HTTP 404
+GET http://joao.lvh.me:8787/sitemap.xml HTTP 404
+```
+
+A causa observada foi **edge parado**, não KV miss nem alteração da ordem das
+rotas. A raiz continuou servindo o snapshot v7 existente. Ele antecede a F5c e
+não contém os novos arquivos SEO; **republicar** gera robots/sitemap/favicon e
+links corrigidos. Não há migração retroativa de snapshots. O novo teste do
+roteador verifica a sequência host → KV → prefixo R2 para `/`, `/robots.txt` e
+`/sitemap.xml`, e que nenhum desses pedidos entra no handler do app.
+
+Em desenvolvimento use **`pnpm dev` na raiz**, mantendo app (3000) e edge (8787)
+ativos. `next dev` sozinho serve o app/preview, mas não os subdomínios publicados.
+Para diagnóstico, teste o app e o subdomínio separadamente; se 8787 não responde,
+inicie o edge antes de investigar KV. Ausência de robots em um snapshot antigo
+não significa ausência do site. Não é necessário limpar KV, R2 ou o banco.
+
+`normalizeExternalUrl` (`packages/core`) faz trim, converte somente o esquema
+para minúsculas e completa endereços sem esquema com `https://`. Links
+executáveis, relativos e com credenciais são recusados; `#` continua como
+placeholder de botão. O editor normaliza o estado compartilhado ao confirmar o
+card, antes do autosave. Os schemas usados pelo PUT normalizam idempotentemente
+e rejeitam URLs sociais inseguras; os renders usam a mesma função como defesa
+para conteúdo legado. Esc continua revertendo sem salvar. Para alterar o HTML
+já publicado, republicar após salvar.
+
+Todos os textareas fixos usam `resize: none`. O compositor de texto expansível
+permite somente `resize: vertical`. A topbar mantém os handlers existentes em
+três zonas: identidade/status, controle segmentado Editar/Visualizar e
+preview/save/retorno. Em telas estreitas, os grupos se reorganizam sem cortar
+controles.
+
+O dashboard reúne saudação pelo primeiro nome, miniatura ativa, endereço gerado
+com `ROOT_DOMAIN`, publicação, copiar/preview/editor, contagem de páginas/blocos,
+última edição por `Intl.RelativeTimeFormat` e quatro escolhas rápidas de estilo.
+Dados vêm de `bootstrapAndRead`, a mesma leitura utilizada por `GET /api/editor`,
+sem endpoint novo nem uma chamada HTTP do servidor a si próprio. Quando o ativo
+é um dos quatro showcases adicionais, ele ocupa uma das quatro escolhas rápidas;
+todos os oito continuam acessíveis em `/templates`.
+
+Trocar estilo exige confirmação. O dashboard usa o POST existente
+`/api/site/template` com `{ templateId, applyContent: false }`; esse campo opcional
+só aceita `false` e impede substituição de páginas mesmo num site virgem. O fluxo
+original sem o campo mantém suas regras. O 409 com `appliedTheme: true` e
+`contentSkipped: true` é sucesso de estilo, acompanhado de mensagem sobre a
+preservação do conteúdo. Publicação, GC, dnd e autosave mantêm seus fluxos.
+
+Validação F5c.1: `pnpm lint`, `pnpm typecheck` e `pnpm test` verdes, com
+**654 testes em 64 arquivos**. Foram acrescentados casos do roteador, links
+sem esquema/seguros, normalização no PUT e no autosave, confirmação de estilo
+sem conteúdo e dashboard pt/en. Conferência visual dos componentes reais em
+1440×1000 e 390×844: topbar em uma linha no desktop, wrap no mobile e cards sem
+overflow horizontal. A imagem do snapshot também respondeu HTTP 200 (`image/webp`)
+com app e edge locais ativos.
+O build final também passou: Next/OpenNext e edge (`wrangler deploy --dry-run`).
+A ação de logout continua definida no servidor e é passada ao dashboard por slot,
+preservando o fluxo de autenticação existente.
+
+### Acabamento visual — fundo ambiente e hierarquia
+
+Landing e dashboard compartilham `AmbientBackground`: formas CSS leves, camada difusa
+com movimento lento e uma máscara nítida que acompanha o cursor. Atualizações do ponteiro
+usam `requestAnimationFrame` e variáveis CSS, sem renderizar novamente os componentes.
+O efeito decorativo não intercepta cliques nem entra na árvore de acessibilidade. Touch
+mantém somente o movimento ambiente; `prefers-reduced-motion` remove animação e resposta
+ao cursor. A animação pausa quando a aba fica oculta.
+
+O card principal do dashboard agrupa edição, preview e cópia à esquerda e publicação
+à direita, com altura uniforme. No celular, as ações seguem uma grade de duas colunas
+com edição em largura completa. Cards, campos e botões compartilham espaçamento,
+raios e contraste revisados. Configurações concentra dados, aparência e gerenciamento:
+a escolha de templates permanece no dashboard, na galeria e no onboarding.
+
+Validação deste acabamento: lint e typecheck aprovados; 657 testes aprovados, incluindo
+resposta ao cursor, movimento reduzido e ausência da galeria nas configurações.
+Inspeção visual dos componentes reais em desktop (1440px) e celular (390px).
+Build de produção Next/OpenNext e edge também aprovado.

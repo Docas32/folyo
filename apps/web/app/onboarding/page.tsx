@@ -1,3 +1,4 @@
+import { legalDictionary } from '../../lib/legal';
 import { TemplateToast } from '../../components/template-toast';
 import { pageAccount } from '../../lib/session';
 import { getDictionary, supportedLocale } from '../../lib/i18n';
@@ -14,4 +15,12 @@ export default async function Onboarding() {
       <Logout label={d.signOut} />
     </main>
   );
+}
+
+export async function generateMetadata() {
+  const d = await legalDictionary();
+  return {
+    title: `${d.onboardingHeading} · Folyo`,
+    robots: { index: false, follow: false },
+  };
 }

@@ -1,3 +1,4 @@
+import { legalDictionary } from '../../../lib/legal';
 import { pageAccount } from '../../../lib/session';
 import { getDictionary, supportedLocale } from '../../../lib/i18n';
 import { TemplateGallery } from '../../../components/templates';
@@ -11,4 +12,12 @@ export default async function TemplateOnboarding() {
       <TemplateGallery d={d} locale={supportedLocale(user.locale)} />
     </main>
   );
+}
+
+export async function generateMetadata() {
+  const d = await legalDictionary();
+  return {
+    title: `${d.templates.heading} · Folyo`,
+    robots: { index: false, follow: false },
+  };
 }

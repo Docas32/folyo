@@ -34,21 +34,24 @@ export function createRepository(databaseUrl: string): Repository {
       );
     },
     async createSite(userId, handle) {
-      await db
-        .insert(sites)
-        .values({
-          userId,
-          handle,
-          templateId: 'blank',
-          theme: { preset: 'blank' },
-          status: 'draft',
-        });
+      await db.insert(sites).values({
+        userId,
+        handle,
+        templateId: 'blank',
+        theme: { preset: 'blank' },
+        status: 'draft',
+      });
     },
     async acceptTerms(userId, version, now) {
       await db
         .update(users)
         .set({ termsAcceptedAt: now, termsVersion: version })
-        .where(and(eq(users.id, userId), isNull(users.termsAcceptedAt)));
+        .where(
+          and(
+            eq(users.id, userId),
+            or(isNull(users.termsVersion), lte(users.termsVersion, version)),
+          ),
+        );
     },
     async updateSite(userId, siteId, patch, now) {
       const current = await db.query.sites.findFirst({

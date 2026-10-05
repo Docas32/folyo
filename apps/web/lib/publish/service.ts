@@ -1,3 +1,4 @@
+import { renderRobots, renderSitemap } from './seo';
 import {
   availableHandleSchema,
   blockContentSchema,
@@ -66,7 +67,12 @@ export async function changePublication(
       pageId: block.pageId,
       position: block.position,
     }));
-    const assetKeys = [...extractAssetKeys(pageBlocks)];
+    const assetKeys = [
+      ...new Set([
+        ...extractAssetKeys(pageBlocks),
+        ...(current.faviconKey ? [current.faviconKey] : []),
+      ]),
+    ];
     await repo.protect(current.id, token, assetKeys);
     const theme = resolveTheme(current.theme);
     const publicUrl = buildPublicSiteUrl(current.handle, env);
@@ -92,7 +98,16 @@ export async function changePublication(
     await bindings.sites.put(`${prefix}site.css`, renderSiteCss(theme), {
       httpMetadata: { contentType: 'text/css; charset=utf-8' },
     });
-    await repo.record(current.id, version, prefix, assetKeys, new Date());
+    const publishedAt = new Date();
+    await bindings.sites.put(`${prefix}robots.txt`, renderRobots(publicUrl), {
+      httpMetadata: { contentType: 'text/plain; charset=utf-8' },
+    });
+    await bindings.sites.put(
+      `${prefix}sitemap.xml`,
+      renderSitemap(publicUrl, snapshot.pages, publishedAt),
+      { httpMetadata: { contentType: 'application/xml; charset=utf-8' } },
+    );
+    await repo.record(current.id, version, prefix, assetKeys, publishedAt);
     try {
       await bindings.kv.put(
         key,

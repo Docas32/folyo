@@ -10,7 +10,7 @@ export const user: User = {
   locale: 'pt-BR',
   createdAt: now,
   termsAcceptedAt: now,
-  termsVersion: '2026-10-v1',
+  termsVersion: '2026-10-v2',
 };
 export const site: Site = {
   id: '20000000-0000-4000-8000-000000000002',

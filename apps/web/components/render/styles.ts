@@ -43,6 +43,7 @@ export const SITE_CSS = `
 .folyo-site .site-divider { border: 0; border-top: 1px solid #e8e6e0; margin-bottom: 0; }
 .folyo-site .site-spacer { margin-top: 0; }
 .folyo-site .site-footer { padding: 24px 0; text-align: center; font-size: .8rem; border-top: 1px solid #e8e6e0; }
-.folyo-site .site-footer a { color: #8a8894; }
+.folyo-site .site-footer a { color: #696773; }
+.folyo-site .site-report { margin-left: 16px; }
 @media (max-width: 560px) { .folyo-site .site-gallery { grid-template-columns: 1fr; } .folyo-site .site-main { padding-top: 32px; } }
 `;

@@ -53,6 +53,7 @@ export const databaseUrlSchema = z
   );
 export type SiteStatus = z.infer<typeof siteStatusSchema>;
 export * from './blocks';
+export * from './external-url';
 // F5: replace this catalog with locale selection; components keep using keys.
 export const messages = {
   'pt-BR': {
@@ -74,3 +75,5 @@ export * from './asset-keys';
 export * from './theme';
 
 export * from './inline-markdown';
+
+export * from './legal';

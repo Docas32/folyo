@@ -388,3 +388,46 @@ describe('host dispatch', () => {
     ).toBe(500);
   });
 });
+
+it.each([
+  ['/robots.txt', 'text/plain; charset=utf-8'],
+  ['/sitemap.xml', 'application/xml; charset=utf-8'],
+])(
+  'serves snapshot SEO file %s from the current prefix',
+  async (path, contentType) => {
+    kvGet.mockResolvedValue(
+      JSON.stringify({
+        siteId: '20000000-0000-4000-8000-000000000002',
+        version: 3,
+      }),
+    );
+    get.mockResolvedValue({
+      body: new Response('SEO file').body,
+    } as R2ObjectBody);
+    const response = await request('maria.lvh.me', path);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe(contentType);
+    expect(get).toHaveBeenCalledWith(
+      `sites/20000000-0000-4000-8000-000000000002/v3${path}`,
+    );
+  },
+);
+
+it('dispatches home, robots and sitemap inside the handle without ever invoking the app handler', async () => {
+  const siteId = '20000000-0000-4000-8000-000000000002';
+  kvGet.mockResolvedValue(JSON.stringify({ siteId, version: 7 }));
+  get.mockImplementation(
+    async (key) => ({ body: new Response(String(key)).body }) as R2ObjectBody,
+  );
+  for (const [path, object] of [
+    ['/', 'index.html'],
+    ['/robots.txt', 'robots.txt'],
+    ['/sitemap.xml', 'sitemap.xml'],
+  ]) {
+    const response = await request('joao.lvh.me:8787', path);
+    expect(response.status).toBe(200);
+    expect(kvGet).toHaveBeenLastCalledWith('site:joao');
+    expect(await response.text()).toBe(`sites/${siteId}/v7/${object}`);
+  }
+  expect(webFetch).not.toHaveBeenCalled();
+});

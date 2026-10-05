@@ -1,13 +1,12 @@
-import Link from 'next/link';
+import { LegalPage } from '../../components/legal-page';
 import { legalDictionary } from '../../lib/legal';
-export default async function LegalPage() {
+export async function generateMetadata() {
   const d = await legalDictionary();
-  return (
-    <main>
-      <h1>{d.privacyLink}</h1>
-      <p>{d.legalNotice}</p>
-      <p>{d.privacyBody}</p>
-      <Link href="/">{d.home}</Link>
-    </main>
-  );
+  return {
+    title: `${d.privacyLink} · Folyo`,
+    description: d.legal.privacy[0]?.paragraphs[0],
+  };
+}
+export default function Privacy() {
+  return <LegalPage kind="privacy" />;
 }

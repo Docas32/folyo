@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { assetKeySchema, imageMimeSchema } from '@folyo/core';
 import { route } from '../../../../lib/api';
 import { objectStorage } from '../../../../lib/runtime';
@@ -13,12 +14,23 @@ export async function GET(
     if (!parsed.success) throw new AccountError('notFound', 404);
     const object = await objectStorage().getObject(parsed.data);
     if (!object) throw new AccountError('notFound', 404);
-    const mime = imageMimeSchema.parse(object.headers.get('content-type'));
+    const mime = z
+      .union([
+        imageMimeSchema,
+        z.enum(['image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml']),
+      ])
+      .parse(object.headers.get('content-type'));
     return new Response(object.body, {
       headers: {
         'Content-Type': mime,
         'Cache-Control': 'public, max-age=31536000, immutable',
         'X-Content-Type-Options': 'nosniff',
+        ...(mime === 'image/svg+xml'
+          ? {
+              'Content-Security-Policy':
+                "sandbox; default-src 'none'; style-src 'none'",
+            }
+          : {}),
       },
     });
   })(request);

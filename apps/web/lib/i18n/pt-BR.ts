@@ -1,11 +1,17 @@
+import { dashboardPt } from './dashboard';
+import { publicPt } from './public';
+import { legalPt } from './legal-content';
 import { siteDeletionPt } from './site-deletion';
 import { templatePt } from './templates';
 import { getBlockPlaceholders } from '@folyo/core';
 import type { Dictionary } from './en';
 const ptBR: Dictionary = {
+  dashboardHub: dashboardPt,
   siteDeletion: siteDeletionPt,
   templates: templatePt,
   signInError: 'Não foi possível entrar com Google. Tente novamente.',
+  public: publicPt,
+  legal: legalPt,
   brand: 'Folyo',
   welcome: 'Seu portfólio começa aqui',
   welcomeBody: 'Entre para criar e gerenciar seu portfólio.',
@@ -91,7 +97,11 @@ const ptBR: Dictionary = {
     publicationBusy:
       'Uma publicação está em andamento. Tente novamente em instantes.',
   },
-  siteChrome: { navigation: 'Páginas do site', madeWith: 'Feito com Folyo' },
+  siteChrome: {
+    report: 'Denunciar este site',
+    navigation: 'Páginas do site',
+    madeWith: 'Feito com Folyo',
+  },
   editor: {
     inline: {
       link: 'Inserir link',

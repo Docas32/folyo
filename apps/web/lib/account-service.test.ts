@@ -244,3 +244,9 @@ describe('account deletion', () => {
     expect(storage.delete).not.toHaveBeenCalled();
   });
 });
+
+it('redirects users with an earlier accepted terms version to renewed acceptance', () => {
+  expect(postLoginPath({ ...user, termsVersion: '2026-10-v1' }, site)).toBe(
+    '/accept-terms',
+  );
+});

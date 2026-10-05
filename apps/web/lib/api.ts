@@ -1,3 +1,4 @@
+import { hasAcceptedCurrentTerms } from '@folyo/core';
 import { hasSameOrigin } from './request-origin';
 import { z } from 'zod';
 import { AccountError } from './account-service';
@@ -10,7 +11,7 @@ export async function apiAccount(
   if (request.method !== 'GET' && !hasSameOrigin(request))
     throw new AccountError('origin', 403);
   const context = await accountContext();
-  if (stage !== 'user' && !context.user.termsAcceptedAt)
+  if (stage !== 'user' && !hasAcceptedCurrentTerms(context.user))
     throw new AccountError('termsRequired', 403);
   if (stage === 'site' && !context.site)
     throw new AccountError('siteRequired', 409);

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /editor
+Disallow: /settings
+Disallow: /api/
+Disallow: /onboarding
+Disallow: /accept-terms
+Disallow: /templates
+Disallow: /p/
+Disallow: /admin

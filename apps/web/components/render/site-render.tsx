@@ -12,11 +12,12 @@ export type SiteRenderProps = {
   /** Serializable path prefix: preview /p/<id>; published site uses ''. */
   basePath: string;
   appUrl: string;
+  reportUrl?: string;
   onPageChange?: (pageId: string) => void;
   relativeNavigation?: boolean;
   embedCss?: boolean;
   children?: ReactNode;
-  chrome: { navigation: string; madeWith: string };
+  chrome: { navigation: string; madeWith: string; report?: string };
 };
 export function pageHref(basePath: string, slug: string) {
   return `${basePath}/${encodeURIComponent(slug)}`;
@@ -37,6 +38,7 @@ export function SiteRender({
   blocks,
   basePath,
   appUrl,
+  reportUrl,
   chrome,
   children,
   onPageChange,
@@ -94,6 +96,11 @@ export function SiteRender({
       </main>
       <footer className="site-footer">
         <a href={appUrl}>{chrome.madeWith}</a>
+        {reportUrl && chrome.report && (
+          <a className="site-report" href={reportUrl}>
+            {chrome.report}
+          </a>
+        )}
       </footer>
     </div>
   );

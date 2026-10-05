@@ -398,16 +398,12 @@ const fontPairs = [
 ] as const;
 export function AppearanceSettings({
   d,
-  locale,
   siteId,
   initialTheme,
-  virgin,
 }: {
   d: Dictionary;
-  locale: string;
   siteId: string;
   initialTheme: unknown;
-  virgin: boolean;
 }) {
   const router = useRouter();
   const [theme, setTheme] = useState(() => resolveTheme(initialTheme));
@@ -525,18 +521,8 @@ export function AppearanceSettings({
             }}
           />
         </div>
-        <p role="status">{message}</p>
-        <p role="alert">{error}</p>
-      </section>
-      <section>
-        <h2>{d.templates.section}</h2>
-        <TemplateGallery
-          d={d}
-          locale={locale}
-          settings
-          virgin={virgin}
-          onTheme={setTheme}
-        />
+        {message && <p role="status">{message}</p>}
+        {error && <p role="alert">{error}</p>}
       </section>
     </>
   );

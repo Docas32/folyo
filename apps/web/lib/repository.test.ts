@@ -41,6 +41,20 @@ beforeEach(() => {
   } as unknown as ReturnType<typeof createDb>);
 });
 describe('Drizzle account repository', () => {
+  it('updates a previous acceptance while refusing to downgrade a newer version', async () => {
+    const repo = createRepository('postgres://test:test@localhost/db');
+    await repo.acceptTerms(user.id, '2026-10-v2', now);
+    expect(set).toHaveBeenCalledWith({
+      termsAcceptedAt: now,
+      termsVersion: '2026-10-v2',
+    });
+    const query = new PgDialect().sqlToQuery(where.mock.calls[0]?.[0] as SQL);
+    expect(query.sql).toContain('"users"."terms_version" <=');
+    expect(query.sql).toContain('"users"."terms_version" is null');
+    expect(query.sql).not.toContain('"users"."terms_accepted_at" is null');
+    expect(query.params).toContain(user.id);
+    expect(query.params).toContain('2026-10-v2');
+  });
   it('creates the minimal draft/blank site with the authenticated owner', async () => {
     const repo = createRepository('postgres://test:test@localhost/db');
     await repo.createSite(user.id, 'maria');

@@ -140,6 +140,27 @@ describe('template gallery', () => {
   });
 });
 describe('appearance settings', () => {
+  it('keeps theme controls but removes template selection from settings', () => {
+    render(
+      <AppearanceSettings
+        d={en}
+        siteId="site-id"
+        initialTheme={DEFAULT_THEME}
+      />,
+    );
+    expect(
+      screen.getByRole('heading', { name: en.templates.appearance }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole('heading', { name: en.templates.section }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: en.templates.applyStyle }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: en.templates.applyContent }),
+    ).toBeNull();
+  });
   it('saves curated accents and points preview at the same site', async () => {
     fetchMock.mockResolvedValue(
       Response.json({ theme: { ...DEFAULT_THEME, accent: '#7C3AED' } }),
@@ -147,10 +168,8 @@ describe('appearance settings', () => {
     render(
       <AppearanceSettings
         d={en}
-        locale="en"
         siteId="site-id"
         initialTheme={DEFAULT_THEME}
-        virgin={false}
       />,
     );
     expect(screen.getByRole('link', { name: en.preview })).toHaveAttribute(
@@ -183,10 +202,8 @@ describe('appearance settings', () => {
     render(
       <AppearanceSettings
         d={en}
-        locale="en"
         siteId="site-id"
         initialTheme={DEFAULT_THEME}
-        virgin={false}
       />,
     );
     fireEvent.click(
@@ -217,10 +234,8 @@ describe('appearance settings', () => {
     render(
       <AppearanceSettings
         d={en}
-        locale="en"
         siteId="site-id"
         initialTheme={DEFAULT_THEME}
-        virgin={false}
       />,
     );
     fireEvent.click(

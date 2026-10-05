@@ -1,4 +1,5 @@
 import {
+  normalizeExternalUrl,
   templateAssetUrlSchema,
   parseInlineMarkdown,
   type InlineToken,
@@ -177,7 +178,11 @@ export function ButtonRender({ content }: RenderProps<'button'>) {
   return (
     <a
       className={`site-button site-button-${content.style}`}
-      href={content.url === '#' ? '#' : safeLink(content.url, 'email')}
+      href={
+        content.url.trim() === '#'
+          ? '#'
+          : safeLink(normalizeExternalUrl(content.url) ?? '', 'email')
+      }
     >
       {content.label}
     </a>
@@ -233,7 +238,7 @@ export function SocialRender({ content }: RenderProps<'social'>) {
       {content.links.map((link, index) => (
         <li key={index}>
           <a
-            href={safeLink(link.url, link.platform)}
+            href={safeLink(normalizeExternalUrl(link.url) ?? '', link.platform)}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={socialNames[link.platform]}

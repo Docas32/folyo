@@ -1,11 +1,12 @@
 'use client';
 import { z } from 'zod';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { CopyLink } from './forms';
 import type { Dictionary } from '../lib/i18n';
 export function PublicationActions({
+  children,
   status,
   version,
   publishedAt,
@@ -13,6 +14,7 @@ export function PublicationActions({
   d,
   locale,
 }: {
+  children?: ReactNode;
   status: 'draft' | 'published';
   version: number;
   publishedAt: string | null;
@@ -88,29 +90,34 @@ export function PublicationActions({
             ? `${d.published} · v${version}${publishedAt ? ` · ${new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeZone: 'UTC' }).format(new Date(publishedAt))}` : ''}`
             : d.draft}
         </p>
-        <Button
-          variant={status === 'draft' ? 'primary' : 'secondary'}
-          disabled={busy !== null}
-          onClick={() => void submit('publish')}
-        >
-          {busy === 'publish'
-            ? status === 'published'
-              ? p.republishing
-              : p.publishing
-            : status === 'published'
-              ? p.republish
-              : p.publish}
-        </Button>
-        {status === 'published' && (
+      </div>
+      <div className="publication-controls">
+        {children}
+        <div className="publication-control-group">
           <Button
-            variant="ghost"
-            className="publication-unpublish"
+            variant={!children && status === 'draft' ? 'primary' : 'secondary'}
             disabled={busy !== null}
-            onClick={() => dialog.current?.showModal()}
+            onClick={() => void submit('publish')}
           >
-            {busy === 'unpublish' ? p.unpublishing : p.unpublish}
+            {busy === 'publish'
+              ? status === 'published'
+                ? p.republishing
+                : p.publishing
+              : status === 'published'
+                ? p.republish
+                : p.publish}
           </Button>
-        )}
+          {status === 'published' && (
+            <Button
+              variant="ghost"
+              className="publication-unpublish"
+              disabled={busy !== null}
+              onClick={() => dialog.current?.showModal()}
+            >
+              {busy === 'unpublish' ? p.unpublishing : p.unpublish}
+            </Button>
+          )}
+        </div>
       </div>
       {notice && (
         <div

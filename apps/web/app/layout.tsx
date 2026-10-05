@@ -1,3 +1,4 @@
+import { CookieBanner } from '../components/cookie-banner';
 import type { ReactNode } from 'react';
 import {
   Inter,
@@ -36,7 +37,10 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-space-grotesk',
   display: 'swap',
 });
-export const metadata = { title: getDictionary('en').brand };
+export const metadata = {
+  title: getDictionary('en').brand,
+  icons: { icon: '/favicon.svg', shortcut: '/favicon.ico' },
+};
 export default async function RootLayout({
   children,
 }: {
@@ -49,6 +53,7 @@ export default async function RootLayout({
   } catch (error) {
     if (!(error instanceof AccountError && error.status === 401)) throw error;
   }
+  const d = getDictionary(locale);
   return (
     <html
       lang={locale}
@@ -62,7 +67,15 @@ export default async function RootLayout({
     >
       {/* Browser zoom extensions can inject inline styles before hydration.
           Ignore attribute differences on body only; children stay checked. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <CookieBanner
+          d={{
+            privacyLink: d.privacyLink,
+            public: { cookies: d.public.cookies },
+          }}
+        />
+      </body>
     </html>
   );
 }

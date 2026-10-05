@@ -1,24 +1,22 @@
-import Link from 'next/link';
-import { TemplateToast } from '../../components/template-toast';
+import { DashboardHub } from '../../components/dashboard-hub';
+import { Logout } from '../../components/logout';
+import { templateSchema } from '@folyo/core';
+import { legalDictionary } from '../../lib/legal';
 import { editorRepository } from '../../lib/runtime';
 import { isVirginSite } from '../../lib/templates';
-import { ButtonLink, PreviewIcon } from '../../components/ui/button';
 import { redirect } from 'next/navigation';
 import { pageAccount } from '../../lib/session';
 import { publishEnvironment, publishRepository } from '../../lib/runtime';
 import { buildPublicSiteUrl } from '../../lib/publish/environment';
-import { PublicationActions } from '../../components/publication-actions';
 import { getDictionary } from '../../lib/i18n';
-import { CopyLink } from '../../components/forms';
-import { Logout } from '../../components/logout';
 export default async function Dashboard() {
   const { user, site } = await pageAccount('app');
   if (!site) redirect('/onboarding');
   const d = getDictionary(user.locale);
-  const document =
-    site.templateId === 'blank'
-      ? await editorRepository().bootstrapAndRead(site.id, user.locale)
-      : null;
+  const document = await editorRepository().bootstrapAndRead(
+    site.id,
+    user.locale,
+  );
   const virgin =
     document &&
     isVirginSite(
@@ -31,54 +29,37 @@ export default async function Dashboard() {
     site.status === 'published'
       ? await publishRepository().publishedAt(site)
       : null;
+  const activeTemplate = templateSchema.safeParse(site.templateId);
   return (
-    <main>
-      <h1>{d.dashboardHeading}</h1>
-      <TemplateToast />
-      {virgin && (
-        <p className="template-banner">
-          <Link href="/templates">{d.templates.banner}</Link>
-        </p>
-      )}
-      <div data-ad-slot="dashboard-top" />
-      <section>
-        <PublicationActions
-          status={site.status}
-          version={site.publishedVersion}
-          publishedAt={publishedAt}
-          url={url}
-          d={d}
-          locale={user.locale}
-        />
-        <h2>{site.handle}</h2>
-        <div className="dashboard-link-row">
-          <span className="dashboard-url" title={url}>
-            <a
-              href={url}
-              aria-label={d.publicLink}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {url}
-            </a>
-          </span>
-          <CopyLink url={url} d={d} />
-          <ButtonLink
-            href={`/p/${site.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {d.preview} <PreviewIcon />
-          </ButtonLink>
-        </div>
-      </section>
-      <nav className="dashboard-actions">
-        <ButtonLink href="/editor">{d.edit}</ButtonLink>
-        <ButtonLink href="/settings" variant="ghost">
-          {d.settings}
-        </ButtonLink>
-        <Logout label={d.signOut} />
-      </nav>
-    </main>
+    <DashboardHub
+      logout={<Logout label={d.signOut} />}
+      d={d}
+      locale={user.locale}
+      firstName={user.name?.trim().split(/\s+/)[0] ?? ''}
+      site={{
+        id: site.id,
+        handle: site.handle,
+        status: site.status,
+        publishedVersion: site.publishedVersion,
+        faviconKey: site.faviconKey,
+        updatedAt: (
+          site.updatedAt ??
+          site.createdAt ??
+          new Date()
+        ).toISOString(),
+        activeTemplate: activeTemplate.success ? activeTemplate.data : 'blank',
+      }}
+      url={url}
+      publishedAt={publishedAt}
+      pages={document.pages.length}
+      blocks={document.blocks.length}
+      now={new Date().toISOString()}
+      virgin={!!virgin}
+    />
   );
+}
+
+export async function generateMetadata() {
+  const d = await legalDictionary();
+  return { title: `${d.dashboardHeading} · Folyo`, robots: { index: false } };
 }

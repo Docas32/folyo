@@ -1,4 +1,5 @@
 'use client';
+import { Logo } from '../logo';
 import { Button, ButtonLink, PreviewIcon } from '../ui/button';
 
 import {
@@ -19,6 +20,7 @@ import {
   editorBlockSchema,
   MAX_BLOCKS,
   createDefaultBlock,
+  normalizeBlockLinks,
   type EditorBlock,
   type BlockType,
   type EditorDocument,
@@ -622,6 +624,9 @@ function PageCanvas({
       card.querySelector<HTMLElement>('.drag-handle')?.focus();
     editSession.current = null;
     setEditingId(null);
+    const normalized = blocksRef.current.map(normalizeBlockLinks);
+    if (normalized.some((block, i) => block !== blocksRef.current[i]))
+      updateState(normalized);
     const current = blocksRef.current.find((block) => block.id === session.id);
     if (
       (current &&
@@ -630,7 +635,7 @@ function PageCanvas({
       (current && current.type !== session.before.type)
     )
       queue.update(blocksRef.current);
-  }, [queue]);
+  }, [queue, updateState]);
   const beginEditing = useCallback(
     (id: string) => {
       if (
@@ -707,7 +712,10 @@ function PageCanvas({
     (next: EditorBlock[]) => {
       editSession.current = null;
       setEditingId(null);
-      const ordered = next.map((block, position) => ({ ...block, position }));
+      const ordered = next.map((block, position) => ({
+        ...normalizeBlockLinks(block),
+        position,
+      }));
       blocksRef.current = ordered;
       setBlocks(ordered);
       changeBlocks.current(ordered);
@@ -864,37 +872,37 @@ function PageCanvas({
                 <path d="M7 3v14" />
               </svg>
             </Button>
-            <div>
-              <p className="editor-kicker">{e.heading}</p>
-              <h1>{document.site.title || document.site.handle}</h1>
-              <span className="editor-status">
-                {document.site.status === 'published' ? d.published : d.draft}
-              </span>
-            </div>
+            <Logo />
+            <h1 title={document.site.title || document.site.handle}>
+              {document.site.title || document.site.handle}
+            </h1>
+            <span className="editor-status">
+              {document.site.status === 'published' ? d.published : d.draft}
+            </span>
+          </div>
+          <div
+            className="editor-mode-toggle"
+            role="group"
+            aria-label={e.inline.mode}
+          >
+            <Button
+              variant="ghost"
+              aria-pressed={!viewing}
+              disabled={viewBusy || disabled || uploadCount.current > 0}
+              onClick={() => void toggleView(false)}
+            >
+              {e.inline.edit}
+            </Button>
+            <Button
+              variant="ghost"
+              aria-pressed={viewing}
+              disabled={viewBusy || disabled || uploadCount.current > 0}
+              onClick={() => void toggleView(true)}
+            >
+              {e.inline.view}
+            </Button>
           </div>
           <div className="editor-save">
-            <div
-              className="editor-mode-toggle"
-              role="group"
-              aria-label={e.inline.mode}
-            >
-              <Button
-                variant="ghost"
-                aria-pressed={!viewing}
-                disabled={viewBusy || disabled || uploadCount.current > 0}
-                onClick={() => void toggleView(false)}
-              >
-                {e.inline.edit}
-              </Button>
-              <Button
-                variant="ghost"
-                aria-pressed={viewing}
-                disabled={viewBusy || disabled || uploadCount.current > 0}
-                onClick={() => void toggleView(true)}
-              >
-                {e.inline.view}
-              </Button>
-            </div>
             <ButtonLink
               variant="ghost"
               size="sm"
@@ -937,7 +945,7 @@ function PageCanvas({
                 }
               }}
             >
-              {d.back}
+              {d.dashboardHub.back}
             </Link>
           </div>
         </div>

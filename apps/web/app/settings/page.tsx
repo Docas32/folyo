@@ -1,9 +1,9 @@
+import { legalDictionary } from '../../lib/legal';
+import { FaviconSettings } from '../../components/favicon-settings';
 import { DeletePortfolio } from '../../components/delete-portfolio';
 import { publishEnvironment } from '../../lib/runtime';
 import { buildPublicSiteUrl } from '../../lib/publish/environment';
 import { AppearanceSettings } from '../../components/templates';
-import { editorRepository } from '../../lib/runtime';
-import { isVirginSite } from '../../lib/templates';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { pageAccount } from '../../lib/session';
@@ -19,16 +19,15 @@ export default async function Settings() {
   if (!site) redirect('/onboarding');
   const d = getDictionary(user.locale);
   const locale = supportedLocale(user.locale);
-  const document = await editorRepository().bootstrapAndRead(site.id, locale);
-  const virgin = isVirginSite(
-    site,
-    document.pages,
-    document.blocks as { type: string; content: unknown }[],
-  );
   return (
-    <main>
-      <h1>{d.settingsHeading}</h1>
-      <Link href="/dashboard">{d.back}</Link>
+    <main className="settings-page">
+      <header className="settings-header">
+        <div>
+          <p className="page-eyebrow">{d.brand}</p>
+          <h1>{d.settingsHeading}</h1>
+        </div>
+        <Link href="/dashboard">{d.dashboardHub.back}</Link>
+      </header>
       <section>
         <MetadataForm
           key={`${site.title}-${site.description}`}
@@ -49,13 +48,8 @@ export default async function Settings() {
           nextAllowedAt={nextHandleChange(site.handleChangedAt)?.toISOString()}
         />
       </section>
-      <AppearanceSettings
-        d={d}
-        locale={locale}
-        siteId={site.id}
-        initialTheme={site.theme}
-        virgin={virgin}
-      />
+      <FaviconSettings d={d} initialKey={site.faviconKey} />
+      <AppearanceSettings d={d} siteId={site.id} initialTheme={site.theme} />
       <DeletePortfolio
         d={d}
         handle={site.handle}
@@ -64,4 +58,9 @@ export default async function Settings() {
       <DeleteAccountForm d={d} locale={locale} handle={site.handle} />
     </main>
   );
+}
+
+export async function generateMetadata() {
+  const d = await legalDictionary();
+  return { title: `${d.settingsHeading} · Folyo`, robots: { index: false } };
 }

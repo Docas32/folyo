@@ -59,6 +59,41 @@ beforeEach(() => {
   });
 });
 describe('editor API authorization and validation', () => {
+  it('normalizes scheme-less social and button URLs before persistence', async () => {
+    const incoming = [
+      {
+        ...block,
+        type: 'social',
+        content: {
+          links: [{ platform: 'linkedin', url: ' linkedin.com/in/Maria ' }],
+        },
+      },
+      {
+        ...block,
+        id: '50000000-0000-4000-8000-000000000005',
+        position: 1,
+        type: 'button',
+        content: { label: 'Work', url: ' example.com/work ', style: 'primary' },
+      },
+    ];
+    expect((await PUT(req({ blocks: incoming }), context())).status).toBe(200);
+    expect(repo.replaceBlocks).toHaveBeenCalledWith(site.id, page.id, [
+      expect.objectContaining({
+        content: expect.objectContaining({
+          links: [
+            { platform: 'linkedin', url: 'https://linkedin.com/in/Maria' },
+          ],
+        }),
+      }),
+      expect.objectContaining({
+        content: {
+          label: 'Work',
+          url: 'https://example.com/work',
+          style: 'primary',
+        },
+      }),
+    ]);
+  });
   it('GET bootstraps and returns only the owner document', async () => {
     const response = await GET(new Request('http://localhost:3000/api/editor'));
     expect(response.status).toBe(200);

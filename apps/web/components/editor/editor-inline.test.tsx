@@ -108,11 +108,38 @@ async function debounce() {
 }
 function leave(input: HTMLElement) {
   fireEvent.blur(input, {
-    relatedTarget: screen.getByRole('link', { name: en.back }),
+    relatedTarget: screen.getByRole('link', { name: en.dashboardHub.back }),
   });
 }
 
 describe('WYSIWYG controlled block editing', () => {
+  it.each(['button', 'social'] as const)(
+    'trims and normalizes %s in the shared state when confirming, before its single autosave',
+    async (type) => {
+      vi.useFakeTimers();
+      const fetch = savedFetch();
+      mount([block(type)]);
+      const card = edit(type);
+      const input = within(card).getByRole('textbox', {
+        name: en.editor.fields.url,
+      });
+      fireEvent.change(input, { target: { value: ' linkedin.com/in/Maria ' } });
+      fireEvent.click(
+        within(card).getByRole('button', { name: en.editor.inline.done }),
+      );
+      expect(within(card).getByRole('link')).toHaveAttribute(
+        'href',
+        'https://linkedin.com/in/Maria',
+      );
+      await debounce();
+      expect(fetch).toHaveBeenCalledOnce();
+      const content = JSON.parse(fetch.mock.calls[0]![1].body).blocks[0]
+        .content;
+      expect(type === 'button' ? content.url : content.links[0].url).toBe(
+        'https://linkedin.com/in/Maria',
+      );
+    },
+  );
   it('renders heading first, edits inside its heading, commits on blur and sends one debounced full-list PUT', async () => {
     vi.useFakeTimers();
     const fetch = savedFetch();

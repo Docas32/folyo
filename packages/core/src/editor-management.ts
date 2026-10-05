@@ -8,7 +8,7 @@ export const imageMimeSchema = z.enum([
 ]);
 export const assetKeySchema = z
   .string()
-  .regex(/^assets\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/);
+  .regex(/^assets\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp|ico|svg)$/);
 export const assetUrlSchema = z.string().refine((value) => {
   if (!value.startsWith('/api/assets/')) return false;
   return assetKeySchema.safeParse(value.slice('/api/assets/'.length)).success;

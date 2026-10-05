@@ -2,6 +2,7 @@ import { templateAssetUrlSchema } from './templates';
 import { z } from 'zod';
 import { assetUrlSchema, MAX_PAGES } from './editor-management';
 import { getBlockPlaceholders } from './block-placeholders';
+import { normalizeExternalUrl } from './external-url';
 export const MAX_BLOCKS = 100;
 export const MAX_GALLERY_ITEMS = 12;
 export const MAX_SOCIAL_LINKS = 10;
@@ -64,14 +65,20 @@ export const galleryItemSchema = z
 export const galleryContentSchema = z
   .object({ items: z.array(galleryItemSchema).min(1).max(MAX_GALLERY_ITEMS) })
   .strict();
+const navigationUrlSchema = z.string().transform((value, context) => {
+  if (value.trim() === '#') return '#';
+  const normalized = normalizeExternalUrl(value);
+  if (!normalized)
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Invalid external URL',
+    });
+  return normalized ?? value;
+});
 export const buttonContentSchema = z
   .object({
     label: z.string().min(1).max(60),
-    url: z.union([
-      externalUrlSchema,
-      z.literal('#'),
-      z.string().regex(/^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/),
-    ]),
+    url: navigationUrlSchema,
     style: z.enum(['primary', 'outline']),
   })
   .strict();
@@ -95,7 +102,14 @@ export const socialContentSchema = z
     align: z.enum(['start', 'center', 'end']).default('start'),
     links: z
       .array(
-        z.object({ platform: socialPlatformSchema, url: z.string() }).strict(),
+        z
+          .object({
+            platform: socialPlatformSchema,
+            url: z
+              .string()
+              .transform((value) => normalizeExternalUrl(value) ?? value),
+          })
+          .strict(),
       )
       .min(1)
       .max(MAX_SOCIAL_LINKS),
@@ -131,6 +145,25 @@ const variants = [
 export const blockContentSchema = z.discriminatedUnion('type', variants);
 export type BlockContent = z.infer<typeof blockContentSchema>;
 export type BlockType = BlockContent['type'];
+export function normalizeBlockLinks<T extends BlockContent>(block: T): T {
+  if (block.type === 'button') {
+    const url =
+      block.content.url.trim() === '#'
+        ? '#'
+        : normalizeExternalUrl(block.content.url);
+    if (url && url !== block.content.url)
+      return { ...block, content: { ...block.content, url } } as T;
+  }
+  if (block.type === 'social') {
+    const links = block.content.links.map((link) => ({
+      ...link,
+      url: normalizeExternalUrl(link.url) ?? link.url,
+    }));
+    if (links.some((link, i) => link.url !== block.content.links[i]!.url))
+      return { ...block, content: { ...block.content, links } } as T;
+  }
+  return block;
+}
 export type ContentByType = {
   [T in BlockType]: Extract<BlockContent, { type: T }>['content'];
 };
@@ -194,6 +227,15 @@ export const saveBlocksSchema = z
   .superRefine(({ blocks }, context) => {
     const seen = new Set<string>();
     blocks.forEach((block, index) => {
+      if (block.type === 'social')
+        block.content.links.forEach((link, linkIndex) => {
+          if (!normalizeExternalUrl(link.url))
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['blocks', index, 'content', 'links', linkIndex, 'url'],
+              message: 'Invalid external URL',
+            });
+        });
       if (seen.has(block.id))
         context.addIssue({
           code: z.ZodIssueCode.custom,

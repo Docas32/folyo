@@ -1,3 +1,4 @@
+import { legalDictionary } from '../../lib/legal';
 import Link from 'next/link';
 import { pageAccount } from '../../lib/session';
 import { getDictionary, supportedLocale } from '../../lib/i18n';
@@ -18,4 +19,12 @@ export default async function AcceptTerms() {
       <Logout label={d.signOut} />
     </main>
   );
+}
+
+export async function generateMetadata() {
+  const d = await legalDictionary();
+  return {
+    title: `${d.termsHeading} · Folyo`,
+    robots: { index: false, follow: false },
+  };
 }

@@ -24,6 +24,7 @@ export type SnapshotSite = {
   title: string | null;
   description: string | null;
   locale: string;
+  faviconKey?: string | null;
 };
 export type RenderOptions = {
   appUrl: string;
@@ -131,6 +132,18 @@ export async function renderPageHtml(
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title}</title>
         <meta name="description" content={site.description ?? ''} />
+        <meta name="robots" content="index,follow" />
+        <link
+          rel="icon"
+          href={
+            new URL(
+              site.faviconKey
+                ? `/api/assets/${site.faviconKey}`
+                : '/favicon.svg',
+              appUrl,
+            ).href
+          }
+        />
         <link rel="canonical" href={canonical} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={site.description ?? ''} />
@@ -148,6 +161,12 @@ export async function renderPageHtml(
             content={absoluteAssetUrl(image, appUrl)}
           />
         )}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <link rel="stylesheet" href={googleFontsUrl(theme)} />
         <link rel="stylesheet" href={`./site.css?v=${opts.version}`} />
       </head>
@@ -162,6 +181,10 @@ export async function renderPageHtml(
             .map((block) => absoluteImages(block, appUrl))}
           basePath=""
           appUrl={appUrl}
+          reportUrl={
+            new URL(`/report?site=${encodeURIComponent(site.handle)}`, appUrl)
+              .href
+          }
           chrome={getDictionary(locale).siteChrome}
           relativeNavigation
           embedCss={false}

@@ -2,13 +2,30 @@ import { describe, expect, it, vi } from 'vitest';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import { createDb, type Database } from './index';
-import { recomputeOrphans, recomputeOrphansQuery } from './asset-gc';
+import {
+  recomputeOrphans,
+  recomputeOrphansQuery,
+  publishedAssetProtection,
+} from './asset-gc';
+import { sql } from 'drizzle-orm';
 const db = createDb('postgres://test:test@localhost/db');
 const dialect = new PgDialect();
 function compile(query: unknown) {
   return dialect.sqlToQuery((query as { getSQL(): SQL }).getSQL());
 }
 describe('recomputeOrphans transaction', () => {
+  it('protects the current favicon and retains icons used by live snapshots', () => {
+    const references = compile(recomputeOrphansQuery(db, { userId: 'owner' }));
+    expect(references.sql).toContain(
+      'select s.favicon_key as key from sites s',
+    );
+    const protection = dialect.sqlToQuery(
+      publishedAssetProtection(sql`a.r2_key`),
+    );
+    expect(protection.sql).toContain('from sites where favicon_key = a.r2_key');
+    expect(protection.sql).toContain('pub.assets_keys @>');
+    expect(protection.sql).toContain('op.assets_keys @>');
+  });
   it('marks newly unreferenced assets while preserving the original grace timestamp', () => {
     const query = compile(recomputeOrphansQuery(db, { userId: 'owner' }));
     expect(query.sql).toContain('else coalesce(a.orphaned_at, now())');

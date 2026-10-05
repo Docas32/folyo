@@ -207,6 +207,32 @@ describe('pure block rendering', () => {
       9,
     );
   });
+  it('defends both navigation renders against scheme-less legacy content', () => {
+    const { container } = render(
+      <>
+        <SocialRender
+          content={{
+            layout: 'row',
+            align: 'start',
+            links: [{ platform: 'linkedin', url: ' linkedin.com/in/x ' }],
+          }}
+          theme={theme}
+        />
+        <ButtonRender
+          content={{ label: 'Work', url: 'example.com/work', style: 'primary' }}
+          theme={theme}
+        />
+      </>,
+    );
+    expect(container.querySelector('a[aria-label="LinkedIn"]')).toHaveAttribute(
+      'href',
+      'https://linkedin.com/in/x',
+    );
+    expect(container.querySelector('.site-button')).toHaveAttribute(
+      'href',
+      'https://example.com/work',
+    );
+  });
   it.each([
     'javascript:alert(1)',
     'data:text/html,<script>x</script>',

@@ -1,3 +1,4 @@
+import { legalDictionary } from '../../lib/legal';
 import { redirect } from 'next/navigation';
 import { pageAccount } from '../../lib/session';
 import { getDictionary, supportedLocale } from '../../lib/i18n';
@@ -26,4 +27,9 @@ export default async function EditorPage() {
       locale={supportedLocale(user.locale)}
     />
   );
+}
+
+export async function generateMetadata() {
+  const d = await legalDictionary();
+  return { title: `${d.editor.heading} · Folyo`, robots: { index: false } };
 }

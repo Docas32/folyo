@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-04",
+  "scope": "Local production landing and real renderPageHtml professional pt-BR snapshot. No production deployment.",
+  "reports": {
+    "landing": {
+      "url": "http://127.0.0.1:3016/",
+      "fetchTime": "2026-10-05T00:25:50.247Z",
+      "lighthouseVersion": "13.5.0",
+      "browser": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+      "config": {
+        "formFactor": "mobile",
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        }
+      },
+      "scores": {
+        "performance": 91,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 828.91,
+          "display": "0.8 s"
+        },
+        "largest-contentful-paint": {
+          "value": 2917.595,
+          "display": "2.9 s"
+        },
+        "total-blocking-time": {
+          "value": 220.04500000000007,
+          "display": "220 ms"
+        },
+        "speed-index": {
+          "value": 2288.784447130337,
+          "display": "2.3 s"
+        },
+        "cumulative-layout-shift": {
+          "value": 0,
+          "display": "0"
+        }
+      }
+    },
+    "published": {
+      "url": "http://127.0.0.1:3017/",
+      "fetchTime": "2026-10-05T00:26:23.129Z",
+      "lighthouseVersion": "13.5.0",
+      "browser": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+      "config": {
+        "formFactor": "mobile",
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        }
+      },
+      "scores": {
+        "performance": 91,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 2770.5290999999997,
+          "display": "2.8 s"
+        },
+        "largest-contentful-paint": {
+          "value": 2770.5290999999997,
+          "display": "2.8 s"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "display": "0 ms"
+        },
+        "speed-index": {
+          "value": 2830.21214399372,
+          "display": "2.8 s"
+        },
+        "cumulative-layout-shift": {
+          "value": 0,
+          "display": "0"
+        }
+      }
+    }
+  },
+  "snapshotHtmlBytes": {
+    "home": 3405,
+    "experience": 2713,
+    "contact": 2452
+  }
+}

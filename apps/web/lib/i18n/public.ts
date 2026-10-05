@@ -1,0 +1,190 @@
+export const publicEn = {
+  navigation: 'Main navigation',
+  footerNavigation: 'Legal and support',
+  locale: 'en',
+  exampleHandle: 'maya.folyo',
+  tagline: 'Your portfolio. One link.',
+  subtitle: 'Turn what you do into a portfolio that feels like you.',
+  title: 'Folyo — Your portfolio. One link.',
+  description:
+    'Create a personal, multi-page portfolio. Edit by clicking, choose your style and publish your own link with Folyo.',
+  features: [
+    {
+      title: 'No code — edit by clicking',
+      text: 'Write directly on your page. Add images, projects and links without touching code.',
+    },
+    {
+      title: 'Multiple pages, your own address',
+      text: 'Give your work room to breathe, with up to five pages at one memorable link.',
+    },
+    {
+      title: 'Publish in minutes, edit anytime',
+      text: 'Start with a complete template. Preview, publish and keep making it yours.',
+    },
+  ],
+  exampleLabel: 'Portfolio example',
+  exampleName: 'Maya Chen',
+  exampleTitle: 'Designer of useful, thoughtful things',
+  exampleBio:
+    'I turn complex ideas into clear experiences. Here is a little of my work.',
+  examplePage: 'Home',
+  exampleAbout: 'About',
+  exampleWork: 'Selected work',
+  cookies: {
+    label: 'Cookie preferences',
+    text: 'We use essential cookies to keep your session secure and remember preferences. Optional cookies are not active in this MVP.',
+    accept: 'Accept',
+    essential: 'Essential only',
+    saved: 'Cookie preference saved.',
+  },
+  report: {
+    title: 'Report a portfolio',
+    description:
+      'Help keep Folyo safe. Reports are reviewed by the service team.',
+    handle: 'Portfolio handle',
+    reason: 'Reason',
+    details: 'Details (optional)',
+    hint: 'Describe the issue without including sensitive personal data. Up to 2,000 characters.',
+    submit: 'Submit report',
+    success: 'Thank you. Your report was received for review.',
+    error: 'Could not send the report. Please try again.',
+    rate: 'Too many reports. Wait a minute and try again.',
+    reasons: {
+      spam: 'Spam',
+      phishing: 'Phishing',
+      illegal: 'Illegal content',
+      impersonation: 'Impersonation',
+      other: 'Other',
+    },
+  },
+  admin: {
+    title: 'Report queue',
+    all: 'All statuses',
+    empty: 'No reports with this status.',
+    status: 'Status',
+    statuses: { open: 'Open', reviewed: 'Reviewed', actioned: 'Actioned' },
+    reviewed: 'Mark reviewed',
+    actioned: 'Mark actioned',
+    note: 'Status updates record the review. Content and publication changes are performed separately using the existing tools.',
+    error: 'Could not update the report.',
+    saved: 'Report updated.',
+  },
+  favicon: {
+    title: 'Portfolio icon',
+    description:
+      'PNG, ICO or simple SVG, up to 256 KB. Republish to update the live site.',
+    choose: 'Choose favicon',
+    alt: 'Portfolio icon preview',
+    error:
+      'Could not save the icon. Use a valid PNG, ICO or simple SVG up to 256 KB.',
+    saved: 'Icon saved. Republish to update your portfolio.',
+    default: 'Restore default icon',
+  },
+  notFound: {
+    title: 'Page not found',
+    text: 'This link may have changed or the page is no longer available.',
+  },
+  loading: 'Loading your portfolio…',
+  legalUpdated: 'Last updated: October 4, 2026',
+  legalOwner: 'Service operator',
+  legalContact: 'Privacy and legal contact',
+  contactPending:
+    'The operator must provide its legal identification and contact channel before public launch.',
+};
+export const publicPt: typeof publicEn = {
+  navigation: 'Navegação principal',
+  footerNavigation: 'Informações legais e suporte',
+  locale: 'pt-BR',
+  exampleHandle: 'clara.folyo',
+  tagline: 'Seu portfólio, um link.',
+  subtitle: 'Transforme o que você faz em um portfólio com a sua identidade.',
+  title: 'Folyo — Seu portfólio, um link.',
+  description:
+    'Crie um portfólio pessoal com várias páginas. Edite clicando, escolha seu estilo e publique seu próprio link com o Folyo.',
+  features: [
+    {
+      title: 'Sem código — edite clicando',
+      text: 'Escreva na própria página. Adicione imagens, projetos e links sem tocar em código.',
+    },
+    {
+      title: 'Multi-página com seu endereço',
+      text: 'Dê espaço ao seu trabalho, com até cinco páginas em um link fácil de lembrar.',
+    },
+    {
+      title: 'Publicar em minutos, editar quando quiser',
+      text: 'Comece com um template completo. Veja o preview, publique e deixe cada detalhe com a sua cara.',
+    },
+  ],
+  exampleLabel: 'Exemplo de portfólio',
+  exampleName: 'Clara Nunes',
+  exampleTitle: 'Design para ideias que merecem ganhar vida',
+  exampleBio:
+    'Transformo ideias complexas em experiências claras. Conheça um pouco do meu trabalho.',
+  examplePage: 'Início',
+  exampleAbout: 'Sobre',
+  exampleWork: 'Trabalhos selecionados',
+  cookies: {
+    label: 'Preferências de cookies',
+    text: 'Usamos cookies essenciais para proteger sua sessão e lembrar preferências. Cookies opcionais não estão ativos neste MVP.',
+    accept: 'Aceitar',
+    essential: 'Essenciais apenas',
+    saved: 'Preferência de cookies salva.',
+  },
+  report: {
+    title: 'Denunciar um portfólio',
+    description:
+      'Ajude a manter o Folyo seguro. As denúncias são analisadas pela equipe do serviço.',
+    handle: 'Handle do portfólio',
+    reason: 'Motivo',
+    details: 'Detalhes (opcional)',
+    hint: 'Descreva o problema sem incluir dados pessoais sensíveis. Até 2.000 caracteres.',
+    submit: 'Enviar denúncia',
+    success: 'Obrigado. Sua denúncia foi recebida para análise.',
+    error: 'Não foi possível enviar a denúncia. Tente novamente.',
+    rate: 'Muitas denúncias. Aguarde um minuto e tente novamente.',
+    reasons: {
+      spam: 'Spam',
+      phishing: 'Phishing',
+      illegal: 'Conteúdo ilegal',
+      impersonation: 'Impersonação',
+      other: 'Outro',
+    },
+  },
+  admin: {
+    title: 'Fila de denúncias',
+    all: 'Todos os status',
+    empty: 'Nenhuma denúncia com este status.',
+    status: 'Status',
+    statuses: {
+      open: 'Aberta',
+      reviewed: 'Revisada',
+      actioned: 'Ação registrada',
+    },
+    reviewed: 'Marcar como revisada',
+    actioned: 'Registrar ação',
+    note: 'O status registra a análise. Alterações de conteúdo e publicação são feitas separadamente pelas ferramentas existentes.',
+    error: 'Não foi possível atualizar a denúncia.',
+    saved: 'Denúncia atualizada.',
+  },
+  favicon: {
+    title: 'Ícone do portfólio',
+    description:
+      'PNG, ICO ou SVG simples, até 256 KB. Republique para atualizar o site no ar.',
+    choose: 'Escolher favicon',
+    alt: 'Preview do ícone do portfólio',
+    error:
+      'Não foi possível salvar o ícone. Use PNG, ICO ou SVG simples válido, até 256 KB.',
+    saved: 'Ícone salvo. Republique para atualizar seu portfólio.',
+    default: 'Restaurar ícone padrão',
+  },
+  notFound: {
+    title: 'Página não encontrada',
+    text: 'Este link pode ter mudado ou a página não está mais disponível.',
+  },
+  loading: 'Carregando seu portfólio…',
+  legalUpdated: 'Última atualização: 4 de outubro de 2026',
+  legalOwner: 'Responsável pelo serviço',
+  legalContact: 'Contato de privacidade e assuntos legais',
+  contactPending:
+    'O responsável deve informar sua identificação jurídica e canal de contato antes do lançamento público.',
+};

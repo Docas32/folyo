@@ -1,3 +1,5 @@
+import { createFaviconRepository } from './favicon-repository';
+import { createReportsRepository } from './reports-repository';
 import { createSiteDeletionRepository } from './site-deletion-repository';
 import type { DeletionBindings } from './site-deletion-service';
 import { createTemplateRepository } from './template-repository';
@@ -81,4 +83,12 @@ export async function siteDeletionBindings(): Promise<DeletionBindings> {
     sites: async () => env.SITES_BUCKET,
     assets: async () => (await accountBuckets()).assets,
   };
+}
+
+export function reportsRepository() {
+  return createReportsRepository(serverEnv().DATABASE_URL);
+}
+
+export function faviconRepository() {
+  return createFaviconRepository(serverEnv().DATABASE_URL);
 }

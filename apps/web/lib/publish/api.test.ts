@@ -124,6 +124,8 @@ describe('publication API', () => {
       `sites/${site.id}/v1/index.html`,
       `sites/${site.id}/v1/about/index.html`,
       `sites/${site.id}/v1/site.css`,
+      `sites/${site.id}/v1/robots.txt`,
+      `sites/${site.id}/v1/sitemap.xml`,
     ]);
     expect(repo.record).toHaveBeenCalledWith(
       site.id,
@@ -372,4 +374,27 @@ describe('publication API', () => {
       ok: true,
     });
   });
+});
+
+it('protects custom favicon assets and writes SEO files for the same publication timestamp', async () => {
+  current = {
+    ...current,
+    faviconKey: `assets/${user.id}/50000000-0000-4000-8000-000000000006.svg`,
+  };
+  expect((await publish(req())).status).toBe(200);
+  expect(repo.protect).toHaveBeenCalledWith(
+    site.id,
+    expect.any(String),
+    expect.arrayContaining([current.faviconKey]),
+  );
+  expect(objects.get(`sites/${site.id}/v1/index.html`)).toContain(
+    `href="http://app.lvh.me:3000/api/assets/${current.faviconKey}"`,
+  );
+  const sitemap = objects.get(`sites/${site.id}/v1/sitemap.xml`)!;
+  const publishedAt = repo.record.mock.calls[0]![4];
+  expect(sitemap).toContain(publishedAt.toISOString());
+  expect(sitemap).toContain('http://maria.lvh.me:8787/about');
+  expect(objects.get(`sites/${site.id}/v1/robots.txt`)).toContain(
+    'Sitemap: http://maria.lvh.me:8787/sitemap.xml',
+  );
 });

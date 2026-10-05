@@ -9,14 +9,20 @@ export const applyTemplate = route(async (request) => {
   const { user, site } = await apiAccount(request, 'site');
   if (!site) throw new AccountError('siteRequired', 409);
   assertEditorOwner(user.id, site);
-  const { templateId } = await body(
+  const { templateId, applyContent } = await body(
     request,
-    z.object({ templateId: templateSchema }).strict(),
+    z
+      .object({
+        templateId: templateSchema,
+        applyContent: z.literal(false).optional(),
+      })
+      .strict(),
   );
   const result = await templateRepository().apply(
     site.id,
     user.id,
     buildTemplate(templateId, user.locale),
+    ...(applyContent === false ? ([false] as const) : []),
   );
   return Response.json(result, { status: result.contentSkipped ? 409 : 200 });
 });

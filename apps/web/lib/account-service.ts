@@ -1,11 +1,15 @@
-import { handleSchema, RESERVED_HANDLES } from '@folyo/core';
+import {
+  handleSchema,
+  RESERVED_HANDLES,
+  hasAcceptedCurrentTerms,
+} from '@folyo/core';
 import type { assets, sites, users } from '@folyo/db';
 import type { z } from 'zod';
 import type { sitePatchSchema } from './schemas';
 export type User = typeof users.$inferSelect;
 export type Site = typeof sites.$inferSelect;
 export type Asset = typeof assets.$inferSelect;
-export const TERMS_VERSION = '2026-10-v1';
+export { TERMS_VERSION } from '@folyo/core';
 export const HANDLE_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 export type ErrorCode =
   | 'unauthorized'
@@ -55,7 +59,7 @@ export interface Repository {
   deleteUser(userId: string): Promise<void>;
 }
 export function postLoginPath(user: User, site: Site | undefined) {
-  return !user.termsAcceptedAt
+  return !hasAcceptedCurrentTerms(user)
     ? '/accept-terms'
     : !site
       ? '/onboarding'

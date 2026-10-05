@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
+    // Keep JSDOM editor tests within the memory/CPU budget of small CI runners.
+    maxWorkers: 2,
     environment: 'jsdom',
     environmentMatchGlobs: [
       ['apps/web/components/**/*.test.{ts,tsx}', 'jsdom'],

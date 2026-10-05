@@ -128,6 +128,7 @@ app.all('*', async (c) => {
       if (/^\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(path))
         return c.redirect(`${path.slice(0, -1)}${url.search}`, 301);
       const css = path === '/site.css';
+      const seo = path === '/robots.txt' || path === '/sitemap.xml';
       const versionParam = url.searchParams.get('v');
       const cssVersion =
         css && versionParam ? Number(versionParam) : pointer.version;
@@ -138,17 +139,26 @@ app.all('*', async (c) => {
           cssVersion > pointer.version)
       )
         return notFound();
-      if (!css && path !== '/' && !/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path))
+      if (
+        !css &&
+        !seo &&
+        path !== '/' &&
+        !/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path)
+      )
         return notFound();
       const prefix = `sites/${pointer.siteId}/v${css ? cssVersion : pointer.version}/`;
-      const objectKey = `${prefix}${css ? 'site.css' : path === '/' ? 'index.html' : `${path.slice(1)}/index.html`}`;
+      const objectKey = `${prefix}${css ? 'site.css' : seo ? path.slice(1) : path === '/' ? 'index.html' : `${path.slice(1)}/index.html`}`;
       const object = await c.env.SITES_BUCKET.get(objectKey);
       if (!object) return notFound();
       return new Response(c.req.method === 'HEAD' ? null : object.body, {
         headers: {
-          'Content-Type': css
-            ? 'text/css; charset=utf-8'
-            : 'text/html; charset=utf-8',
+          'Content-Type': seo
+            ? path === '/robots.txt'
+              ? 'text/plain; charset=utf-8'
+              : 'application/xml; charset=utf-8'
+            : css
+              ? 'text/css; charset=utf-8'
+              : 'text/html; charset=utf-8',
           'Cache-Control':
             css && versionParam
               ? 'public,max-age=31536000,immutable'

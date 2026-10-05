@@ -1,10 +1,16 @@
+import { dashboardEn } from './dashboard';
+import { publicEn } from './public';
+import { legalEn } from './legal-content';
 import { siteDeletionEn } from './site-deletion';
 import { templateEn } from './templates';
 import { getBlockPlaceholders } from '@folyo/core';
 const en = {
+  dashboardHub: dashboardEn,
   siteDeletion: siteDeletionEn,
   templates: templateEn,
   signInError: 'Could not sign in with Google. Please try again.',
+  public: publicEn,
+  legal: legalEn,
   brand: 'Folyo',
   welcome: 'Your portfolio starts here',
   welcomeBody: 'Sign in to create and manage your portfolio.',
@@ -88,7 +94,11 @@ const en = {
       'APP_PUBLIC_URL is invalid: configure the HTTP(S) app origin',
     publicationBusy: 'A publication is already in progress. Try again shortly.',
   },
-  siteChrome: { navigation: 'Site pages', madeWith: 'Made with Folyo' },
+  siteChrome: {
+    report: 'Report this site',
+    navigation: 'Site pages',
+    madeWith: 'Made with Folyo',
+  },
   editor: {
     inline: {
       link: 'Insert link',

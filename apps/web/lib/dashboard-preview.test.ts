@@ -3,8 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 vi.mock('./session', () => ({ pageAccount: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('./runtime', () => ({
-  editorRepository: () => ({bootstrapAndRead: async () => ({pages: [], blocks: []})}),
+  editorRepository: () => ({
+    bootstrapAndRead: async () => ({ pages: [], blocks: [] }),
+  }),
   publishEnvironment: () => ({
     ROOT_DOMAIN: 'lvh.me',
     ENVIRONMENT: 'dev',
@@ -16,7 +19,8 @@ vi.mock('../components/forms', () => ({
   CopyLink: () => createElement('button', null, 'Copiar link'),
 }));
 vi.mock('../components/publication-actions', () => ({
-  PublicationActions: () => null,
+  PublicationActions: ({ children }: { children: import('react').ReactNode }) =>
+    children,
 }));
 vi.mock('../components/logout', () => ({ Logout: () => null }));
 import Dashboard from '../app/dashboard/page';
@@ -36,8 +40,9 @@ describe('dashboard draft preview', () => {
     expect(html).toContain('Ver preview');
     expect(html).toContain(`href="http://${'a'.repeat(30)}.lvh.me:8787"`);
     expect(html).not.toContain('.lvh.me:3000');
+    expect(html).toContain('class="dashboard-site-card"');
     expect(html).toMatch(
-      /<section>[\s\S]*class="dashboard-link-row"[\s\S]*class="dashboard-url"[\s\S]*<button>Copiar link<\/button>[\s\S]*Ver preview[\s\S]*<\/section>/,
+      /class="dashboard-link-row dashboard-edit-actions"[\s\S]*Ver preview[\s\S]*<button>Copiar link<\/button>/,
     );
     const css = readFileSync(
       new URL('../app/globals.css', import.meta.url),

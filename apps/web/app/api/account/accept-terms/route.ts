@@ -6,6 +6,9 @@ export const POST = route(async (request) => {
   await body(request, termsSchema);
   await repo.acceptTerms(user.id, TERMS_VERSION, new Date());
   return Response.json({
-    redirect: postLoginPath({ ...user, termsAcceptedAt: new Date() }, site),
+    redirect: postLoginPath(
+      { ...user, termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION },
+      site,
+    ),
   });
 });

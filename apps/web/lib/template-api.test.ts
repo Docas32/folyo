@@ -38,6 +38,27 @@ beforeEach(() => {
   }));
 });
 describe('template API', () => {
+  it('explicitly preserves content for dashboard style choices, even on a virgin site', async () => {
+    repo.apply.mockResolvedValue({
+      appliedTheme: true,
+      contentSkipped: true,
+      theme: DEFAULT_THEME,
+    });
+    const response = await POST(
+      request('POST', { templateId: 'professional', applyContent: false }),
+    );
+    expect(response.status).toBe(409);
+    expect(repo.apply).toHaveBeenCalledWith(
+      site.id,
+      user.id,
+      expect.anything(),
+      false,
+    );
+    expect(await response.json()).toMatchObject({
+      appliedTheme: true,
+      contentSkipped: true,
+    });
+  });
   it('applies content and theme to virgin sites using authenticated ownership', async () => {
     const response = await POST(request('POST', { templateId: 'creative' }));
     expect(response.status).toBe(200);
