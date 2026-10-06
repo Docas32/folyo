@@ -1,1 +1,587 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"><rect x="0" y="0" width="1200" height="900" rx="0" fill="#E5EDF8" stroke="none"/><rect x="70" y="85" width="1060" height="730" rx="16" fill="#FAFCFF" stroke="none"/><rect x="70" y="85" width="1060" height="55" rx="16" fill="#161E30" stroke="none"/><circle cx="100" cy="112" r="5" fill="#FF8170" stroke="none"/><circle cx="122" cy="112" r="5" fill="#EBC780" stroke="none"/><circle cx="144" cy="112" r="5" fill="#83BEAB" stroke="none"/><rect x="70" y="140" width="190" height="675" rx="0" fill="#F0F4FB" stroke="none"/><text x="98" y="198" font-family="sans-serif" font-size="24" font-weight="700" fill="#1E5AA8">ATLAS</text><rect x="98" y="250" width="115" height="9" rx="4" fill="#CED8E8" stroke="none"/><rect x="98" y="300" width="115" height="9" rx="4" fill="#CED8E8" stroke="none"/><rect x="98" y="350" width="115" height="9" rx="4" fill="#CED8E8" stroke="none"/><rect x="98" y="400" width="115" height="9" rx="4" fill="#CED8E8" stroke="none"/><rect x="300" y="190" width="230" height="130" rx="10" fill="#FFFFFF" stroke="#DBE4F1"/><text x="325" y="253" font-family="sans-serif" font-size="40" font-weight="600" fill="#161E30">24</text><rect x="325" y="280" width="100" height="7" rx="3" fill="#CED8E8" stroke="none"/><rect x="558" y="190" width="230" height="130" rx="10" fill="#FFFFFF" stroke="#DBE4F1"/><text x="583" y="253" font-family="sans-serif" font-size="40" font-weight="600" fill="#161E30">128</text><rect x="583" y="280" width="100" height="7" rx="3" fill="#CED8E8" stroke="none"/><rect x="816" y="190" width="230" height="130" rx="10" fill="#FFFFFF" stroke="#DBE4F1"/><text x="841" y="253" font-family="sans-serif" font-size="40" font-weight="600" fill="#161E30">96</text><rect x="841" y="280" width="100" height="7" rx="3" fill="#CED8E8" stroke="none"/><rect x="300" y="360" width="750" height="260" rx="10" fill="#FFFFFF" stroke="#DBE4F1"/><rect x="330" y="575" width="38" height="25" rx="4" fill="#1E5AA8" stroke="none"/><rect x="392" y="533" width="38" height="67" rx="4" fill="#1E5AA8" stroke="none"/><rect x="454" y="491" width="38" height="109" rx="4" fill="#1E5AA8" stroke="none"/><rect x="516" y="449" width="38" height="151" rx="4" fill="#1E5AA8" stroke="none"/><rect x="578" y="547" width="38" height="53" rx="4" fill="#1E5AA8" stroke="none"/><rect x="640" y="505" width="38" height="95" rx="4" fill="#1E5AA8" stroke="none"/><rect x="702" y="463" width="38" height="137" rx="4" fill="#1E5AA8" stroke="none"/><rect x="764" y="421" width="38" height="179" rx="4" fill="#1E5AA8" stroke="none"/><rect x="826" y="519" width="38" height="81" rx="4" fill="#1E5AA8" stroke="none"/><rect x="888" y="477" width="38" height="123" rx="4" fill="#1E5AA8" stroke="none"/><rect x="950" y="435" width="38" height="165" rx="4" fill="#1E5AA8" stroke="none"/><rect x="300" y="655" width="750" height="28" rx="4" fill="#F0F4FB" stroke="none"/><rect x="300" y="697" width="750" height="28" rx="4" fill="#F0F4FB" stroke="none"/><rect x="300" y="739" width="750" height="28" rx="4" fill="#F0F4FB" stroke="none"/></svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 900"
+  width="1200"
+  height="900"
+>
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow
+        dx="0"
+        dy="24"
+        stdDeviation="24"
+        flood-color="#152030"
+        flood-opacity=".18"
+      />
+    </filter>
+    <linearGradient id="paper" x2="1" y2="1">
+      <stop stop-color="#fff" />
+      <stop offset="1" stop-color="#e9e4da" />
+    </linearGradient>
+    <linearGradient id="desk" x2="0" y2="1">
+      <stop stop-color="#dce5f1" />
+      <stop offset="1" stop-color="#c6c3bd" />
+    </linearGradient>
+    <linearGradient id="glass" x2="1" y2="1">
+      <stop stop-color="#ffffff" stop-opacity=".35" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#dce5f1" />
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#dce5f1" />
+  <circle cx="1040" cy="105" r="285" fill="#c5d5ea" />
+  <circle cx="112" cy="830" r="249" fill="#cbd8e9" />
+  <g transform="translate(78 118)" filter="url(#shadow)">
+    <rect x="0" y="0" width="1044" height="665" rx="12" fill="#fbfcff" />
+    <rect x="0" y="0" width="1044" height="40" rx="12" fill="#15233a" />
+    <rect x="0" y="22" width="1044" height="18" rx="0" fill="#15233a" />
+    <circle cx="22" cy="20" r="4" fill="#f59d91" />
+    <circle cx="39" cy="20" r="4" fill="#f4cd82" />
+    <circle cx="56" cy="20" r="4" fill="#9ecba8" />
+    <text
+      x="437"
+      y="25"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7b7ce"
+    >
+      app.atlas.dev / overview
+    </text>
+    <rect x="0" y="40" width="192" height="625" rx="0" fill="#edf2fa" />
+    <text
+      x="26"
+      y="84"
+      font-family="Arial, sans-serif"
+      font-size="26"
+      font-weight="700"
+      fill="#1d365a"
+    >
+      Atlas /
+    </text>
+    <text
+      x="26"
+      y="113"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#7c8ba1"
+      letter-spacing="2"
+    >
+      WORKSPACE
+    </text>
+    <rect x="16" y="137" width="160" height="35" rx="6" fill="#dbe6f7" />
+    <text
+      x="32"
+      y="160"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Overview
+    </text>
+    <text
+      x="32"
+      y="202"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Projects
+    </text>
+    <text
+      x="32"
+      y="244"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Analytics
+    </text>
+    <text
+      x="32"
+      y="286"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Deployments
+    </text>
+    <text
+      x="32"
+      y="328"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Team
+    </text>
+    <text
+      x="32"
+      y="370"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Settings
+    </text>
+    <path d="M22 449h148" stroke="#d4deec" />
+    <text
+      x="26"
+      y="481"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#7c8ba1"
+      letter-spacing="1"
+    >
+      RECENT PROJECTS
+    </text>
+    <text
+      x="32"
+      y="513"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#60748f"
+    >
+      Portfolio API
+    </text>
+    <text
+      x="32"
+      y="542"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#60748f"
+    >
+      Design system
+    </text>
+    <text
+      x="32"
+      y="571"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#60748f"
+    >
+      Client dashboard
+    </text>
+    <circle cx="35" cy="619" r="13" fill="#bdd0eb" />
+    <text
+      x="58"
+      y="615"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="700"
+      fill="#435a78"
+    >
+      Product team
+    </text>
+    <text
+      x="58"
+      y="633"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#7c8ba1"
+    >
+      Personal workspace
+    </text>
+    <text
+      x="225"
+      y="88"
+      font-family="Arial, sans-serif"
+      font-size="27"
+      font-weight="700"
+      fill="#172c49"
+    >
+      Workspace overview
+    </text>
+    <text
+      x="225"
+      y="116"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#74869d"
+    >
+      Your projects, performance and recent activity in one place.
+    </text>
+    <rect x="872" y="66" width="139" height="36" rx="6" fill="#285ca6" />
+    <text
+      x="891"
+      y="89"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="700"
+      fill="#fff"
+    >
+      + New project
+    </text>
+    <rect
+      x="225"
+      y="145"
+      width="247"
+      height="111"
+      rx="8"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="241"
+      y="172"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#74869d"
+    >
+      Active projects
+    </text>
+    <text
+      x="241"
+      y="212"
+      font-family="Arial, sans-serif"
+      font-size="30"
+      font-weight="700"
+      fill="#172c49"
+    >
+      24
+    </text>
+    <text
+      x="241"
+      y="238"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#267c65"
+    >
+      +3 this month
+    </text>
+    <rect
+      x="495"
+      y="145"
+      width="247"
+      height="111"
+      rx="8"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="511"
+      y="172"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#74869d"
+    >
+      Uptime
+    </text>
+    <text
+      x="511"
+      y="212"
+      font-family="Arial, sans-serif"
+      font-size="30"
+      font-weight="700"
+      fill="#172c49"
+    >
+      99.98%
+    </text>
+    <text
+      x="511"
+      y="238"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#267c65"
+    >
+      All systems operational
+    </text>
+    <rect
+      x="765"
+      y="145"
+      width="247"
+      height="111"
+      rx="8"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="781"
+      y="172"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#74869d"
+    >
+      Avg. response
+    </text>
+    <text
+      x="781"
+      y="212"
+      font-family="Arial, sans-serif"
+      font-size="30"
+      font-weight="700"
+      fill="#172c49"
+    >
+      1.42 s
+    </text>
+    <text
+      x="781"
+      y="238"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#267c65"
+    >
+      18% faster
+    </text>
+    <rect
+      x="225"
+      y="277"
+      width="516"
+      height="242"
+      rx="8"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="246"
+      y="308"
+      font-family="Arial, sans-serif"
+      font-size="15"
+      font-weight="700"
+      fill="#172c49"
+    >
+      Traffic overview
+    </text>
+    <text
+      x="634"
+      y="308"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#74869d"
+    >
+      Last 30 days
+    </text>
+    <path d="M246 342h474" stroke="#edf1f7" />
+    <path d="M246 386h474" stroke="#edf1f7" />
+    <path d="M246 430h474" stroke="#edf1f7" />
+    <path d="M246 474h474" stroke="#edf1f7" />
+    <rect x="251" y="424" width="13" height="49" rx="3" fill="#759ad1" />
+    <rect x="274" y="405" width="13" height="68" rx="3" fill="#759ad1" />
+    <rect x="297" y="386" width="13" height="87" rx="3" fill="#759ad1" />
+    <rect x="320" y="367" width="13" height="106" rx="3" fill="#759ad1" />
+    <rect x="343" y="348" width="13" height="125" rx="3" fill="#759ad1" />
+    <rect x="366" y="329" width="13" height="144" rx="3" fill="#759ad1" />
+    <rect x="389" y="420" width="13" height="53" rx="3" fill="#759ad1" />
+    <rect x="412" y="401" width="13" height="72" rx="3" fill="#759ad1" />
+    <rect x="435" y="382" width="13" height="91" rx="3" fill="#759ad1" />
+    <rect x="458" y="363" width="13" height="110" rx="3" fill="#759ad1" />
+    <rect x="481" y="344" width="13" height="129" rx="3" fill="#759ad1" />
+    <rect x="504" y="435" width="13" height="38" rx="3" fill="#759ad1" />
+    <rect x="527" y="416" width="13" height="57" rx="3" fill="#759ad1" />
+    <rect x="550" y="397" width="13" height="76" rx="3" fill="#759ad1" />
+    <rect x="573" y="378" width="13" height="95" rx="3" fill="#759ad1" />
+    <rect x="596" y="359" width="13" height="114" rx="3" fill="#759ad1" />
+    <rect x="619" y="340" width="13" height="133" rx="3" fill="#285ca6" />
+    <rect x="642" y="431" width="13" height="42" rx="3" fill="#285ca6" />
+    <rect x="665" y="412" width="13" height="61" rx="3" fill="#285ca6" />
+    <rect x="688" y="393" width="13" height="80" rx="3" fill="#285ca6" />
+    <text
+      x="246"
+      y="497"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#74869d"
+    >
+      01 MAY
+    </text>
+    <text
+      x="662"
+      y="497"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#74869d"
+    >
+      30 MAY
+    </text>
+    <rect x="761" y="277" width="250" height="242" rx="8" fill="#172c49" />
+    <text
+      x="780"
+      y="310"
+      font-family="Arial, sans-serif"
+      font-size="14"
+      font-weight="700"
+      fill="#eff5ff"
+    >
+      Latest deployment
+    </text>
+    <text
+      x="780"
+      y="344"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7d7bf"
+    >
+      ● Production is live
+    </text>
+    <text
+      x="780"
+      y="375"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7d7bf"
+    >
+      main → production
+    </text>
+    <text
+      x="780"
+      y="406"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7d7bf"
+    >
+      Build completed in 42s
+    </text>
+    <text
+      x="780"
+      y="437"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7d7bf"
+    >
+      12 checks passed
+    </text>
+    <text
+      x="780"
+      y="468"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7d7bf"
+    >
+      Updated a few moments ago
+    </text>
+    <rect x="780" y="482" width="212" height="19" rx="4" fill="#274467" />
+    <text
+      x="829"
+      y="496"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#c7d8ef"
+    >
+      View deployment ↗
+    </text>
+    <text
+      x="225"
+      y="552"
+      font-family="Arial, sans-serif"
+      font-size="15"
+      font-weight="700"
+      fill="#172c49"
+    >
+      Recent activity
+    </text>
+    <path d="M225 569h786" stroke="#e4eaf3" />
+    <circle cx="241" cy="584" r="7" fill="#c7d8ef" />
+    <text
+      x="260"
+      y="588"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Portfolio API
+    </text>
+    <text
+      x="574"
+      y="588"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#74869d"
+    >
+      main
+    </text>
+    <rect x="802" y="571" width="87" height="23" rx="12" fill="#e7f3ed" />
+    <text
+      x="818"
+      y="587"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#267c65"
+    >
+      Deployed
+    </text>
+    <text
+      x="934"
+      y="588"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#74869d"
+    >
+      2 min ago
+    </text>
+    <path d="M225 612h786" stroke="#e4eaf3" />
+    <circle cx="241" cy="627" r="7" fill="#c7d8ef" />
+    <text
+      x="260"
+      y="631"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Design system
+    </text>
+    <text
+      x="574"
+      y="631"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#74869d"
+    >
+      main
+    </text>
+    <rect x="802" y="614" width="87" height="23" rx="12" fill="#e7f3ed" />
+    <text
+      x="818"
+      y="630"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#267c65"
+    >
+      Updated
+    </text>
+    <text
+      x="934"
+      y="631"
+      font-family="Arial, sans-serif"
+      font-size="9"
+      font-weight="400"
+      fill="#74869d"
+    >
+      3 min ago
+    </text>
+  </g>
+</svg>

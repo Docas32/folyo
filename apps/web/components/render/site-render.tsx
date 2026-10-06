@@ -49,6 +49,10 @@ export function SiteRender({
   return (
     <div
       className="folyo-site"
+      data-preset={theme.preset}
+      data-gallery={theme.galleryLayout}
+      data-corners={theme.cornerStyle}
+      data-hero-style={theme.heroStyle}
       lang={locale}
       style={
         {

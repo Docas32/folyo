@@ -52,6 +52,29 @@ const opts = {
   version: 2,
 };
 describe('static page snapshot', () => {
+  it('publishes the editor design settings and the public Edge address together', async () => {
+    const theme = {
+      ...DEFAULT_THEME,
+      backgroundColor: '#f2c9dc',
+      textColor: '#281622',
+      galleryLayout: 'featured' as const,
+      heroStyle: 'panel' as const,
+      cornerStyle: 'rounded' as const,
+      contentWidth: 'wide' as const,
+    };
+    const html = await renderPageHtml(site, pages[0]!, blocks, pages, theme, {
+      ...opts,
+      publicUrl: 'http://maria.lvh.me:8787',
+    });
+    expect(html).toContain('--site-paper:#f2c9dc');
+    expect(html).toContain('--site-ink:#281622');
+    expect(html).toContain('data-gallery="featured"');
+    expect(html).toContain('data-hero-style="panel"');
+    expect(html).toContain('data-corners="rounded"');
+    expect(html).toContain('href="http://maria.lvh.me:8787/"');
+    expect(renderSiteCss(theme)).toContain('--site-content-width: 1200px');
+  });
+
   it('rebases old absolute app asset URLs while preserving external images', () => {
     expect(
       absoluteAssetUrl(

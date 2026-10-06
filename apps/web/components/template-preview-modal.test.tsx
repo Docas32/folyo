@@ -85,7 +85,7 @@ describe('real template preview', () => {
     expect(use).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
   });
-  it('loads the original gallery and avatar URLs through the real renders', async () => {
+  it('loads the local template artwork through the real renders', async () => {
     render(
       <TemplatePreviewModal
         templateId="creative"
@@ -98,8 +98,12 @@ describe('real template preview', () => {
     const modal = screen.getByRole('dialog');
     expect(
       await within(modal).findByRole('img', { name: 'Alex Morgan' }),
-    ).toHaveAttribute('src', 'https://placehold.co/240x240/FFE5DC/16161D.png');
+    ).toHaveAttribute('src', '/template-assets/studio-6.svg');
     expect(modal.querySelectorAll('.site-gallery img')).toHaveLength(3);
+    expect(modal.querySelector('.site-gallery img')).toHaveAttribute(
+      'src',
+      '/template-assets/studio-1.svg',
+    );
   });
   it('Close restores focus to the gallery without any API call', async () => {
     render(<TemplateGallery d={en} locale="en" />);

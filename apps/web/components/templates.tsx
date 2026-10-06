@@ -13,224 +13,163 @@ import {
   type Theme,
   type ThemePatch,
 } from '@folyo/core';
-import type { Dictionary } from '../lib/i18n';
+import { getDictionary, type Dictionary } from '../lib/i18n';
 import { buildTemplate } from '../lib/templates';
 import { Button, ButtonLink } from './ui/button';
 import { Select } from './ui/select';
-export function TemplateThumbnail({ id }: { id: TemplateId }) {
-  if (
-    id === 'executive' ||
-    id === 'studio' ||
-    id === 'scientist' ||
-    id === 'developer'
-  )
-    return <ShowcaseThumbnail id={id} />;
-  const accent = {
-    blank: '#16161D',
-    minimal: '#16161D',
-    professional: '#1E5AA8',
-    creative: '#FF5C38',
-  }[id];
-  const x = id === 'professional' ? 28 : 100;
-  return (
-    <svg
-      className="template-thumbnail"
-      viewBox="0 0 240 160"
-      aria-hidden="true"
-    >
-      <rect width="240" height="160" rx="8" fill="#faf9f6" />
-      {id !== 'blank' && (
-        <g fill="#d7d5ce">
-          <rect x="84" y="14" width="20" height="3" rx="1" />
-          <rect x="111" y="14" width="20" height="3" rx="1" />
-          <rect x="138" y="14" width="20" height="3" rx="1" />
-        </g>
-      )}
-      {id === 'creative' && <circle cx="120" cy="38" r="12" fill="#ffe5dc" />}
-      <rect
-        x={id === 'creative' ? 85 : x - (id === 'professional' ? 0 : 20)}
-        y={id === 'creative' ? 58 : 48}
-        width="80"
-        height={id === 'minimal' ? 8 : 7}
-        rx="2"
-        fill={accent}
-      />
-      <rect
-        x={id === 'professional' ? 28 : 94}
-        y="73"
-        width="52"
-        height="3"
-        rx="1"
-        fill="#8a8894"
-      />
-      {id !== 'blank' && (
-        <>
-          {id === 'creative' ? (
-            <g>
-              {['#ffe5dc', '#dde8fa', '#ddf0e8'].map((fill, i) => (
-                <rect
-                  key={fill}
-                  x={28 + i * 64}
-                  y="90"
-                  width="56"
-                  height="42"
-                  rx="3"
-                  fill={fill}
-                />
-              ))}
-            </g>
-          ) : (
-            <g fill="#d7d5ce">
-              {[92, 101, 110].map((y) => (
-                <rect
-                  key={y}
-                  x="28"
-                  y={y}
-                  width={y === 110 ? 136 : 184}
-                  height="3"
-                  rx="1"
-                />
-              ))}
-            </g>
-          )}
-          {id === 'professional' ? (
-            <rect x="28" y="128" width="50" height="14" rx="3" fill={accent} />
-          ) : (
-            <g fill={accent}>
-              {[110, 120, 130].map((cx) => (
-                <circle key={cx} cx={cx} cy="146" r="2" />
-              ))}
-            </g>
-          )}
-        </>
-      )}
-    </svg>
-  );
-}
-function ShowcaseThumbnail({
+// Compact compositions mirror the rendered presets and reuse their project artwork.
+export function TemplateThumbnail({
   id,
+  locale = 'en',
 }: {
-  id: 'executive' | 'studio' | 'scientist' | 'developer';
+  id: TemplateId;
+  locale?: string;
 }) {
-  const colors = {
-    executive: '#16161D',
-    studio: '#7C3AED',
-    scientist: '#0F766E',
-    developer: '#1E5AA8',
+  const d = getDictionary(locale);
+  const example = buildTemplate(id, locale);
+  const hero = example.pages[0]?.blocks[0];
+  const palettes = {
+    blank: ['#faf9f6', '#16161d', '#e8e6e0'],
+    minimal: ['#f3ede3', '#30291f', '#d5c5ad'],
+    professional: ['#edf2f7', '#1e5aa8', '#d3e1f2'],
+    creative: ['#fff1e7', '#b93d22', '#ffd7bc'],
+    executive: ['#f1ece3', '#30291f', '#c7b89d'],
+    studio: ['#f3edff', '#7c3aed', '#e1d3fc'],
+    scientist: ['#edf5f0', '#0f766e', '#c7e4d9'],
+    developer: ['#101c2e', '#b5ceef', '#314661'],
   };
-  const color = colors[id];
+  const [paper, ink, tint] = palettes[id];
+  const family =
+    id === 'creative' ? 'studio' : id === 'professional' ? 'developer' : id;
+  const illustrated = !['blank', 'minimal', 'professional'].includes(id);
+  const centered = ['minimal', 'creative', 'studio'].includes(id);
+  const name =
+    hero?.type === 'hero' ? hero.content.name : d.templates.names[id];
+  const portuguese = locale === 'pt-BR';
   return (
     <svg
       className="template-thumbnail"
-      viewBox="0 0 240 160"
+      viewBox="0 0 320 224"
       aria-hidden="true"
     >
-      <rect width="240" height="160" rx="8" fill="#faf9f6" />
-      <g fill="#d7d5ce">
-        {[124, 146, 168, 190, 212].map((x) => (
-          <rect key={x} x={x} y="12" width="14" height="2" rx="1" />
-        ))}
-      </g>
-      <rect
-        x={id === 'studio' ? 62 : 18}
-        y="32"
-        width={id === 'executive' ? 148 : 116}
-        height={id === 'executive' ? 10 : 8}
-        rx="1"
-        fill={color}
-      />
-      <rect
-        x={id === 'studio' ? 88 : 18}
-        y="48"
-        width="64"
-        height="3"
-        rx="1"
-        fill="#8a8894"
-      />
-      <rect
-        x={id === 'studio' ? 30 : 18}
-        y="62"
-        width={id === 'studio' ? 180 : 162}
-        height="2"
-        rx="1"
-        fill="#d7d5ce"
-      />
-      <rect
-        x={id === 'studio' ? 86 : 18}
-        y="72"
-        width="68"
-        height="8"
-        rx="2"
-        fill={color}
-      />
-      <rect
-        x="18"
-        y="92"
-        width="204"
-        height="51"
-        rx="3"
-        fill={
-          id === 'studio'
-            ? '#7C3AED'
-            : id === 'scientist'
-              ? '#EAF2EE'
-              : id === 'developer'
-                ? '#E5EDF8'
-                : '#EEEAE1'
+      <rect width="320" height="224" fill={paper} />
+      <path d="M20 30H300" stroke={tint} />
+      <text
+        x="20"
+        y="20"
+        fill={ink}
+        fontSize="8"
+        fontFamily="sans-serif"
+        fontWeight="700"
+      >
+        {id === 'studio' ? 'LUME®' : 'PORTFOLIO'}
+      </text>
+      {id !== 'blank' && (
+        <text x="209" y="20" fill={ink} fontSize="6" fontFamily="sans-serif">
+          {portuguese ? 'TRABALHOS  SOBRE  CONTATO' : 'WORK  ABOUT  CONTACT'}
+        </text>
+      )}
+      <text
+        x={centered ? 160 : 22}
+        y="64"
+        textAnchor={centered ? 'middle' : 'start'}
+        fill={ink}
+        fontSize={id === 'studio' ? 29 : 25}
+        fontFamily={
+          ['minimal', 'executive', 'creative', 'studio'].includes(id)
+            ? 'Georgia, serif'
+            : 'sans-serif'
         }
-      />
-      {id === 'executive' && (
+        letterSpacing="-1"
+      >
+        {name}
+      </text>
+      <text
+        x={centered ? 160 : 22}
+        y="79"
+        textAnchor={centered ? 'middle' : 'start'}
+        fill={ink}
+        fontSize="7"
+        fontFamily="sans-serif"
+      >
+        {id === 'blank'
+          ? d.templates.intro
+          : hero?.type === 'hero'
+            ? hero.content.title
+            : d.templates.intro}
+      </text>
+      {illustrated ? (
         <>
-          <rect x="148" y="99" width="31" height="44" fill="#B3A68E" />
-          <rect x="123" y="114" width="31" height="29" fill="#16161D" />
-          <circle cx="106" cy="108" r="8" fill="#C59C62" />
-          <rect x="72" y="129" width="42" height="14" fill="#D5C8AA" />
-        </>
-      )}
-      {id === 'studio' && (
-        <>
-          <circle cx="168" cy="117" r="22" fill="#FF5C38" />
-          <circle cx="168" cy="117" r="11" fill="#D5EC6B" />
-          <rect x="33" y="100" width="16" height="35" fill="#D5EC6B" />
-          <rect x="56" y="100" width="16" height="35" fill="#FAF9F6" />
-          <rect x="79" y="100" width="16" height="35" fill="#FF5C38" />
-        </>
-      )}
-      {id === 'scientist' && (
-        <>
-          <g stroke="#C1DACE" strokeWidth=".5">
-            {[103, 114, 125, 136].map((y) => (
-              <path key={y} d={`M32 ${y}H210`} />
-            ))}
-          </g>
-          <path
-            d="M32 130L54 116L78 122L99 105L123 112L147 102L171 110L207 99"
-            fill="none"
-            stroke={color}
-            strokeWidth="2"
+          <image
+            href={`/template-assets/${family}-cover.svg`}
+            x="20"
+            y="95"
+            width="280"
+            height="99"
+            preserveAspectRatio="xMidYMid slice"
           />
+          <text x="20" y="211" fill={ink} fontSize="7" fontFamily="sans-serif">
+            {d.templates.showcase.selected.toUpperCase()}
+          </text>
+          <text x="288" y="211" fill={ink} fontSize="10">
+            ↗
+          </text>
         </>
-      )}
-      {id === 'developer' && (
+      ) : id === 'professional' ? (
         <>
-          <rect x="42" y="98" width="158" height="39" rx="2" fill="#FAFCFF" />
-          <rect x="42" y="98" width="158" height="5" rx="2" fill="#161E30" />
-          <rect x="42" y="103" width="25" height="34" fill="#D8E1EE" />
-          {[76, 116, 156].map((x) => (
-            <g key={x}>
-              <rect x={x} y="108" width="32" height="8" rx="1" fill="#E5EDF8" />
-              <rect
-                x={x}
-                y="121"
-                width="32"
-                height="9"
-                rx="1"
-                fill="#1E5AA8"
-                opacity=".7"
-              />
-            </g>
+          <rect x="20" y="95" width="280" height="99" rx="5" fill="white" />
+          <path d="M20 95H300" stroke={ink} strokeWidth="3" />
+          {[115, 127, 139].map((y) => (
+            <rect
+              key={y}
+              x="34"
+              y={y}
+              width={y === 139 ? 164 : 237}
+              height="3"
+              rx="1"
+              fill={tint}
+            />
           ))}
+          <rect x="34" y="156" width="92" height="24" rx="4" fill={ink} />
+          <text
+            x="80"
+            y="172"
+            textAnchor="middle"
+            fill="white"
+            fontSize="7"
+            fontFamily="sans-serif"
+          >
+            {d.templates.content.cv} ↗
+          </text>
         </>
+      ) : id === 'minimal' ? (
+        <>
+          <path d="M136 96h48" stroke={ink} />
+          {[114, 125, 136].map((y) => (
+            <rect
+              key={y}
+              x="63"
+              y={y}
+              width="194"
+              height="3"
+              rx="1"
+              fill={tint}
+            />
+          ))}
+          <rect x="108" y="160" width="104" height="25" rx="13" fill={ink} />
+          <text
+            x="160"
+            y="176"
+            textAnchor="middle"
+            fill={paper}
+            fontSize="7"
+            fontFamily="sans-serif"
+          >
+            {portuguese ? 'VAMOS CONVERSAR ↗' : 'LET’S CONNECT ↗'}
+          </text>
+        </>
+      ) : (
+        <path d="M160 120v32m-16-16h32" stroke={tint} strokeWidth="2" />
       )}
     </svg>
   );
@@ -313,9 +252,17 @@ export function TemplateGallery({
   return (
     <div>
       <div className="template-grid" aria-busy={busy !== null}>
-        {TEMPLATE_IDS.map((id) => (
-          <article className="template-card" key={id}>
-            <TemplateThumbnail id={id} />
+        {TEMPLATE_IDS.map((id, index) => (
+          <article className="template-card" key={id} data-template={id}>
+            <TemplateThumbnail id={id} locale={locale} />
+            <div className="template-card-meta">
+              <span aria-hidden="true">
+                {String(index + 1).padStart(2, '0')} / FOLYO
+              </span>
+              <span>
+                {buildTemplate(id, locale).pages.length} {d.dashboardHub.pages}
+              </span>
+            </div>
             <h3>{d.templates.names[id]}</h3>
             <p>{d.templates.descriptions[id]}</p>
             <Button

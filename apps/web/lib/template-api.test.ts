@@ -160,14 +160,45 @@ describe('theme PATCH API', () => {
       accent: '#1E5AA8',
     });
   });
+  it('accepts custom colors, layout controls and a base without replacing content', async () => {
+    const patch = {
+      preset: 'creative',
+      accent: '#123456',
+      backgroundColor: '#f3c4d5',
+      textColor: '#281622',
+      galleryLayout: 'featured',
+      heroStyle: 'panel',
+      contentWidth: 'wide',
+      cornerStyle: 'rounded',
+    };
+    const response = await PATCH(request('PATCH', patch));
+    expect(response.status).toBe(200);
+    expect(repo.patch).toHaveBeenCalledWith(site.id, user.id, patch);
+    expect(repo.apply).not.toHaveBeenCalled();
+    expect(await response.json()).toEqual({
+      theme: { ...DEFAULT_THEME, ...patch },
+    });
+  });
+  it('accepts returning custom colors to template defaults', async () => {
+    const response = await PATCH(
+      request('PATCH', { backgroundColor: null, textColor: null }),
+    );
+    expect(response.status).toBe(200);
+    expect(repo.patch).toHaveBeenCalledWith(site.id, user.id, {
+      backgroundColor: null,
+      textColor: null,
+    });
+  });
   it.each([
     { accent: 'red' },
-    { accent: '#123456' },
     { accent: '#fff' },
     { headingFont: 'comic-sans' },
     { bodyFont: 'lora' },
     { heroLayout: 'right' },
-    { preset: 'creative' },
+    { preset: 'unknown' },
+    { backgroundColor: '#fff; color:red' },
+    { contentWidth: '5000px' },
+    { galleryLayout: 'masonry-script' },
     { unknown: true },
     {},
   ])('rejects invalid patch %j', async (data) => {

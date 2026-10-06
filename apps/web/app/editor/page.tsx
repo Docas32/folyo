@@ -5,6 +5,8 @@ import { getDictionary, supportedLocale } from '../../lib/i18n';
 import { loadEditor } from '../../lib/editor-service';
 import { editorRepository } from '../../lib/runtime';
 import { AccountError } from '../../lib/account-service';
+import { publishEnvironment } from '../../lib/runtime';
+import { buildPublicSiteUrl } from '../../lib/publish/environment';
 import { Editor } from '../../components/editor/editor';
 export default async function EditorPage() {
   const { user, site } = await pageAccount('app');
@@ -22,6 +24,7 @@ export default async function EditorPage() {
       key={page.id}
       document={document}
       theme={site.theme}
+      publicUrl={buildPublicSiteUrl(site.handle, publishEnvironment())}
       pageId={page.id}
       d={getDictionary(user.locale)}
       locale={supportedLocale(user.locale)}

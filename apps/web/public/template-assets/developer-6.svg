@@ -1,1 +1,251 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"><rect x="0" y="0" width="1200" height="900" rx="0" fill="#E5EDF8" stroke="none"/><rect x="70" y="85" width="1060" height="730" rx="16" fill="#FAFCFF" stroke="none"/><rect x="70" y="85" width="1060" height="55" rx="16" fill="#161E30" stroke="none"/><circle cx="100" cy="112" r="5" fill="#FF8170" stroke="none"/><circle cx="122" cy="112" r="5" fill="#EBC780" stroke="none"/><circle cx="144" cy="112" r="5" fill="#83BEAB" stroke="none"/><circle cx="260" cy="430" r="75" fill="#E5EDF8" stroke="#1E5AA8"/><text x="233" y="444" font-family="sans-serif" font-size="36" font-weight="400" fill="#1E5AA8">01</text><circle cx="580" cy="430" r="75" fill="#E5EDF8" stroke="#1E5AA8"/><text x="553" y="444" font-family="sans-serif" font-size="36" font-weight="400" fill="#1E5AA8">02</text><circle cx="900" cy="430" r="75" fill="#E5EDF8" stroke="#1E5AA8"/><text x="873" y="444" font-family="sans-serif" font-size="36" font-weight="400" fill="#1E5AA8">03</text><path d="M335 430L495 430" fill="none" stroke="#1E5AA8" stroke-width="4"/><path d="M655 430L815 430" fill="none" stroke="#1E5AA8" stroke-width="4"/><rect x="270" y="620" width="650" height="7" rx="3" fill="#D8E1EE" stroke="none"/><rect x="270" y="650" width="585" height="7" rx="3" fill="#D8E1EE" stroke="none"/><rect x="270" y="680" width="520" height="7" rx="3" fill="#D8E1EE" stroke="none"/><rect x="270" y="710" width="455" height="7" rx="3" fill="#D8E1EE" stroke="none"/></svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 900"
+  width="1200"
+  height="900"
+>
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow
+        dx="0"
+        dy="24"
+        stdDeviation="24"
+        flood-color="#152030"
+        flood-opacity=".18"
+      />
+    </filter>
+    <linearGradient id="paper" x2="1" y2="1">
+      <stop stop-color="#fff" />
+      <stop offset="1" stop-color="#e9e4da" />
+    </linearGradient>
+    <linearGradient id="desk" x2="0" y2="1">
+      <stop stop-color="#dce5f1" />
+      <stop offset="1" stop-color="#c6c3bd" />
+    </linearGradient>
+    <linearGradient id="glass" x2="1" y2="1">
+      <stop stop-color="#ffffff" stop-opacity=".35" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#dce5f1" />
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#dce5f1" />
+  <circle cx="1040" cy="105" r="285" fill="#c5d5ea" />
+  <g transform="translate(78 118)" filter="url(#shadow)">
+    <rect x="0" y="0" width="1044" height="665" rx="12" fill="#fbfcff" />
+    <rect x="0" y="0" width="1044" height="40" rx="12" fill="#15233a" />
+    <rect x="0" y="22" width="1044" height="18" rx="0" fill="#15233a" />
+    <circle cx="22" cy="20" r="4" fill="#f59d91" />
+    <circle cx="39" cy="20" r="4" fill="#f4cd82" />
+    <circle cx="56" cy="20" r="4" fill="#9ecba8" />
+    <text
+      x="440"
+      y="25"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#a7b7ce"
+    >
+      PRODUCT STUDIES / 06
+    </text>
+    <text
+      x="40"
+      y="100"
+      font-family="Arial, sans-serif"
+      font-size="29"
+      font-weight="700"
+      fill="#172c49"
+    >
+      System documentation
+    </text>
+    <text
+      x="40"
+      y="129"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#74869d"
+    >
+      Shared understanding for the next person.
+    </text>
+    <path d="M40 156h964" stroke="#e1e8f2" />
+    <rect x="40" y="186" width="218" height="426" rx="8" fill="#edf2fa" />
+    <text
+      x="60"
+      y="220"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#74869d"
+      letter-spacing="1"
+    >
+      DOCUMENTATION
+    </text>
+    <text
+      x="60"
+      y="257"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Getting started
+    </text>
+    <text
+      x="60"
+      y="301"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Architecture
+    </text>
+    <text
+      x="60"
+      y="345"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      API reference
+    </text>
+    <text
+      x="60"
+      y="389"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Design decisions
+    </text>
+    <text
+      x="60"
+      y="433"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Runbooks
+    </text>
+    <text
+      x="60"
+      y="477"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#435a78"
+    >
+      Changelog
+    </text>
+    <text
+      x="298"
+      y="226"
+      font-family="Arial, sans-serif"
+      font-size="27"
+      font-weight="700"
+      fill="#172c49"
+    >
+      Getting started
+    </text>
+    <text
+      x="298"
+      y="260"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#74869d"
+    >
+      A clear path from your first checkout to a working environment.
+    </text>
+    <rect
+      x="298"
+      y="302"
+      width="705"
+      height="80"
+      rx="7"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="317"
+      y="332"
+      font-family="Arial, sans-serif"
+      font-size="16"
+      font-weight="700"
+      fill="#172c49"
+    >
+      01 / Set up your workspace
+    </text>
+    <text
+      x="317"
+      y="359"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#60748f"
+    >
+      Clone the repository and install dependencies.
+    </text>
+    <rect
+      x="298"
+      y="402"
+      width="705"
+      height="80"
+      rx="7"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="317"
+      y="432"
+      font-family="Arial, sans-serif"
+      font-size="16"
+      font-weight="700"
+      fill="#172c49"
+    >
+      02 / Configure the environment
+    </text>
+    <text
+      x="317"
+      y="459"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#60748f"
+    >
+      Use the example configuration to connect local services.
+    </text>
+    <rect
+      x="298"
+      y="502"
+      width="705"
+      height="80"
+      rx="7"
+      fill="#fff"
+      stroke="#dce5f0"
+    />
+    <text
+      x="317"
+      y="532"
+      font-family="Arial, sans-serif"
+      font-size="16"
+      font-weight="700"
+      fill="#172c49"
+    >
+      03 / Make your first change
+    </text>
+    <text
+      x="317"
+      y="559"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#60748f"
+    >
+      Run the checks, review the result and open a pull request.
+    </text>
+  </g>
+</svg>

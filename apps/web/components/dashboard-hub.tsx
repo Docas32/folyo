@@ -118,7 +118,7 @@ export function DashboardHub({
           aria-label={d.templates.names[active]}
           role="img"
         >
-          <TemplateThumbnail id={active} />
+          <TemplateThumbnail id={active} locale={locale} />
         </div>
         <div className="dashboard-site-content">
           <div className="dashboard-site-address">
@@ -210,7 +210,7 @@ export function DashboardHub({
                 dialog.current?.showModal();
               }}
             >
-              <TemplateThumbnail id={id} />
+              <TemplateThumbnail id={id} locale={locale} />
               <span>
                 {d.templates.names[id]}
                 {active === id && (

@@ -1,4 +1,8 @@
 'use client';
+import { DesignPanel } from './design-panel';
+import { useSiteDesign } from './use-site-design';
+import { themeToStyle } from '@folyo/core';
+import type { CSSProperties } from 'react';
 import { Logo } from '../logo';
 import { Button, ButtonLink, PreviewIcon } from '../ui/button';
 
@@ -268,6 +272,7 @@ type EditorProps = {
   d: Dictionary;
   locale: string;
   theme?: unknown;
+  publicUrl?: string;
 };
 
 // SSR and the first hydration render share only this skeleton. The dnd-kit
@@ -301,7 +306,21 @@ export function Editor(props: EditorProps) {
     );
   return <MountedEditor {...props} />;
 }
-function MountedEditor({ document, pageId, d, locale, theme }: EditorProps) {
+function MountedEditor({
+  document,
+  pageId,
+  d,
+  locale,
+  theme,
+  publicUrl,
+}: EditorProps) {
+  const design = useSiteDesign(theme);
+  const [designOpen, setDesignOpen] = useState(false);
+  const designToggle = useRef<HTMLButtonElement>(null);
+  const closeDesign = () => {
+    setDesignOpen(false);
+    designToggle.current?.focus();
+  };
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarSlot = useRef<HTMLDivElement>(null);
   const sidebarToggle = useRef<HTMLButtonElement>(null);
@@ -400,7 +419,14 @@ function MountedEditor({ document, pageId, d, locale, theme }: EditorProps) {
   }
   return (
     <div
-      className={`editor-layout ${sidebarOpen ? '' : 'is-sidebar-collapsed'}`}
+      className={`editor-layout ${sidebarOpen ? '' : 'is-sidebar-collapsed'} ${designOpen ? 'has-design-panel' : ''}`}
+      style={
+        {
+          '--editor-canvas-width': themeToStyle(design.theme)[
+            '--site-content-width'
+          ],
+        } as CSSProperties
+      }
     >
       <div
         id="editor-sidebar"
@@ -465,6 +491,27 @@ function MountedEditor({ document, pageId, d, locale, theme }: EditorProps) {
         />
       </div>
       <div className="editor-main">
+        {!designOpen && design.status === 'error' && (
+          <div className="editor-page-error" role="alert">
+            {d.templates.design.error}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDesignOpen(true)}
+            >
+              {d.templates.design.open}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                void design.flush();
+              }}
+            >
+              {d.editor.retry}
+            </Button>
+          </div>
+        )}
         {error && (
           <div className="editor-page-error" role="alert">
             {error}
@@ -476,7 +523,16 @@ function MountedEditor({ document, pageId, d, locale, theme }: EditorProps) {
           onToggleSidebar={toggleSidebar}
           key={activeId}
           document={document}
-          theme={theme}
+          theme={design.theme}
+          designOpen={designOpen}
+          designToggle={designToggle}
+          onToggleDesign={() => {
+            if (designOpen) closeDesign();
+            else setDesignOpen(true);
+          }}
+          flushDesign={design.flush}
+          designDirty={design.dirty}
+          publicUrl={publicUrl}
           pages={pages}
           onPageChange={(id) => {
             if (id !== activeId) void operation(async () => activate(id), true);
@@ -495,6 +551,19 @@ function MountedEditor({ document, pageId, d, locale, theme }: EditorProps) {
           }}
         />
       </div>
+      {designOpen && (
+        <DesignPanel
+          d={d}
+          locale={locale}
+          theme={design.theme}
+          status={design.status}
+          onChange={design.update}
+          onRetry={() => {
+            void design.flush();
+          }}
+          onClose={closeDesign}
+        />
+      )}
     </div>
   );
 }
@@ -504,6 +573,12 @@ function PageCanvas({
   sidebarToggle,
   onToggleSidebar,
   theme: storedTheme,
+  designOpen,
+  designToggle,
+  onToggleDesign,
+  flushDesign,
+  designDirty,
+  publicUrl,
   pages,
   onPageChange,
   viewing,
@@ -519,6 +594,12 @@ function PageCanvas({
   onUploadBusyChange,
 }: {
   theme: unknown;
+  designOpen: boolean;
+  designToggle: React.RefObject<HTMLButtonElement | null>;
+  onToggleDesign: () => void;
+  flushDesign: () => Promise<boolean>;
+  designDirty: boolean;
+  publicUrl: string | undefined;
   pages: EditorPage[];
   onPageChange: (id: string) => void;
   viewing: boolean;
@@ -702,7 +783,7 @@ function PageCanvas({
     finishEditing();
     setViewBusy(true);
     try {
-      if (await queue.flush()) onViewChange(true);
+      if ((await queue.flush()) && (await flushDesign())) onViewChange(true);
       else setViewError(d.editor.inline.previewError);
     } finally {
       setViewBusy(false);
@@ -903,6 +984,41 @@ function PageCanvas({
             </Button>
           </div>
           <div className="editor-save">
+            <Button
+              ref={designToggle}
+              variant="ghost"
+              size="sm"
+              aria-expanded={designOpen}
+              aria-controls="editor-design-panel"
+              onClick={onToggleDesign}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                aria-hidden="true"
+              >
+                <path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-4 1.5 1.5 0 0 1 1-3h2a4 4 0 0 0 4-4c0-4-4-7-9-7Z" />
+                <circle cx="7" cy="10" r="1" />
+                <circle cx="11" cy="7" r="1" />
+                <circle cx="16" cy="8" r="1" />
+              </svg>
+              {d.templates.design.open}
+            </Button>
+            {document.site.status === 'published' && publicUrl && (
+              <ButtonLink
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="ghost"
+                size="sm"
+              >
+                {d.publicLink} ↗
+              </ButtonLink>
+            )}
             <ButtonLink
               variant="ghost"
               size="sm"
@@ -935,13 +1051,16 @@ function PageCanvas({
               onClick={(event) => {
                 if (
                   editSession.current ||
-                  queue.snapshot().status !== 'saved'
+                  queue.snapshot().status !== 'saved' ||
+                  designDirty
                 ) {
                   event.preventDefault();
                   finishEditing();
-                  void queue.flush().then((saved) => {
-                    if (saved) router.push('/dashboard');
-                  });
+                  void Promise.all([queue.flush(), flushDesign()]).then(
+                    ([blocksSaved, designSaved]) => {
+                      if (blocksSaved && designSaved) router.push('/dashboard');
+                    },
+                  );
                 }
               }}
             >

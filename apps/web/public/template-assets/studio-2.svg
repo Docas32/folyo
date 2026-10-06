@@ -1,1 +1,166 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"><rect x="0" y="0" width="1200" height="900" rx="0" fill="#D5EC6B" stroke="none"/><circle cx="600" cy="435" r="275" fill="none" stroke="#16161D"/><circle cx="600" cy="435" r="175" fill="none" stroke="#16161D"/><rect x="480" y="150" width="240" height="590" rx="0" fill="#16161D" stroke="none"/><text x="90" y="130" font-family="serif" font-size="98" font-weight="400" fill="#16161D">ORBITA</text><text x="790" y="825" font-family="sans-serif" font-size="110" font-weight="400" fill="#16161D">02</text></svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 900"
+  width="1200"
+  height="900"
+>
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow
+        dx="0"
+        dy="24"
+        stdDeviation="24"
+        flood-color="#152030"
+        flood-opacity=".18"
+      />
+    </filter>
+    <linearGradient id="paper" x2="1" y2="1">
+      <stop stop-color="#fff" />
+      <stop offset="1" stop-color="#e9e4da" />
+    </linearGradient>
+    <linearGradient id="desk" x2="0" y2="1">
+      <stop stop-color="#e9e2db" />
+      <stop offset="1" stop-color="#c6c3bd" />
+    </linearGradient>
+    <linearGradient id="glass" x2="1" y2="1">
+      <stop stop-color="#ffffff" stop-opacity=".35" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#e9e2db" />
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="url(#desk)" />
+  <path d="M0 710L1200 530V900H0Z" fill="#e95332" opacity=".06" />
+  <g transform="translate(120 126) rotate(-6 240 320)" filter="url(#shadow)">
+    <rect x="0" y="0" width="470" height="620" rx="2" fill="#e95332" />
+    <text
+      x="32"
+      y="45"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#ffe9d5"
+      letter-spacing="3"
+    >
+      BRAND STUDY / 03
+    </text>
+    <text
+      x="28"
+      y="151"
+      font-family="Georgia, serif"
+      font-size="76"
+      font-weight="700"
+      fill="#ffe9d5"
+    >
+      ORBITA
+    </text>
+    <circle cx="244" cy="362" r="146" fill="#6539bb" />
+    <circle cx="244" cy="362" r="78" fill="#ffe9d5" />
+    <rect x="232" y="214" width="24" height="296" rx="0" fill="#e95332" />
+    <text
+      x="32"
+      y="565"
+      font-family="Arial, sans-serif"
+      font-size="22"
+      font-weight="400"
+      fill="#ffe9d5"
+    >
+      Ideas made visible.
+    </text>
+    <text
+      x="32"
+      y="593"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#ffe9d5"
+      letter-spacing="2"
+    >
+      IDENTITY / ART DIRECTION / DESIGN
+    </text>
+  </g>
+  <g transform="translate(670 212) rotate(9 175 235)" filter="url(#shadow)">
+    <rect x="0" y="0" width="352" height="470" rx="3" fill="#ffe9d5" />
+    <rect x="0" y="0" width="14" height="470" rx="0" fill="#e95332" />
+    <text
+      x="42"
+      y="64"
+      font-family="Georgia, serif"
+      font-size="36"
+      font-weight="700"
+      fill="#e95332"
+    >
+      ORBITA
+    </text>
+    <text
+      x="42"
+      y="92"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#e95332"
+      letter-spacing="3"
+    >
+      A NEW PERSPECTIVE
+    </text>
+    <rect x="42" y="143" width="32" height="174" rx="16" fill="#e95332" />
+    <rect x="93" y="143" width="32" height="174" rx="16" fill="#6539bb" />
+    <rect x="144" y="143" width="32" height="174" rx="16" fill="#e95332" />
+    <rect x="195" y="143" width="32" height="174" rx="16" fill="#6539bb" />
+    <rect x="246" y="143" width="32" height="174" rx="16" fill="#e95332" />
+    <text
+      x="42"
+      y="382"
+      font-family="Arial, sans-serif"
+      font-size="22"
+      font-weight="400"
+      fill="#e95332"
+    >
+      Built to stand out.
+    </text>
+    <text
+      x="42"
+      y="413"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#e95332"
+    >
+      Independent creative practice
+    </text>
+    <path d="M42 432h263" stroke="#e95332" />
+  </g>
+  <g transform="translate(615 634) rotate(-10 170 95)" filter="url(#shadow)">
+    <rect x="0" y="0" width="370" height="196" rx="3" fill="#6539bb" />
+    <text
+      x="26"
+      y="58"
+      font-family="Georgia, serif"
+      font-size="34"
+      font-weight="700"
+      fill="#e95332"
+    >
+      ORBITA
+    </text>
+    <text
+      x="26"
+      y="144"
+      font-family="Arial, sans-serif"
+      font-size="14"
+      font-weight="400"
+      fill="#e95332"
+    >
+      hello@orbita.studio
+    </text>
+    <circle cx="308" cy="101" r="35" fill="#ffe9d5" />
+    <text
+      x="295"
+      y="115"
+      font-family="Arial, sans-serif"
+      font-size="35"
+      font-weight="400"
+      fill="#e95332"
+    >
+      ↗
+    </text>
+  </g>
+</svg>

@@ -1,1 +1,166 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"><rect x="0" y="0" width="1200" height="900" rx="0" fill="#F8F5EE" stroke="none"/><circle cx="330" cy="320" r="200" fill="#7C3AED" stroke="none"/><rect x="540" y="330" width="360" height="360" rx="0" fill="#FF5C38" stroke="none"/><path d="M750 70L1130 610H370Z" fill="#D5EC6B"/><circle cx="220" cy="700" r="100" fill="#16161D" stroke="none"/></svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 900"
+  width="1200"
+  height="900"
+>
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow
+        dx="0"
+        dy="24"
+        stdDeviation="24"
+        flood-color="#152030"
+        flood-opacity=".18"
+      />
+    </filter>
+    <linearGradient id="paper" x2="1" y2="1">
+      <stop stop-color="#fff" />
+      <stop offset="1" stop-color="#e9e4da" />
+    </linearGradient>
+    <linearGradient id="desk" x2="0" y2="1">
+      <stop stop-color="#e9e2db" />
+      <stop offset="1" stop-color="#c6c3bd" />
+    </linearGradient>
+    <linearGradient id="glass" x2="1" y2="1">
+      <stop stop-color="#ffffff" stop-opacity=".35" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#e9e2db" />
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="url(#desk)" />
+  <path d="M0 710L1200 530V900H0Z" fill="#f2cae0" opacity=".06" />
+  <g transform="translate(120 126) rotate(-6 240 320)" filter="url(#shadow)">
+    <rect x="0" y="0" width="470" height="620" rx="2" fill="#f2cae0" />
+    <text
+      x="32"
+      y="45"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#592644"
+      letter-spacing="3"
+    >
+      BRAND STUDY / 07
+    </text>
+    <text
+      x="28"
+      y="151"
+      font-family="Georgia, serif"
+      font-size="92"
+      font-weight="700"
+      fill="#592644"
+    >
+      VERSO
+    </text>
+    <circle cx="244" cy="362" r="146" fill="#c54773" />
+    <circle cx="244" cy="362" r="78" fill="#592644" />
+    <rect x="232" y="214" width="24" height="296" rx="0" fill="#f2cae0" />
+    <text
+      x="32"
+      y="565"
+      font-family="Arial, sans-serif"
+      font-size="22"
+      font-weight="400"
+      fill="#592644"
+    >
+      Ideas made visible.
+    </text>
+    <text
+      x="32"
+      y="593"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#592644"
+      letter-spacing="2"
+    >
+      IDENTITY / ART DIRECTION / DESIGN
+    </text>
+  </g>
+  <g transform="translate(670 212) rotate(9 175 235)" filter="url(#shadow)">
+    <rect x="0" y="0" width="352" height="470" rx="3" fill="#592644" />
+    <rect x="0" y="0" width="14" height="470" rx="0" fill="#f2cae0" />
+    <text
+      x="42"
+      y="64"
+      font-family="Georgia, serif"
+      font-size="43"
+      font-weight="700"
+      fill="#f2cae0"
+    >
+      VERSO
+    </text>
+    <text
+      x="42"
+      y="92"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#f2cae0"
+      letter-spacing="3"
+    >
+      A NEW PERSPECTIVE
+    </text>
+    <rect x="42" y="143" width="32" height="174" rx="16" fill="#f2cae0" />
+    <rect x="93" y="143" width="32" height="174" rx="16" fill="#c54773" />
+    <rect x="144" y="143" width="32" height="174" rx="16" fill="#f2cae0" />
+    <rect x="195" y="143" width="32" height="174" rx="16" fill="#c54773" />
+    <rect x="246" y="143" width="32" height="174" rx="16" fill="#f2cae0" />
+    <text
+      x="42"
+      y="382"
+      font-family="Arial, sans-serif"
+      font-size="22"
+      font-weight="400"
+      fill="#f2cae0"
+    >
+      Built to stand out.
+    </text>
+    <text
+      x="42"
+      y="413"
+      font-family="Arial, sans-serif"
+      font-size="12"
+      font-weight="400"
+      fill="#f2cae0"
+    >
+      Independent creative practice
+    </text>
+    <path d="M42 432h263" stroke="#f2cae0" />
+  </g>
+  <g transform="translate(615 634) rotate(-10 170 95)" filter="url(#shadow)">
+    <rect x="0" y="0" width="370" height="196" rx="3" fill="#c54773" />
+    <text
+      x="26"
+      y="58"
+      font-family="Georgia, serif"
+      font-size="34"
+      font-weight="700"
+      fill="#f2cae0"
+    >
+      VERSO
+    </text>
+    <text
+      x="26"
+      y="144"
+      font-family="Arial, sans-serif"
+      font-size="14"
+      font-weight="400"
+      fill="#f2cae0"
+    >
+      hello@verso.studio
+    </text>
+    <circle cx="308" cy="101" r="35" fill="#592644" />
+    <text
+      x="295"
+      y="115"
+      font-family="Arial, sans-serif"
+      font-size="35"
+      font-weight="400"
+      fill="#f2cae0"
+    >
+      ↗
+    </text>
+  </g>
+</svg>

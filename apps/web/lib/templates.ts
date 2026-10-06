@@ -34,9 +34,7 @@ export function buildTemplate(
       name: c.name,
       title,
       subtitle,
-      ...(avatar
-        ? { avatarUrl: 'https://placehold.co/240x240/FFE5DC/16161D.png' }
-        : {}),
+      ...(avatar ? { avatarUrl: '/template-assets/studio-6.svg' } : {}),
     },
   });
   const social = (
@@ -56,10 +54,12 @@ export function buildTemplate(
   const gallery = (count: number): BlockContent => ({
     type: 'gallery',
     content: {
-      items: c.galleryAlts.slice(0, count).map((alt, i) => ({
-        url: `https://placehold.co/1200x900/${['FFE5DC', 'DDE8FA', 'DDF0E8', 'EAE0FA', 'F7EACB', 'F7DDE6'][i]}/16161D.png`,
-        alt,
-      })),
+      items: getDictionary(locale)
+        .templates.showcase.studio.imageAlts.slice(0, count)
+        .map((alt, i) => ({
+          url: `/template-assets/studio-${i + 1}.svg`,
+          alt,
+        })),
     },
   });
   const page = (title: string, slug: string, blocks: BlockContent[]) => ({

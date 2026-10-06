@@ -4,6 +4,8 @@ import {
   resolveTheme,
   themeSchema,
   themeToCssVars,
+  themeColors,
+  themePatchSchema,
 } from './theme';
 describe('site theme', () => {
   it('uses the blank default for empty stored themes', () => {
@@ -47,5 +49,35 @@ describe('template theme defaults', () => {
     expect(themeToCssVars({ headingFont: 'space-grotesk' })).toContain(
       '--font-space-grotesk',
     );
+  });
+});
+
+describe('custom site design', () => {
+  it('preserves legacy preset colors and supplies readable text for custom backgrounds', () => {
+    expect(themeColors({ preset: 'developer' })).toEqual({
+      background: '#101c2e',
+      text: '#eff5ff',
+    });
+    expect(
+      themeColors({ preset: 'developer', backgroundColor: '#fff3e9' }).text,
+    ).toBe('#16161d');
+    expect(themeColors({ backgroundColor: '#142138' }).text).toBe('#eff5ff');
+  });
+  it('round trips custom controls into the same publication variables', () => {
+    const theme = themeSchema.parse({
+      backgroundColor: '#f2c9dc',
+      textColor: '#281622',
+      contentWidth: 'wide',
+      sectionSpacing: 'spacious',
+    });
+    expect(themeSchema.parse(JSON.parse(JSON.stringify(theme)))).toEqual(theme);
+    const css = themeToCssVars(theme);
+    expect(css).toContain('--site-paper: #f2c9dc;');
+    expect(css).toContain('--site-ink: #281622;');
+    expect(css).toContain('--site-content-width: 1200px;');
+    expect(css).toContain('--site-block-gap: 56px;');
+    expect(themePatchSchema.parse({ backgroundColor: null })).toEqual({
+      backgroundColor: null,
+    });
   });
 });

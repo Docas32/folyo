@@ -45,6 +45,7 @@ export function Landing({
           <div inert>
             <SiteRender
               theme={{
+                preset: 'creative',
                 accent: '#FF5C38',
                 headingFont: 'lora',
                 heroLayout: 'left',

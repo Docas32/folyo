@@ -7,7 +7,6 @@ import {
 } from '@folyo/db';
 import {
   DEFAULT_THEME,
-  TEMPLATE_IDS,
   themeSchema,
   createDefaultBlock,
   getBlockPlaceholders,
@@ -100,31 +99,42 @@ export function templateRepositoryFromDb(db: Database) {
     },
     async patch(siteId: string, userId: string, patch: ThemePatch) {
       // Mirror resolveTheme's all-or-default fallback before merging a patch.
+      const enumFields = [
+        'preset',
+        'headingFont',
+        'bodyFont',
+        'heroLayout',
+        'contentWidth',
+        'sectionSpacing',
+        'galleryLayout',
+        'cornerStyle',
+        'heroStyle',
+      ] as const;
+      const colorFields = ['accent', 'backgroundColor', 'textColor'] as const;
+      const checks = [
+        ...enumFields.map(
+          (key) =>
+            sql`(not (${sites.theme} ? ${key}) or ${sites.theme}->>${key} in (${sql.join(
+              themeSchema.shape[key]
+                .removeDefault()
+                .options.map((value) => sql`${value}`),
+              sql`, `,
+            )}))`,
+        ),
+        ...colorFields.map(
+          (
+            key,
+          ) => sql`(not (${sites.theme} ? ${key}) ${key === 'accent' ? sql`` : sql`or ${sites.theme}->${key} = 'null'::jsonb`}
+          or ${sites.theme}->>${key} ~ '^#[0-9a-fA-F]{6}$')`,
+        ),
+      ];
+      const keys = sql`array[${sql.join(
+        Object.keys(themeSchema.shape).map((key) => sql`${key}`),
+        sql`, `,
+      )}]::text[]`;
       const stored = sql`case when jsonb_typeof(${sites.theme}) = 'object' then
-        case when (${sites.theme} - array['preset', 'accent', 'headingFont', 'bodyFont', 'heroLayout']) = '{}'::jsonb
-          and (not (${sites.theme} ? 'preset') or ${sites.theme}->>'preset' in (${sql.join(
-            TEMPLATE_IDS.map((value) => sql`${value}`),
-            sql`, `,
-          )}))
-          and (not (${sites.theme} ? 'accent') or ${sites.theme}->>'accent' ~ '^#[0-9a-fA-F]{6}$')
-          and (not (${sites.theme} ? 'headingFont') or ${sites.theme}->>'headingFont' in (${sql.join(
-            themeSchema.shape.headingFont
-              .removeDefault()
-              .options.map((value) => sql`${value}`),
-            sql`, `,
-          )}))
-          and (not (${sites.theme} ? 'bodyFont') or ${sites.theme}->>'bodyFont' in (${sql.join(
-            themeSchema.shape.bodyFont
-              .removeDefault()
-              .options.map((value) => sql`${value}`),
-            sql`, `,
-          )}))
-          and (not (${sites.theme} ? 'heroLayout') or ${sites.theme}->>'heroLayout' in (${sql.join(
-            themeSchema.shape.heroLayout
-              .removeDefault()
-              .options.map((value) => sql`${value}`),
-            sql`, `,
-          )}))
+        case when (${sites.theme} - ${keys}) = '{}'::jsonb
+          and ${sql.join(checks, sql` and `)}
           then ${sites.theme} else '{}'::jsonb end
         else '{}'::jsonb end`;
       const [, rows] = await db.batch([
@@ -133,6 +143,7 @@ export function templateRepositoryFromDb(db: Database) {
           .update(sites)
           .set({
             theme: sql`${JSON.stringify(DEFAULT_THEME)}::jsonb || ${stored} || ${JSON.stringify(patch)}::jsonb`,
+            ...(patch.preset ? { templateId: patch.preset } : {}),
             updatedAt: sql`clock_timestamp()`,
           })
           .where(owner(siteId, userId))

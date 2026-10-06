@@ -42,12 +42,12 @@ export const showcaseEn = {
     contactText:
       'Tell me what is changing, what feels stuck and what you hope to achieve. We can begin with a focused conversation and decide together what useful support would look like.',
     imageAlts: [
-      'Architectural composition illustrating strategic direction',
-      'Editorial composition for a positioning study',
-      'Three-part model for a business transformation',
-      'Illustrative bar composition for team alignment',
-      'Roadmap illustration for strategic initiatives',
-      'Geometric study of a shared vision',
+      'Printed strategy report with an editorial cover and advisory notes',
+      'Editorial strategy booklet with positioning and decision frameworks',
+      'Business advisory report with a three-part transformation framework',
+      'Printed team-alignment report with an illustrative bar composition',
+      'Strategic planning publication with an editorial roadmap cover',
+      'Advisory publication presenting a shared strategic vision',
     ],
     captions: [
       '01 · Direction',
@@ -136,11 +136,11 @@ export const showcaseEn = {
       'I welcome conversations about interdisciplinary projects, research communication and environmental monitoring. Share your question, the context and where you think collaboration could help.',
     imageAlts: [
       'Example time-series visualization, not measured research data',
-      'Conceptual water-system diagram',
-      'Illustrative sampling grid for an urban study',
+      'Conceptual environmental research dashboard with seasonal observations',
+      'Research dashboard with an illustrative sampling distribution',
       'Example comparison chart showing variability',
-      'Conceptual diagram for an open research workflow',
-      'Conceptual diagram connecting stages of research communication',
+      'Open research report with example metrics and an observation chart',
+      'Research communication report with illustrative charts and sample groups',
     ],
     captions: [
       '01 · Observation',
@@ -243,12 +243,12 @@ export const showcasePt: typeof showcaseEn = {
     contactText:
       'Conte o que está mudando, onde existe um impasse e o que você deseja alcançar. Podemos começar com uma conversa focada e decidir juntos como um apoio útil poderia funcionar.',
     imageAlts: [
-      'Composição arquitetônica ilustrando direção estratégica',
-      'Composição editorial para um estudo de posicionamento',
-      'Modelo ilustrativo de transformação de negócios em três partes',
-      'Composição de barras ilustrando alinhamento de equipes',
-      'Ilustração de um roteiro de iniciativas estratégicas',
-      'Estudo geométrico de uma visão compartilhada',
+      'Relatório de estratégia impresso com capa editorial e notas de consultoria',
+      'Publicação editorial de estratégia com um estudo de posicionamento',
+      'Relatório de consultoria com modelo de transformação em três partes',
+      'Relatório de alinhamento com uma composição ilustrativa de barras',
+      'Publicação de planejamento estratégico com capa editorial',
+      'Publicação de consultoria apresentando uma visão estratégica compartilhada',
     ],
     captions: [
       '01 · Direção',
@@ -336,11 +336,11 @@ export const showcasePt: typeof showcaseEn = {
       'Estou aberta a conversas sobre projetos interdisciplinares, comunicação científica e monitoramento ambiental. Compartilhe sua pergunta, o contexto e onde uma colaboração poderia ajudar.',
     imageAlts: [
       'Visualização de série temporal de exemplo, sem dados de pesquisa medidos',
-      'Diagrama conceitual de um sistema hídrico',
-      'Grade ilustrativa de amostragem para um estudo urbano',
+      'Painel conceitual de pesquisa ambiental com observações sazonais',
+      'Painel de pesquisa com uma distribuição ilustrativa de amostragem',
       'Gráfico comparativo de exemplo mostrando variabilidade',
-      'Diagrama conceitual de um fluxo de pesquisa aberta',
-      'Diagrama conceitual conectando etapas de comunicação científica',
+      'Relatório de pesquisa aberta com métricas de exemplo e gráfico de observações',
+      'Relatório de comunicação científica com gráficos e grupos de amostragem ilustrativos',
     ],
     captions: [
       '01 · Observação',

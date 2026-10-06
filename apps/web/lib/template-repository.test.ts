@@ -137,4 +137,28 @@ describe('template transactions', () => {
     expect(queries[1]!.params).toContain(JSON.stringify({ accent: '#1E5AA8' }));
     expect(queries[1]!.params).toContain(user.id);
   });
+  it('keeps design controls valid during later partial patches and updates the template identity', async () => {
+    const { repo, batch } = setup();
+    const theme = {
+      ...DEFAULT_THEME,
+      preset: 'studio' as const,
+      backgroundColor: '#f2c9dc',
+      galleryLayout: 'featured' as const,
+    };
+    batch.mockResolvedValue([{}, [{ theme }]]);
+    expect(await repo.patch(site.id, user.id, { preset: 'studio' })).toEqual(
+      theme,
+    );
+    const query = compile(batch.mock.calls[0]![0][1]);
+    expect(query.sql).toContain('"template_id"');
+    expect(query.params).toEqual(
+      expect.arrayContaining([
+        'backgroundColor',
+        'textColor',
+        'galleryLayout',
+        'sectionSpacing',
+        'studio',
+      ]),
+    );
+  });
 });

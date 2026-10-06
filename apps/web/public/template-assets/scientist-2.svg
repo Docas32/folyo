@@ -1,1 +1,345 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"><rect x="0" y="0" width="1200" height="900" rx="0" fill="#EAF2EE" stroke="none"/><rect x="48" y="48" width="1104" height="804" rx="16" fill="#FAFCFA" stroke="none"/><text x="92" y="115" font-family="sans-serif" font-size="20" font-weight="600" fill="#0F766E">02 / 06</text><path d="M110 270C300 140 510 420 690 270S950 200 1090 280" fill="none" stroke="#0F766E" stroke-width="7"/><path d="M110 336C300 206 510 486 690 336S950 266 1090 346" fill="none" stroke="#89B8A1" stroke-width="7"/><path d="M110 402C300 272 510 552 690 402S950 332 1090 412" fill="none" stroke="#B8D7C6" stroke-width="7"/><path d="M110 468C300 338 510 618 690 468S950 398 1090 478" fill="none" stroke="#0F766E" stroke-width="7"/><path d="M110 534C300 404 510 684 690 534S950 464 1090 544" fill="none" stroke="#89B8A1" stroke-width="7"/><path d="M110 600C300 470 510 750 690 600S950 530 1090 610" fill="none" stroke="#B8D7C6" stroke-width="7"/></svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 900"
+  width="1200"
+  height="900"
+>
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow
+        dx="0"
+        dy="24"
+        stdDeviation="24"
+        flood-color="#152030"
+        flood-opacity=".18"
+      />
+    </filter>
+    <linearGradient id="paper" x2="1" y2="1">
+      <stop stop-color="#fff" />
+      <stop offset="1" stop-color="#e9e4da" />
+    </linearGradient>
+    <linearGradient id="desk" x2="0" y2="1">
+      <stop stop-color="#dbe7e0" />
+      <stop offset="1" stop-color="#c6c3bd" />
+    </linearGradient>
+    <linearGradient id="glass" x2="1" y2="1">
+      <stop stop-color="#ffffff" stop-opacity=".35" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#dbe7e0" />
+  <rect x="0" y="0" width="1200" height="900" rx="0" fill="#dbe7e0" />
+  <path d="M0 0h1200" stroke="#cfddd4" />
+  <path d="M0 40h1200" stroke="#cfddd4" />
+  <path d="M0 80h1200" stroke="#cfddd4" />
+  <path d="M0 120h1200" stroke="#cfddd4" />
+  <path d="M0 160h1200" stroke="#cfddd4" />
+  <path d="M0 200h1200" stroke="#cfddd4" />
+  <path d="M0 240h1200" stroke="#cfddd4" />
+  <path d="M0 280h1200" stroke="#cfddd4" />
+  <path d="M0 320h1200" stroke="#cfddd4" />
+  <path d="M0 360h1200" stroke="#cfddd4" />
+  <path d="M0 400h1200" stroke="#cfddd4" />
+  <path d="M0 440h1200" stroke="#cfddd4" />
+  <path d="M0 480h1200" stroke="#cfddd4" />
+  <path d="M0 520h1200" stroke="#cfddd4" />
+  <path d="M0 560h1200" stroke="#cfddd4" />
+  <path d="M0 600h1200" stroke="#cfddd4" />
+  <path d="M0 640h1200" stroke="#cfddd4" />
+  <path d="M0 680h1200" stroke="#cfddd4" />
+  <path d="M0 720h1200" stroke="#cfddd4" />
+  <path d="M0 760h1200" stroke="#cfddd4" />
+  <path d="M0 800h1200" stroke="#cfddd4" />
+  <path d="M0 840h1200" stroke="#cfddd4" />
+  <path d="M0 880h1200" stroke="#cfddd4" />
+  <g transform="translate(113 99)" filter="url(#shadow)">
+    <rect x="0" y="0" width="974" height="702" rx="12" fill="#fbfdfa" />
+    <rect x="0" y="0" width="974" height="59" rx="12" fill="#173d32" />
+    <rect x="0" y="34" width="974" height="25" rx="0" fill="#173d32" />
+    <circle cx="25" cy="30" r="4" fill="#e7b59c" />
+    <circle cx="40" cy="30" r="4" fill="#d4c78d" />
+    <circle cx="55" cy="30" r="4" fill="#8fc6b0" />
+    <text
+      x="88"
+      y="36"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="700"
+      fill="#e4efe7"
+      letter-spacing="1"
+    >
+      FIELDNOTES / RESEARCH OBSERVATORY
+    </text>
+    <text
+      x="819"
+      y="36"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#c2d9cc"
+    >
+      DATA &amp; INSIGHTS
+    </text>
+    <text
+      x="36"
+      y="105"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#527164"
+      letter-spacing="2"
+    >
+      RESEARCH SERIES / 03
+    </text>
+    <text
+      x="36"
+      y="153"
+      font-family="Georgia, serif"
+      font-size="33"
+      font-weight="400"
+      fill="#173d32"
+    >
+      Mapping a changing world.
+    </text>
+    <text
+      x="36"
+      y="187"
+      font-family="Arial, sans-serif"
+      font-size="13"
+      font-weight="400"
+      fill="#688274"
+    >
+      Environmental research · Longitudinal study · Open methods
+    </text>
+    <rect x="36" y="219" width="288" height="94" rx="8" fill="#edf4ee" />
+    <text
+      x="54"
+      y="245"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+      letter-spacing="1"
+    >
+      OBSERVATION SITES
+    </text>
+    <text
+      x="54"
+      y="284"
+      font-family="Arial, sans-serif"
+      font-size="31"
+      font-weight="700"
+      fill="#173d32"
+    >
+      128
+    </text>
+    <rect x="343" y="219" width="288" height="94" rx="8" fill="#edf4ee" />
+    <text
+      x="361"
+      y="245"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+      letter-spacing="1"
+    >
+      MONTHS OF DATA
+    </text>
+    <text
+      x="361"
+      y="284"
+      font-family="Arial, sans-serif"
+      font-size="31"
+      font-weight="700"
+      fill="#173d32"
+    >
+      24
+    </text>
+    <rect x="650" y="219" width="288" height="94" rx="8" fill="#edf4ee" />
+    <text
+      x="668"
+      y="245"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+      letter-spacing="1"
+    >
+      DATA COMPLETENESS
+    </text>
+    <text
+      x="668"
+      y="284"
+      font-family="Arial, sans-serif"
+      font-size="31"
+      font-weight="700"
+      fill="#173d32"
+    >
+      96.4%
+    </text>
+    <rect
+      x="36"
+      y="335"
+      width="589"
+      height="283"
+      rx="8"
+      fill="#fff"
+      stroke="#d7e5db"
+    />
+    <text
+      x="56"
+      y="366"
+      font-family="Arial, sans-serif"
+      font-size="17"
+      font-weight="700"
+      fill="#173d32"
+    >
+      Seasonal variation
+    </text>
+    <text
+      x="56"
+      y="388"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#688274"
+    >
+      Indexed observations · monthly average
+    </text>
+    <path d="M84 414h510" stroke="#e1eae3" />
+    <text
+      x="54"
+      y="419"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      100
+    </text>
+    <path d="M84 450h510" stroke="#e1eae3" />
+    <text
+      x="54"
+      y="455"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      80
+    </text>
+    <path d="M84 486h510" stroke="#e1eae3" />
+    <text
+      x="54"
+      y="491"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      60
+    </text>
+    <path d="M84 522h510" stroke="#e1eae3" />
+    <text
+      x="54"
+      y="527"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      40
+    </text>
+    <path d="M84 558h510" stroke="#e1eae3" />
+    <text
+      x="54"
+      y="563"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      20
+    </text>
+    <polygon
+      points="87,558 87,497 132,475 177,513 222,491 267,469 312,447 357,485 402,463 447,441 492,419 537,457 582,435 582,558"
+      fill="#0f766e"
+      opacity=".1"
+    />
+    <polyline
+      points="87,497 132,475 177,513 222,491 267,469 312,447 357,485 402,463 447,441 492,419 537,457 582,435"
+      fill="none"
+      stroke="#0f766e"
+      stroke-width="3"
+    />
+    <text
+      x="88"
+      y="586"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC
+    </text>
+    <rect x="647" y="335" width="291" height="283" rx="8" fill="#e9f1ea" />
+    <text
+      x="669"
+      y="366"
+      font-family="Arial, sans-serif"
+      font-size="16"
+      font-weight="700"
+      fill="#173d32"
+    >
+      Study distribution
+    </text>
+    <circle cx="678" cy="397" r="11" fill="#6b9c85" />
+    <circle cx="746" cy="397" r="12" fill="#9bc0a9" />
+    <circle cx="814" cy="397" r="13" fill="#306f54" />
+    <circle cx="882" cy="397" r="14" fill="#c4d7c7" />
+    <circle cx="678" cy="440" r="15" fill="#6b9c85" />
+    <circle cx="746" cy="440" r="16" fill="#9bc0a9" />
+    <circle cx="814" cy="440" r="17" fill="#306f54" />
+    <circle cx="882" cy="440" r="9" fill="#c4d7c7" />
+    <circle cx="678" cy="483" r="10" fill="#6b9c85" />
+    <circle cx="746" cy="483" r="11" fill="#9bc0a9" />
+    <circle cx="814" cy="483" r="12" fill="#306f54" />
+    <circle cx="882" cy="483" r="13" fill="#c4d7c7" />
+    <circle cx="678" cy="526" r="14" fill="#6b9c85" />
+    <circle cx="746" cy="526" r="15" fill="#9bc0a9" />
+    <circle cx="814" cy="526" r="16" fill="#306f54" />
+    <circle cx="882" cy="526" r="17" fill="#c4d7c7" />
+    <text
+      x="669"
+      y="595"
+      font-family="Arial, sans-serif"
+      font-size="11"
+      font-weight="400"
+      fill="#527164"
+    >
+      4 regions / 16 sample groups
+    </text>
+    <path d="M36 648h902" stroke="#d7e5db" />
+    <text
+      x="36"
+      y="678"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+      letter-spacing="2"
+    >
+      METHODS · RESULTS · OPEN RESEARCH
+    </text>
+    <text
+      x="791"
+      y="678"
+      font-family="Arial, sans-serif"
+      font-size="10"
+      font-weight="400"
+      fill="#688274"
+    >
+      RESEARCH NOTE / 03
+    </text>
+  </g>
+</svg>
